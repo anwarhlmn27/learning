@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('nm_profil');
             $table->string('deskripsi');
             $table->string('expertise');
+            $table->string('file')->nullable();
             $table->timestamps();
 
             $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');

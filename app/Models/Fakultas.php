@@ -31,6 +31,16 @@ class Fakultas extends Model
         return $this->hasMany(Prodi::class, 'id_fakultas');
     }
 
+    public function gps()
+    {
+        return $this->hasMany(Gp::class, 'id_prodi');
+    }
+
+    public function gpAttachments()
+    {
+        return $this->hasMany(GpAttachment::class, 'id_prodi');
+    }
+
     public function visi()
     {
         return $this->morphOne(Visi::class, 'visible');

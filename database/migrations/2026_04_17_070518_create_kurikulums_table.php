@@ -12,15 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('kurikulums', function (Blueprint $table) {
-            $table->uuid('id')->primary;
+            $table->uuid('id')->primary();
             $table->string('nm_kurikulum');
-            $table->integer('tahun_akademik');
-            $table->integer('semester');
-            $table->uuid('id_subject');
             $table->uuid('id_prodi');
+            $table->integer('tahun_akademik');
+            // Document Attachments
+            $table->string('berita_acara_fgd')->nullable();
+            $table->string('daftar_hadir')->nullable();
+            $table->string('notulensi_diskusi')->nullable();
+            $table->string('laporan_penyusunan')->nullable();
+            $table->string('laporan_sosialisasi')->nullable();
+            $table->string('dokumentasi')->nullable();
             $table->timestamps();
 
-            $table->foreign('id_subject')->references('id')->on('subjects')->onDelete('cascade');
             $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
         });
     }

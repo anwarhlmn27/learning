@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('kurikulum_subjects', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('id_kurikulum');
+            $table->uuid('id_subject');
+            $table->integer('semester');
+            $table->timestamps();
+
+            $table->foreign('id_kurikulum')->references('id')->on('kurikulums')->onDelete('cascade');
+            $table->foreign('id_subject')->references('id')->on('subjects')->onDelete('cascade');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('kurikulum_subjects');
+    }
+};

@@ -13,30 +13,53 @@
         <a href="{{ route('univ.index') }}" style="font-size: 0.875rem; color: var(--text-muted);">Back</a>
     </div>
     <div class="card-body">
+        @if($errors->any())
+            <div style="background: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                <strong>⚠ Please fix the following errors:</strong>
+                <ul style="margin: 0.5rem 0 0 1.25rem; padding: 0;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('univ.update', $univ->id) }}" method="POST" enctype="multipart/form-data" id="univForm">
             @csrf
             @method('PUT')
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
                     <label class="form-label">University Code</label>
-                    <input type="text" name="kode_univ" class="form-control" required value="{{ old('kode_univ', $univ->kode_univ) }}">
+                    <input type="text" name="kode_univ" class="form-control @error('kode_univ') is-invalid @enderror" required value="{{ old('kode_univ', $univ->kode_univ) }}">
+                    @error('kode_univ')
+                        <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">University Name</label>
-                    <input type="text" name="nama_univ" class="form-control" required value="{{ old('nama_univ', $univ->nama_univ) }}">
+                    <input type="text" name="nama_univ" class="form-control @error('nama_univ') is-invalid @enderror" required value="{{ old('nama_univ', $univ->nama_univ) }}">
+                    @error('nama_univ')
+                        <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
+                    @enderror
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
                     <label class="form-label">Leader Name (Rector)</label>
-                    <input type="text" name="nama_pimpinan" class="form-control" required value="{{ old('nama_pimpinan', $univ->nama_pimpinan) }}">
+                    <input type="text" name="nama_pimpinan" class="form-control @error('nama_pimpinan') is-invalid @enderror" required value="{{ old('nama_pimpinan', $univ->nama_pimpinan) }}">
+                    @error('nama_pimpinan')
+                        <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
+                    @enderror
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Full Address</label>
-                <textarea name="address" class="form-control" rows="3" required>{{ old('address', $univ->address) }}</textarea>
+                <textarea name="address" class="form-control @error('address') is-invalid @enderror" rows="3" required>{{ old('address', $univ->address) }}</textarea>
+                @error('address')
+                    <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
+                @enderror
             </div>
 
             <div class="form-group">
@@ -58,8 +81,11 @@
                 </div>
 
                 <div id="sign_upload_container">
-                    <input type="file" name="sign_file" class="form-control" accept="image/*">
+                    <input type="file" name="sign_file" class="form-control @error('sign_file') is-invalid @enderror" accept="image/*">
                     <small style="color: var(--text-muted);">Format: PNG, JPG (Max 2MB). Leave empty if you don't want to change.</small>
+                    @error('sign_file')
+                        <br><small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 <div id="sign_draw_container" style="display: none;">
@@ -70,17 +96,26 @@
                         <button type="button" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="clearSignature()">Clear</button>
                     </div>
                     <input type="hidden" name="sign" id="sign_base64">
+                    @error('sign')
+                        <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
+                    @enderror
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
                     <label class="form-label">Institutional Email</label>
-                    <input type="email" name="email" class="form-control" required value="{{ old('email', $univ->email) }}">
+                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" required value="{{ old('email', $univ->email) }}">
+                    @error('email')
+                        <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Website (URL)</label>
-                    <input type="url" name="website" class="form-control" required value="{{ old('website', $univ->website) }}">
+                    <input type="url" name="website" class="form-control @error('website') is-invalid @enderror" required value="{{ old('website', $univ->website) }}">
+                    @error('website')
+                        <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
+                    @enderror
                 </div>
             </div>
 

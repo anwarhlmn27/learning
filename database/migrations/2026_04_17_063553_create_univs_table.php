@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('kode_univ');
             $table->string('nama_univ');
             $table->string('nama_pimpinan');
-            $table->string('rector_sign');
+            $table->string('rector_sign')->nullable();
             $table->text('address');
             $table->string('email');
             $table->string('website');

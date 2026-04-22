@@ -13,12 +13,20 @@ return new class extends Migration
     {
         Schema::create('subjects', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->integer('kode_subject');
+            $table->string('kode_subject')->unique();
             $table->string('nama_subject');
             $table->integer('sks_t');
             $table->integer('sks_p');
-            $table->integer('toal_sks');
+            $table->integer('total_sks');
+            $table->uuid('prerequisite_id')->nullable();
+            $table->integer('semester');
+            $table->enum('assesment_type', [
+                'Project', 'Prototype', 'Coding', 'Design Project', 
+                'Essay', 'Presentation', 'Case Study', 'SQL Lab', 'Quiz'
+            ]);
             $table->timestamps();
+
+            $table->foreign('prerequisite_id')->references('id')->on('subjects')->onDelete('set null');
         });
     }
 

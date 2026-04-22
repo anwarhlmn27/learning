@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Dashboard') - OBE System</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/icon_hui.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -41,14 +42,33 @@
             flex-direction: column;
             transition: all 0.3s ease;
             flex-shrink: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .sidebar.collapsed {
+            width: 70px;
         }
 
         .sidebar-header {
-            padding: 2rem 1.5rem;
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-            color: white;
+            padding: 1.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 70px;
+            box-sizing: border-box;
+            border-bottom: 1px solid #1f2937;
+            overflow: hidden;
+        }
+
+        .sidebar-header img {
+            max-width: 180px;
+            height: auto;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed .sidebar-header img {
+            max-width: 40px;
         }
 
         .sidebar-nav {
@@ -64,6 +84,48 @@
             text-transform: uppercase;
             color: #4b5563;
             letter-spacing: 0.05em;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-item span,
+        .sidebar.collapsed .nav-group-btn span,
+        .sidebar.collapsed .nav-group-btn .dropdown-icon {
+            display: none !important;
+        }
+
+        .sidebar.collapsed .nav-item,
+        .sidebar.collapsed .nav-group-btn {
+            justify-content: center;
+            padding: 0.75rem 0;
+            width: 100%;
+        }
+
+        .sidebar.collapsed .nav-item i,
+        .sidebar.collapsed .nav-group-btn i {
+            margin-right: 0;
+            font-size: 1.5rem;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Hover tooltip effect for collapsed state */
+        .sidebar.collapsed .nav-item:hover::after,
+        .sidebar.collapsed .nav-group-btn:hover::after {
+            content: attr(data-title);
+            position: fixed;
+            left: 75px;
+            padding: 0.5rem 0.75rem;
+            background: #1f2937;
+            color: white;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
         }
 
         /* Styling untuk tombol dropdown */
@@ -119,6 +181,15 @@
             margin-bottom: 0.25rem;
             font-weight: 500;
             transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-item i, .nav-group-btn i {
+            width: 20px;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+            text-align: center;
+            font-style: normal;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -132,9 +203,29 @@
             font-size: 0.95em;
         }
 
+        .sidebar.collapsed .nav-dropdown {
+            display: none !important;
+        }
+
         .sidebar-footer {
             padding: 1.5rem;
             border-top: 1px solid #1f2937;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .sidebar-footer {
+            padding: 1.5rem 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .logout-btn span {
+            display: none;
+        }
+
+        .sidebar.collapsed .logout-btn::before {
+            content: '🚪';
+            font-size: 1.25rem;
         }
 
         .main-content {
@@ -154,6 +245,24 @@
             position: sticky;
             top: 0;
             z-index: 10;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            transition: background 0.2s;
+            margin-right: 1rem;
+        }
+
+        .toggle-btn:hover {
+            background: #f3f4f6;
         }
 
         .content-padding {
@@ -265,6 +374,23 @@
             border-radius: 0.375rem;
             font-size: 0.875rem;
             box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc2626;
+            background-color: #fef2f2;
+        }
+
+        .form-control.is-invalid:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
         }
 
         .logout-btn {
@@ -280,68 +406,99 @@
     @yield('styles')
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-header">OBE System</div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ asset('img/logo_hui.png') }}" id="sidebar-logo" alt="Logo">
+        </div>
         <nav class="sidebar-nav">
             <div class="nav-label">Main</div>
-            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">Dashboard</a>
+            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" data-title="Dashboard">
+                <i>🏠</i><span>Dashboard</span>
+            </a>
 
             @php 
                 $isLembagaActive = request()->routeIs('univ.*') || request()->routeIs('fakultas.*') || request()->routeIs('prodi.*'); 
             @endphp
-            <button class="nav-group-btn {{ $isLembagaActive ? 'open' : '' }}" onclick="toggleDropdown('dropdown-lembaga')">
-                Institution
+            <button class="nav-group-btn {{ $isLembagaActive ? 'open' : '' }}" onclick="toggleDropdown('dropdown-lembaga')" data-title="Institution">
+                <div style="display: flex; align-items: center;">
+                    <i>🏢</i><span>Institution</span>
+                </div>
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
             <div class="nav-dropdown {{ $isLembagaActive ? 'show' : '' }}" id="dropdown-lembaga">
-                <a href="{{ route('univ.index') }}" class="nav-item {{ request()->routeIs('univ.*') ? 'active' : '' }}">University</a>
-                <a href="{{ route('fakultas.index') }}" class="nav-item {{ request()->routeIs('fakultas.*') ? 'active' : '' }}">Faculty</a>
-                <a href="{{ route('prodi.index') }}" class="nav-item {{ request()->routeIs('prodi.*') ? 'active' : '' }}">Study Program</a>
+                <a href="{{ route('univ.index') }}" class="nav-item {{ request()->routeIs('univ.*') ? 'active' : '' }}" data-title="University">
+                    <i>🏛️</i><span>University</span>
+                </a>
+                <a href="{{ route('fakultas.index') }}" class="nav-item {{ request()->routeIs('fakultas.*') ? 'active' : '' }}" data-title="Faculty">
+                    <i>🏫</i><span>Faculty</span>
+                </a>
+                <a href="{{ route('prodi.index') }}" class="nav-item {{ request()->routeIs('prodi.*') ? 'active' : '' }}" data-title="Study Program">
+                    <i>📚</i><span>Study Program</span>
+                </a>
             </div>
 
             @php 
                 $isAkademikActive = request()->routeIs('visi.*'); 
             @endphp
-            <button class="nav-group-btn {{ $isAkademikActive ? 'open' : '' }}" onclick="toggleDropdown('dropdown-akademik')">
-                Academic & OBE
+            <button class="nav-group-btn {{ $isAkademikActive ? 'open' : '' }}" onclick="toggleDropdown('dropdown-akademik')" data-title="Academic & OBE">
+                <div style="display: flex; align-items: center;">
+                    <i>🎓</i><span>Academic & OBE</span>
+                </div>
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
             <div class="nav-dropdown {{ $isAkademikActive ? 'show' : '' }}" id="dropdown-akademik">
-                <a href="{{ route('visi.index') }}" class="nav-item {{ request()->routeIs('visi.*') ? 'active' : '' }}">Vision & Mission</a>
-                <a href="#" class="nav-item">Graduate Profile (GP)</a>
-                <a href="#" class="nav-item">CPL (PLO)</a>
-                <a href="#" class="nav-item">Curriculum</a>
-                <a href="#" class="nav-item">Courses</a>
-                <a href="#" class="nav-item">CPMK (CLO)</a>
+                <a href="{{ route('visi.index') }}" class="nav-item {{ request()->routeIs('visi.*') ? 'active' : '' }}" data-title="Vision & Mission">
+                    <i>👁️</i><span>Vision & Mission</span>
+                </a>
+                <a href="{{ route('gp.index') }}" class="nav-item {{ request()->routeIs('gp.*') ? 'active' : '' }}" data-title="Graduate Profile">
+                    <i>👤</i><span>Graduate Profile (GP)</span>
+                </a>
+                <a href="{{ route('plo.index') }}" class="nav-item {{ request()->routeIs('plo.index') || request()->routeIs('plo.manage') ? 'active' : '' }}" data-title="CPL (PLO)">
+                    <i>📝</i><span>CPL (PLO)</span>
+                </a>
+                <a href="{{ route('kurikulum.index') }}" class="nav-item {{ request()->routeIs('kurikulum.*') ? 'active' : '' }}" data-title="Curriculum"><i>📖</i><span>Curriculum</span></a>
+                <a href="{{ route('subjects.index') }}" class="nav-item {{ request()->routeIs('subjects.*') ? 'active' : '' }}" data-title="Courses"><i>📘</i><span>Courses</span></a>
+                <a href="#" class="nav-item" data-title="CPMK (CLO)"><i>🎯</i><span>CPMK (CLO)</span></a>
             </div>
 
-            <button class="nav-group-btn" onclick="toggleDropdown('dropdown-pemetaan')">
-                Mapping
+            <button class="nav-group-btn" onclick="toggleDropdown('dropdown-pemetaan')" data-title="Mapping">
+                <div style="display: flex; align-items: center;">
+                    <i>🗺️</i><span>Mapping</span>
+                </div>
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
             <div class="nav-dropdown" id="dropdown-pemetaan">
-                <a href="#" class="nav-item">Curriculum Mapping</a>
+                <a href="#" class="nav-item" data-title="Curriculum Mapping"><i>🔗</i><span>Curriculum Mapping</span></a>
             </div>
 
-            <button class="nav-group-btn" onclick="toggleDropdown('dropdown-pengaturan')">
-                Settings
+            <button class="nav-group-btn" onclick="toggleDropdown('dropdown-pengaturan')" data-title="Settings">
+                <div style="display: flex; align-items: center;">
+                    <i>⚙️</i><span>Settings</span>
+                </div>
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
             <div class="nav-dropdown" id="dropdown-pengaturan">
-                <a href="#" class="nav-item">User Management</a>
+                <a href="#" class="nav-item" data-title="User Management"><i>👥</i><span>User Management</span></a>
             </div>
         </nav>
         <div class="sidebar-footer">
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="logout-btn">Logout</button>
+                <button type="submit" class="logout-btn">
+                    <span>Logout</span>
+                </button>
             </form>
         </div>
     </div>
 
     <div class="main-content">
         <header>
-            <div>@yield('header_left')</div>
+            <div style="display: flex; align-items: center;">
+                <button class="toggle-btn" onclick="toggleSidebar()">
+                    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                @yield('header_left')
+            </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <span style="font-size: 0.875rem; font-weight: 500;">{{ Auth::user()->email }}</span>
                 <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">A</div>
@@ -362,13 +519,44 @@
             const dropdown = document.getElementById(id);
             const btn = dropdown.previousElementSibling;
             
+            // Check if sidebar is collapsed
+            if (document.getElementById('sidebar').classList.contains('collapsed')) {
+                toggleSidebar(); // Auto expand on click
+            }
+
             // Toggle classes
             dropdown.classList.toggle('show');
             btn.classList.toggle('open');
         }
 
-        // Auto-hide alerts after 3 seconds
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const logo = document.getElementById('sidebar-logo');
+            sidebar.classList.toggle('collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                logo.src = "{{ asset('img/icon_hui.png') }}";
+            } else {
+                logo.src = "{{ asset('img/logo_hui.png') }}";
+            }
+            
+            // Save state to localStorage
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
+
+        // Restore sidebar state and Auto-hide alerts after 3 seconds
         document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const logo = document.getElementById('sidebar-logo');
+            
+            // Restore sidebar state
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                sidebar.classList.add('collapsed');
+                logo.src = "{{ asset('img/icon_hui.png') }}";
+            }
+
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 setTimeout(() => {

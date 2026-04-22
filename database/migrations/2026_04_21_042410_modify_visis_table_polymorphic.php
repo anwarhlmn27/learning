@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::table('visis', function (Blueprint $table) {
             // Drop index if it exists to avoid duplication error
-            try {
+            /* try {
                 $table->dropIndex('visis_visible_id_visible_type_index');
             } catch (\Exception $e) {
                 // Ignore if not exists
-            }
+            } */
 
             if (!Schema::hasColumn('visis', 'visible_id')) {
                 $table->uuid('visible_id');
@@ -66,6 +66,7 @@ return new class extends Migration
             }
 
             if (Schema::hasColumn('visis', 'id_prodi')) {
+                $table->dropForeign(['id_prodi']);
                 $table->dropColumn('id_prodi');
             }
         });
