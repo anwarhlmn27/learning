@@ -45,4 +45,9 @@ class Prodi extends Model
     {
         return $this->morphOne(Visi::class, 'visible');
     }
+
+    public function courseMapings()
+    {
+        return $this->hasMany(CourseMaping::class, 'id_prodi');
+    }
 }

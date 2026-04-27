@@ -23,7 +23,6 @@
                         <th>Abbreviation</th>
                         <th>Study Program Name</th>
                         <th>Leader (Head of SP)</th>
-                        <th>Signature</th>
                         <th style="width: 150px;">Actions</th>
                     </tr>
                 </thead>
@@ -36,13 +35,6 @@
                         <td>{{ $p->short_name }}</td>
                         <td>{{ $p->nama_prodi }}</td>
                         <td>{{ $p->nama_pimpinan ?? '-' }}</td>
-                        <td>
-                            @if($p->sign)
-                                <img src="{{ asset('storage/' . $p->sign) }}" alt="Sign" style="height: 30px; border-radius: 4px;">
-                            @else
-                                <span style="color: var(--text-muted); font-size: 0.75rem;">-</span>
-                            @endif
-                        </td>
                         <td>
                             <div style="display: flex; gap: 0.5rem;">
                                 <a href="{{ route('prodi.edit', $p->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>

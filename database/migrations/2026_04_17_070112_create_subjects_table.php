@@ -22,7 +22,8 @@ return new class extends Migration
             $table->integer('semester');
             $table->enum('assesment_type', [
                 'Project', 'Prototype', 'Coding', 'Design Project', 
-                'Essay', 'Presentation', 'Case Study', 'SQL Lab', 'Quiz'
+                'Essay', 'Presentation', 'Case Study', 'SQL Lab',
+                'Quiz','Writing','Analisys', 'Problem Solving','Reflection','Investigation Report','Business Pitch','Proposal','Performance','Report'
             ]);
             $table->timestamps();
 

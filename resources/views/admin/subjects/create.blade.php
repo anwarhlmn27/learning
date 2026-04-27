@@ -60,15 +60,23 @@
                         @endfor
                     </select>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Assessment Type</label>
-                    <select name="assesment_type" class="form-control" required>
-                        <option value="" disabled selected>Select Type</option>
-                        @foreach($assessmentTypes as $type)
-                            <option value="{{ $type }}" {{ old('assesment_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
-                        @endforeach
-                    </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Assessment Type <span style="color: #dc2626;">*</span></label>
+                @error('assesment_type')
+                    <div style="color: #dc2626; font-size: 0.75rem; margin-bottom: 0.5rem;">{{ $message }}</div>
+                @enderror
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; padding: 0.75rem; border: 1px solid {{ $errors->has('assesment_type') ? '#dc2626' : '#d1d5db' }}; border-radius: 0.375rem; background: #f9fafb;">
+                    @foreach($assessmentTypes as $type)
+                        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; cursor: pointer; padding: 0.25rem 0;">
+                            <input type="checkbox" name="assesment_type[]" value="{{ $type }}" {{ is_array(old('assesment_type')) && in_array($type, old('assesment_type')) ? 'checked' : '' }}
+                                style="accent-color: var(--primary); width: 16px; height: 16px;">
+                            {{ $type }}
+                        </label>
+                    @endforeach
                 </div>
+                <small style="color: var(--text-muted);">Pilih satu atau lebih assessment type.</small>
             </div>
 
             <div class="form-group">

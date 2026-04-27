@@ -6,17 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class Plo extends Model
+class CourseMaping extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $table = 'course_mapings';
+
     protected $fillable = [
         'id_prodi',
-        'id_gp',
-        'title_plo',
-        'plo',
-        'detail',
-        'deskripsi',
+        'id_subject',
+        'level_maping',
+        'id_plo',
     ];
 
     public function prodi()
@@ -24,18 +24,13 @@ class Plo extends Model
         return $this->belongsTo(Prodi::class, 'id_prodi');
     }
 
-    public function gp()
+    public function subject()
     {
-        return $this->belongsTo(Gp::class, 'id_gp');
+        return $this->belongsTo(Subject::class, 'id_subject');
     }
 
-    public function clos()
+    public function plo()
     {
-        return $this->hasMany(Clo::class, 'id_plo');
-    }
-
-    public function courseMapings()
-    {
-        return $this->hasMany(CourseMaping::class, 'id_plo');
+        return $this->belongsTo(Plo::class, 'id_plo');
     }
 }

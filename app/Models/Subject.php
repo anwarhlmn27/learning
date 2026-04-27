@@ -23,6 +23,10 @@ class Subject extends Model
         'assesment_type',
     ];
 
+    protected $casts = [
+        'assesment_type' => 'array',
+    ];
+
     /**
      * Get the prerequisite subject.
      */
@@ -32,10 +36,23 @@ class Subject extends Model
     }
 
     /**
+     * Get the CLOs for this subject.
+     */
+    public function clos()
+    {
+        return $this->hasMany(Clo::class, 'id_subject');
+    }
+
+    /**
      * Get subjects that have this subject as a prerequisite.
      */
     public function dependents()
     {
         return $this->hasMany(Subject::class, 'prerequisite_id');
+    }
+
+    public function courseMapings()
+    {
+        return $this->hasMany(CourseMaping::class, 'id_subject');
     }
 }

@@ -22,7 +22,6 @@
                         <th>Abbreviation</th>
                         <th>Faculty Name</th>
                         <th>Leader (Dean)</th>
-                        <th>Signature</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -34,13 +33,6 @@
                         <td>{{ $f->short_name }}</td>
                         <td>{{ $f->nama_fakultas }}</td>
                         <td>{{ $f->nama_pimpinan }}</td>
-                        <td>
-                            @if($f->sign)
-                                <img src="{{ asset('storage/' . $f->sign) }}" alt="Sign" style="height: 30px; border-radius: 4px;">
-                            @else
-                                <span style="color: var(--text-muted); font-size: 0.75rem;">-</span>
-                            @endif
-                        </td>
                         <td style="display: flex; gap: 0.5rem;">
                             <a href="{{ route('fakultas.edit', $f->id) }}" class="btn" style="background: #e5e7eb; color: #374151; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>
                             <form action="{{ route('fakultas.destroy', $f->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this?');">

@@ -22,7 +22,6 @@
                         <th>Leader (Rector)</th>
                         <th>Email</th>
                         <th>Website</th>
-                        <th>Signature</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -34,13 +33,6 @@
                             <td>{{ $u->nama_pimpinan }}</td>
                             <td>{{ $u->email }}</td>
                             <td><a href="{{ $u->website }}" target="_blank" style="color: var(--primary);">Link</a></td>
-                            <td>
-                                @if($u->sign)
-                                    <img src="{{ asset('storage/' . $u->sign) }}" alt="Sign" style="height: 30px; border-radius: 4px;">
-                                @else
-                                    <span style="color: var(--text-muted); font-size: 0.75rem;">-</span>
-                                @endif
-                            </td>
                             <td style="display: flex; gap: 0.5rem;">
                                 <a href="{{ route('univ.edit', $u->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>
                                 <form action="{{ route('univ.destroy', $u->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this?')">

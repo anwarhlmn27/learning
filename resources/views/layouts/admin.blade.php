@@ -269,13 +269,88 @@
             padding: 2rem;
         }
 
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 70px;
+            }
+            .sidebar .nav-label,
+            .sidebar .nav-item span,
+            .sidebar .nav-group-btn span,
+            .sidebar .nav-group-btn .dropdown-icon {
+                display: none !important;
+            }
+            .sidebar .sidebar-header img {
+                max-width: 40px;
+            }
+            .sidebar-footer .logout-btn span {
+                display: none;
+            }
+            .sidebar-footer .logout-btn::before {
+                content: '🚪';
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                position: relative;
+            }
+            .sidebar {
+                position: fixed;
+                height: 100vh;
+                z-index: 50;
+                left: -260px;
+                width: 260px;
+            }
+            .sidebar.active {
+                left: 0;
+                box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            }
+            .sidebar .nav-label,
+            .sidebar .nav-item span,
+            .sidebar .nav-group-btn span,
+            .sidebar .nav-group-btn .dropdown-icon {
+                display: block !important;
+            }
+            .sidebar .sidebar-header img {
+                max-width: 180px;
+            }
+            .sidebar-footer .logout-btn span {
+                display: inline;
+            }
+            .sidebar-footer .logout-btn::before {
+                content: '';
+            }
+            .content-padding {
+                padding: 1rem;
+            }
+            header {
+                padding: 1rem;
+            }
+            .header-user-email {
+                display: none;
+            }
+            /* Overlay when sidebar is open on mobile */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 40;
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
         .card {
             background-color: white;
             border-radius: 0.75rem;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             border: 1px solid #e5e7eb;
             overflow: hidden;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .card-header {
@@ -438,7 +513,7 @@
             </div>
 
             @php 
-                $isAkademikActive = request()->routeIs('visi.*'); 
+                $isAkademikActive = request()->routeIs('visi.*') || request()->routeIs('gp.*') || request()->routeIs('plo.*') || request()->routeIs('kurikulum.*') || request()->routeIs('subjects.*') || request()->routeIs('clo.*'); 
             @endphp
             <button class="nav-group-btn {{ $isAkademikActive ? 'open' : '' }}" onclick="toggleDropdown('dropdown-akademik')" data-title="Academic & OBE">
                 <div style="display: flex; align-items: center;">
@@ -458,17 +533,17 @@
                 </a>
                 <a href="{{ route('kurikulum.index') }}" class="nav-item {{ request()->routeIs('kurikulum.*') ? 'active' : '' }}" data-title="Curriculum"><i>📖</i><span>Curriculum</span></a>
                 <a href="{{ route('subjects.index') }}" class="nav-item {{ request()->routeIs('subjects.*') ? 'active' : '' }}" data-title="Courses"><i>📘</i><span>Courses</span></a>
-                <a href="#" class="nav-item" data-title="CPMK (CLO)"><i>🎯</i><span>CPMK (CLO)</span></a>
+                <a href="{{ route('clo.index') }}" class="nav-item {{ request()->routeIs('clo.*') ? 'active' : '' }}" data-title="CPMK (CLO)"><i>🎯</i><span>CPMK (CLO)</span></a>
             </div>
 
-            <button class="nav-group-btn" onclick="toggleDropdown('dropdown-pemetaan')" data-title="Mapping">
+            <button class="nav-group-btn {{ request()->routeIs('course_mapping.*') ? 'open' : '' }}" onclick="toggleDropdown('dropdown-pemetaan')" data-title="Mapping">
                 <div style="display: flex; align-items: center;">
                     <i>🗺️</i><span>Mapping</span>
                 </div>
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
-            <div class="nav-dropdown" id="dropdown-pemetaan">
-                <a href="#" class="nav-item" data-title="Curriculum Mapping"><i>🔗</i><span>Curriculum Mapping</span></a>
+            <div class="nav-dropdown {{ request()->routeIs('course_mapping.*') ? 'show' : '' }}" id="dropdown-pemetaan">
+                <a href="{{ route('course_mapping.index') }}" class="nav-item {{ request()->routeIs('course_mapping.*') ? 'active' : '' }}" data-title="Curriculum Mapping"><i>🔗</i><span>Curriculum Mapping</span></a>
             </div>
 
             <button class="nav-group-btn" onclick="toggleDropdown('dropdown-pengaturan')" data-title="Settings">
@@ -500,10 +575,12 @@
                 @yield('header_left')
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <span style="font-size: 0.875rem; font-weight: 500;">{{ Auth::user()->email }}</span>
+                <span class="header-user-email" style="font-size: 0.875rem; font-weight: 500;">{{ Auth::user()->email }}</span>
                 <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">A</div>
             </div>
         </header>
+
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
         <div class="content-padding">
             @if(session('success'))
@@ -532,17 +609,22 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const logo = document.getElementById('sidebar-logo');
-            sidebar.classList.toggle('collapsed');
+            const overlay = document.getElementById('sidebar-overlay');
             
-            if (sidebar.classList.contains('collapsed')) {
-                logo.src = "{{ asset('img/icon_hui.png') }}";
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
             } else {
-                logo.src = "{{ asset('img/logo_hui.png') }}";
+                sidebar.classList.toggle('collapsed');
+                if (sidebar.classList.contains('collapsed')) {
+                    logo.src = "{{ asset('img/icon_hui.png') }}";
+                } else {
+                    logo.src = "{{ asset('img/logo_hui.png') }}";
+                }
+                // Save state to localStorage
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
             }
-            
-            // Save state to localStorage
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
         }
 
         // Restore sidebar state and Auto-hide alerts after 3 seconds

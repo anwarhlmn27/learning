@@ -30,8 +30,12 @@ class SubjectController extends Controller
             'sks_p' => 'required|integer|min:0',
             'total_sks' => 'required|integer|min:1',
             'semester' => 'required|integer|min:1|max:14',
-            'assesment_type' => 'required|in:' . implode(',', $this->getAssessmentTypes()),
+            'assesment_type' => 'required|array|min:1',
+            'assesment_type.*' => 'in:' . implode(',', $this->getAssessmentTypes()),
             'prerequisite_id' => 'nullable|exists:subjects,id',
+        ], [
+            'assesment_type.required' => 'Pilih minimal 1 assessment type.',
+            'assesment_type.min' => 'Pilih minimal 1 assessment type.',
         ]);
 
         try {
@@ -58,8 +62,12 @@ class SubjectController extends Controller
             'sks_p' => 'required|integer|min:0',
             'total_sks' => 'required|integer|min:1',
             'semester' => 'required|integer|min:1|max:14',
-            'assesment_type' => 'required|in:' . implode(',', $this->getAssessmentTypes()),
+            'assesment_type' => 'required|array|min:1',
+            'assesment_type.*' => 'in:' . implode(',', $this->getAssessmentTypes()),
             'prerequisite_id' => 'nullable|exists:subjects,id|different:id',
+        ], [
+            'assesment_type.required' => 'Pilih minimal 1 assessment type.',
+            'assesment_type.min' => 'Pilih minimal 1 assessment type.',
         ]);
 
         try {
@@ -89,7 +97,10 @@ class SubjectController extends Controller
     {
         return [
             'Project', 'Prototype', 'Coding', 'Design Project', 
-            'Essay', 'Presentation', 'Case Study', 'SQL Lab', 'Quiz'
+            'Essay', 'Presentation', 'Case Study', 'SQL Lab',
+            'Quiz', 'Writing', 'Analisys', 'Problem Solving',
+            'Reflection', 'Investigation Report', 'Business Pitch',
+            'Proposal', 'Performance', 'Report'
         ];
     }
 }
