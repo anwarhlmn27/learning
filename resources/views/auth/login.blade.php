@@ -270,6 +270,15 @@
                 <p>Please log in to your OBE System account</p>
             </div>
             
+            @if (session('status'))
+                <div class="alert-success" style="background-color: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.85rem; border-radius: 10px; margin-bottom: 1.25rem; font-size: 0.85rem; display: flex; align-items: flex-start; gap: 0.5rem; backdrop-filter: blur(4px);">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 18px; height: 18px; flex-shrink: 0; margin-top: 0.125rem;">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <div>{{ session('status') }}</div>
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="alert-error">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -305,6 +314,14 @@
                     </div>
                 </div>
 
+                <div class="form-options" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <label class="remember-me" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0;">
+                        <input type="checkbox" name="remember" id="remember" style="width: 1rem; height: 1rem; accent-color: var(--primary);">
+                        <span style="font-weight: 400; color: var(--text-muted);">Remember me</span>
+                    </label>
+                    <a href="{{ route('password.request') }}" class="forgot-password" style="font-size: 0.8rem; color: #a5b4fc; text-decoration: none; font-weight: 500; transition: color 0.2s ease;">Forgot Password?</a>
+                </div>
+                <input type="hidden" name="recaptcha_token" id="recaptcha_token">
                 <button type="submit">Sign In</button>
             </form>
 
@@ -313,5 +330,19 @@
             </div>
         </div>
     </div>
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            
+            grecaptcha.ready(function() {
+                grecaptcha.execute('{{ env("RECAPTCHA_SITE_KEY") }}', {action: 'login'}).then(function(token) {
+                    document.getElementById('recaptcha_token').value = token;
+                    form.submit();
+                });
+            });
+        });
+    </script>
+    <script src="https://www.google.com/recaptcha/api.js?render={{ env('RECAPTCHA_SITE_KEY') }}"></script>
 </body>
 </html>

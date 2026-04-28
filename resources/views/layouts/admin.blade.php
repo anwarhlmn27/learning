@@ -553,16 +553,11 @@
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
             <div class="nav-dropdown" id="dropdown-pengaturan">
-                <a href="#" class="nav-item" data-title="User Management"><i>👥</i><span>User Management</span></a>
+                <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}" data-title="User Management"><i>👥</i><span>User Management</span></a>
             </div>
         </nav>
         <div class="sidebar-footer">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="logout-btn">
-                    <span>Logout</span>
-                </button>
-            </form>
+            <!-- Logout moved to avatar dropdown -->
         </div>
     </div>
 
@@ -574,9 +569,22 @@
                 </button>
                 @yield('header_left')
             </div>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <span class="header-user-email" style="font-size: 0.875rem; font-weight: 500;">{{ Auth::user()->email }}</span>
-                <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">A</div>
+            <div style="display: flex; align-items: center; gap: 1rem; position: relative;">
+                <span class="header-user-email" style="font-size: 0.875rem; font-weight: 500;">{{ Auth::user()->name ?? Auth::user()->email }}</span>
+                <div class="avatar-dropdown-wrapper" style="position: relative;">
+                    <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; user-select: none;" onclick="toggleAvatarDropdown()">{{ strtoupper(substr(Auth::user()->name ?? Auth::user()->email, 0, 1)) }}</div>
+                    <div id="avatar-dropdown" style="display: none; position: absolute; right: 0; top: 120%; background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); width: 180px; z-index: 100; overflow: hidden;">
+                        <a href="{{ route('password.change') }}" style="display: block; padding: 0.75rem 1rem; color: #374151; text-decoration: none; font-size: 0.875rem; border-bottom: 1px solid #e5e7eb; transition: background 0.2s;">
+                            <i>🔑</i> Change Password
+                        </a>
+                        <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                            @csrf
+                            <button type="submit" style="width: 100%; text-align: left; background: none; border: none; padding: 0.75rem 1rem; color: #ef4444; font-size: 0.875rem; font-family: inherit; cursor: pointer; transition: background 0.2s;">
+                                <i>🚪</i> Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -592,16 +600,26 @@
     </div>
     
     <script>
+        function toggleAvatarDropdown() {
+            const dropdown = document.getElementById('avatar-dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.avatar-dropdown-wrapper')) {
+                const dropdown = document.getElementById('avatar-dropdown');
+                if (dropdown) dropdown.style.display = 'none';
+            }
+        });
+
         function toggleDropdown(id) {
             const dropdown = document.getElementById(id);
             const btn = dropdown.previousElementSibling;
             
-            // Check if sidebar is collapsed
             if (document.getElementById('sidebar').classList.contains('collapsed')) {
-                toggleSidebar(); // Auto expand on click
+                toggleSidebar();
             }
 
-            // Toggle classes
             dropdown.classList.toggle('show');
             btn.classList.toggle('open');
         }
@@ -649,6 +667,38 @@
                     }, 500);
                 }, 3000);
             });
+
+            // Auto Logout after 10 seconds of inactivity
+            let idleTimer;
+            const idleLimit = 3600000; // 1 hour
+
+            function resetIdleTimer() {
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(logoutUser, idleLimit);
+            }
+
+            function logoutUser() {
+                const logoutForm = document.createElement('form');
+                logoutForm.method = 'POST';
+                logoutForm.action = "{{ route('logout') }}";
+                
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = "{{ csrf_token() }}";
+                
+                logoutForm.appendChild(csrfInput);
+                document.body.appendChild(logoutForm);
+                
+                alert('Sesi Anda berakhir karena tidak ada aktivitas selama 10 detik.');
+                logoutForm.submit();
+            }
+
+            ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(event => {
+                window.addEventListener(event, resetIdleTimer);
+            });
+
+            resetIdleTimer();
         });
     </script>
     @yield('scripts')

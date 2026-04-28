@@ -10,7 +10,11 @@ Route::get('/', function () {
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:3,1');
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -60,10 +64,19 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/course-mapping/{prodi}', [\App\Http\Controllers\CourseMapingController::class, 'store'])->name('course_mapping.store');
     Route::put('/admin/course-mapping/{courseMaping}', [\App\Http\Controllers\CourseMapingController::class, 'update'])->name('course_mapping.update');
     Route::delete('/admin/course-mapping/{courseMaping}', [\App\Http\Controllers\CourseMapingController::class, 'destroy'])->name('course_mapping.destroy');
+
+    // User Management
+    Route::resource('/admin/users', \App\Http\Controllers\UserController::class)->names('users');
+    Route::post('/admin/users/import', [\App\Http\Controllers\UserController::class, 'import'])->name('users.import');
+    Route::get('/admin/users-template', [\App\Http\Controllers\UserController::class, 'downloadTemplate'])->name('users.template');
+    Route::patch('/admin/users/{user}/toggle-status', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/change-password', [\App\Http\Controllers\ChangePasswordController::class, 'showChangePasswordForm'])->name('password.change');
+    Route::post('/change-password', [\App\Http\Controllers\ChangePasswordController::class, 'updatePassword'])->name('password.update_auth');
 });

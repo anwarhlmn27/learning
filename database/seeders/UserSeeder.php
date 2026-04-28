@@ -13,10 +13,23 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('password'),
-            'role' => 1, // Admin role
-        ]);
+        $roles = ['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak', 'finance', 'kemahasiswaan'];
+        foreach ($roles as $role) {
+            \App\Models\Role::firstOrCreate(['name' => $role]);
+        }
+
+        $adminUser = User::updateOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'name' => 'Admin System',
+                'password' => Hash::make('Password#123'),
+                'status' => 'active'
+            ]
+        );
+
+        $adminRole = \App\Models\Role::where('name', 'admin')->first();
+        if (!$adminUser->roles()->where('role_id', $adminRole->id)->exists()) {
+            $adminUser->roles()->attach($adminRole->id, ['id' => (string) \Illuminate\Support\Str::uuid()]);
+        }
     }
 }

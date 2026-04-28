@@ -14,9 +14,10 @@ class User extends Authenticatable
     protected $table = 'user';
 
     protected $fillable = [
+        'name',
         'email',
         'password',
-        'role',
+        'status',
     ];
 
     protected $hidden = [
@@ -27,7 +28,19 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
-            'role' => 'integer',
         ];
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id');
+    }
+
+    public function hasRole($roleName)
+    {
+        if (is_array($roleName)) {
+            return $this->roles()->whereIn('name', $roleName)->exists();
+        }
+        return $this->roles()->where('name', $roleName)->exists();
     }
 }
