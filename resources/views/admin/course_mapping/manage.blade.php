@@ -67,15 +67,15 @@
                     @forelse($prodi->courseMapings as $maping)
                         <tr class="mapping-row" 
                             data-subject="{{ strtolower($maping->subject->nama_subject . ' ' . $maping->subject->kode_subject) }}"
-                            data-plo="{{ strtolower($maping->plo->title_plo . ' ' . $maping->plo->plo) }}"
+                            data-plo="{{ strtolower($maping->plo->kode_plo . ' ' . $maping->plo->plo_title) }}"
                             data-level="{{ $maping->level_maping }}">
                             <td>
                                 <div style="font-weight: 600;">{{ $maping->subject->nama_subject }}</div>
                                 <div style="font-size: 0.75rem; color: var(--text-muted);">{{ $maping->subject->kode_subject }}</div>
                             </td>
                             <td>
-                                <div style="font-weight: 600;">{{ $maping->plo->title_plo }}</div>
-                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ Str::limit($maping->plo->plo, 50) }}</div>
+                                <div style="font-weight: 600;">{{ $maping->plo->kode_plo }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ Str::limit($maping->plo->plo_title, 50) }}</div>
                             </td>
                             <td>
                                 <span class="badge" style="background: #f3f4f6; color: #374151; padding: 0.25rem 0.5rem; font-weight: bold;">{{ $maping->level_maping }}</span>
@@ -132,7 +132,7 @@
                         <option value="">-- Select PLO --</option>
                         @foreach($plos as $plo)
                             <option value="{{ $plo->id }}" {{ old('id_plo') == $plo->id ? 'selected' : '' }}>
-                                {{ $plo->title_plo }} - {{ Str::limit($plo->plo, 50) }}
+                                {{ $plo->kode_plo }} - {{ Str::limit($plo->plo_title, 50) }}
                             </option>
                         @endforeach
                     </select>

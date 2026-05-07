@@ -84,7 +84,7 @@ class CourseMapingController extends Controller
             $courseMaping->delete();
             return redirect()->back()->with('success', 'Curriculum Mapping berhasil dihapus.');
         } catch (Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Gagal menghapus Mapping: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => $this->handleException($e, 'Gagal menghapus Mapping.')]);
         }
     }
 

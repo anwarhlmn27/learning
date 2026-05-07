@@ -18,6 +18,13 @@ class User extends Authenticatable
         'email',
         'password',
         'status',
+        'avatar',
+        'sidebar_color',
+        'sidebar_font_color',
+        'navbar_color',
+        'navbar_font_color',
+        'content_color',
+        'language',
     ];
 
     protected $hidden = [

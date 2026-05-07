@@ -5,18 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\ScopesByProdi;
 
 class Plo extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, ScopesByProdi;
 
     protected $fillable = [
         'id_prodi',
-        'id_gp',
-        'title_plo',
-        'plo',
-        'detail',
-        'deskripsi',
+        'kode_plo',
+        'plo_title',
+        'rumusan_plo',
+        'domain',
+        'bloom_level',
+        'kko',
+        'indikator_ketercapaian',
+        'target_capaian',
+        'metode_pengukuran',
+        'status',
     ];
 
     public function prodi()
@@ -24,14 +30,14 @@ class Plo extends Model
         return $this->belongsTo(Prodi::class, 'id_prodi');
     }
 
-    public function gp()
+    public function gps()
     {
-        return $this->belongsTo(Gp::class, 'id_gp');
+        return $this->belongsToMany(Gp::class, 'plo_gps', 'id_plo', 'id_gp')->using(PloGp::class)->withTimestamps();
     }
 
     public function clos()
     {
-        return $this->hasMany(Clo::class, 'id_plo');
+        return $this->belongsToMany(Clo::class, 'clo_plo', 'plo_id', 'clo_id')->withTimestamps();
     }
 
     public function courseMapings()

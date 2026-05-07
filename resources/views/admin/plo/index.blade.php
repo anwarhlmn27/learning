@@ -32,8 +32,9 @@
                             <td>
                                 <span class="badge" style="background: var(--primary-light); color: var(--primary);">{{ $p->plos_count }} PLOs</span>
                             </td>
-                            <td>
+                            <td style="display: flex; gap: 0.5rem; align-items: center;">
                                 <a href="{{ route('plo.manage', $p->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Manage PLO</a>
+                                <a href="{{ route('plo.export_pdf', $p->id) }}" target="_blank" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #dc2626; color: white; border: none; border-radius: 4px; text-decoration: none;">Mapping PDF</a>
                             </td>
                         </tr>
                     @empty

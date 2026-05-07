@@ -14,17 +14,6 @@ class Visi extends Model
         'visible_id',
         'visible_type',
         'visi',
-        'misi',
-        'tujuan1',
-        'tujuan2',
-        'tujuan3',
-        'tujuan4',
-        'tujuan5',
-        'strategi1',
-        'strategi2',
-        'strategi3',
-        'strategi4',
-        'strategi5',
         'doc_penyusunan',
         'doc_pengesahan',
         'doc_sosialisasi',
@@ -37,5 +26,13 @@ class Visi extends Model
     public function visible()
     {
         return $this->morphTo();
+    }
+
+    /**
+     * Get the details (misi, tujuan, strategi) for the visi.
+     */
+    public function details()
+    {
+        return $this->hasMany(VisiDetail::class, 'id_visi')->orderBy('urutan');
     }
 }

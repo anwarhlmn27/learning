@@ -25,7 +25,20 @@
 
         <form action="{{ route('subjects.store') }}" method="POST">
             @csrf
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label">Program Studi</label>
+                <select name="id_prodi" class="form-control" required>
+                    <option value="">-- Select Program Studi --</option>
+                    @foreach($prodis as $prodi)
+                        <option value="{{ $prodi->id }}" {{ old('id_prodi', $selected_prodi_id) == $prodi->id ? 'selected' : '' }}>
+                            {{ $prodi->nama_prodi }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
                     <label class="form-label">Subject Code</label>
                     <input type="text" name="kode_subject" class="form-control" placeholder="INF101" required value="{{ old('kode_subject') }}">
@@ -36,7 +49,12 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label">Deskripsi</label>
+                <textarea name="deskripsi" class="form-control" rows="3" required placeholder="Isi dan tujuan MK">{{ old('deskripsi') }}</textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
                     <label class="form-label">SKS Theory (T)</label>
                     <input type="number" name="sks_t" id="sks_t" class="form-control" min="0" required value="{{ old('sks_t', 0) }}">
@@ -51,7 +69,7 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
                     <label class="form-label">Semester</label>
                     <select name="semester" class="form-control" required>
@@ -60,26 +78,25 @@
                         @endfor
                     </select>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Assessment Type <span style="color: #dc2626;">*</span></label>
-                @error('assesment_type')
-                    <div style="color: #dc2626; font-size: 0.75rem; margin-bottom: 0.5rem;">{{ $message }}</div>
-                @enderror
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; padding: 0.75rem; border: 1px solid {{ $errors->has('assesment_type') ? '#dc2626' : '#d1d5db' }}; border-radius: 0.375rem; background: #f9fafb;">
-                    @foreach($assessmentTypes as $type)
-                        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; cursor: pointer; padding: 0.25rem 0;">
-                            <input type="checkbox" name="assesment_type[]" value="{{ $type }}" {{ is_array(old('assesment_type')) && in_array($type, old('assesment_type')) ? 'checked' : '' }}
-                                style="accent-color: var(--primary); width: 16px; height: 16px;">
-                            {{ $type }}
-                        </label>
-                    @endforeach
+                <div class="form-group">
+                    <label class="form-label">Jenis Subject</label>
+                    <select name="jenis_subject" class="form-control" required>
+                        <option value="Wajib Prodi" {{ old('jenis_subject') == 'Wajib Prodi' ? 'selected' : '' }}>Wajib Prodi</option>
+                        <option value="Wajib Universitas" {{ old('jenis_subject') == 'Wajib Universitas' ? 'selected' : '' }}>Wajib Universitas</option>
+                        <option value="Pilihan" {{ old('jenis_subject') == 'Pilihan' ? 'selected' : '' }}>Pilihan</option>
+                    </select>
                 </div>
-                <small style="color: var(--text-muted);">Pilih satu atau lebih assessment type.</small>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-control" required>
+                        <option value="Aktif" {{ old('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="Revisi" {{ old('status') == 'Revisi' ? 'selected' : '' }}>Revisi</option>
+                        <option value="Tidak Aktif" {{ old('status') == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label class="form-label">Prerequisite Subject</label>
                 <select name="prerequisite_id" class="form-control">
                     <option value="">No Prerequisite</option>
@@ -89,7 +106,32 @@
                         </option>
                     @endforeach
                 </select>
-                <small style="color: var(--text-muted);">Select the subject that must be taken before this one.</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label">Bahan Kajian (Mapping)</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb; max-height: 150px; overflow-y: auto;">
+                    @foreach($bks as $bk)
+                        <label style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; cursor: pointer;">
+                            <input type="checkbox" name="bks[]" value="{{ $bk->id }}" {{ is_array(old('bks')) && in_array($bk->id, old('bks')) ? 'checked' : '' }}
+                                style="accent-color: var(--primary); width: 16px; height: 16px; margin-top: 0.2rem;">
+                            <span><strong>{{ $bk->kode_bk }}</strong><br><span style="color: var(--text-muted); font-size: 0.75rem;">{{ $bk->nm_bahan_kajian }}</span></span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label">PLO (Mapping)</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb; max-height: 150px; overflow-y: auto;">
+                    @foreach($plos as $plo)
+                        <label style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; cursor: pointer;">
+                            <input type="checkbox" name="plos[]" value="{{ $plo->id }}" {{ is_array(old('plos')) && in_array($plo->id, old('plos')) ? 'checked' : '' }}
+                                style="accent-color: var(--primary); width: 16px; height: 16px; margin-top: 0.2rem;">
+                            <span><strong>{{ $plo->kode_plo }}</strong><br><span style="color: var(--text-muted); font-size: 0.75rem;">{{ $plo->plo_title }}</span></span>
+                        </label>
+                    @endforeach
+                </div>
             </div>
 
             <div style="margin-top: 1rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; display: flex; justify-content: flex-end;">

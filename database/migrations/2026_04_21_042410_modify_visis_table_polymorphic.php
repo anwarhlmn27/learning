@@ -29,17 +29,6 @@ return new class extends Migration
             $table->index(['visible_id', 'visible_type']);
 
             $table->text('visi')->change();
-            $table->text('misi')->change();
-            $table->text('tujuan1')->nullable()->change();
-            $table->text('tujuan2')->nullable()->change();
-            $table->text('tujuan3')->nullable()->change();
-            $table->text('tujuan4')->nullable()->change();
-            $table->text('tujuan5')->nullable()->change();
-            $table->text('strategi1')->nullable()->change();
-            $table->text('strategi2')->nullable()->change();
-            $table->text('strategi3')->nullable()->change();
-            $table->text('strategi4')->nullable()->change();
-            $table->text('strategi5')->nullable()->change();
             
             if (!Schema::hasColumn('visis', 'doc_penyusunan')) {
                 $table->string('doc_penyusunan')->nullable();

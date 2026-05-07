@@ -182,8 +182,11 @@ class UserController extends Controller
             return back()->with('error', 'Anda tidak bisa menghapus akun Anda sendiri.');
         }
 
-        $user->delete();
-
-        return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+        try {
+            $user->delete();
+            return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('users.index')->withErrors(['error' => $this->handleException($e, 'Gagal menghapus user.')]);
+        }
     }
 }

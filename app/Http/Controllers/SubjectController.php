@@ -3,45 +3,75 @@
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
+use App\Models\Prodi;
+use App\Models\BahanKajian;
+use App\Models\Plo;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SubjectController extends Controller
 {
     public function index()
     {
-        $subjects = Subject::with('prerequisite')->get();
-        return view('admin.subjects.index', compact('subjects'));
+        $prodis = Prodi::withCount('subjects')->with('fakultas')->get();
+        return view('admin.subjects.index', compact('prodis'));
     }
 
-    public function create()
+    public function prodiSubjects(Prodi $prodi)
+    {
+        $subjects = Subject::where('id_prodi', $prodi->id)->with(['prerequisite', 'prodi'])->get();
+        return view('admin.subjects.prodi_subjects', compact('subjects', 'prodi'));
+    }
+
+    public function create(Request $request)
     {
         $subjects = Subject::all();
-        $assessmentTypes = $this->getAssessmentTypes();
-        return view('admin.subjects.create', compact('subjects', 'assessmentTypes'));
+        $prodis = Prodi::orderBy('nama_prodi')->get();
+        $bks = BahanKajian::orderBy('kode_bk')->get();
+        $plos = Plo::orderBy('kode_plo')->get();
+        $selected_prodi_id = $request->query('prodi_id');
+        
+        return view('admin.subjects.create', compact('subjects', 'prodis', 'bks', 'plos', 'selected_prodi_id'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'id_prodi' => 'required|exists:prodis,id',
             'kode_subject' => 'required|string|unique:subjects,kode_subject',
             'nama_subject' => 'required|string|max:255',
             'sks_t' => 'required|integer|min:0',
             'sks_p' => 'required|integer|min:0',
             'total_sks' => 'required|integer|min:1',
             'semester' => 'required|integer|min:1|max:14',
-            'assesment_type' => 'required|array|min:1',
-            'assesment_type.*' => 'in:' . implode(',', $this->getAssessmentTypes()),
+            'jenis_subject' => 'required|in:Wajib Prodi,Wajib Universitas,Pilihan',
+            'deskripsi' => 'required|string',
             'prerequisite_id' => 'nullable|exists:subjects,id',
-        ], [
-            'assesment_type.required' => 'Pilih minimal 1 assessment type.',
-            'assesment_type.min' => 'Pilih minimal 1 assessment type.',
+            'status' => 'required|in:Aktif,Revisi,Tidak Aktif',
+            'bks' => 'nullable|array',
+            'bks.*' => 'exists:bahan_kajians,id',
+            'plos' => 'nullable|array',
+            'plos.*' => 'exists:plos,id',
+            'assessments' => 'nullable|array',
         ]);
 
+        DB::beginTransaction();
         try {
-            Subject::create($request->all());
+            $subject = Subject::create($request->except(['bks', 'plos']));
+            
+            if ($request->has('bks')) {
+                $subject->bks()->sync($request->bks);
+            }
+            if ($request->has('plos')) {
+                $subject->plos()->sync($request->plos);
+            }
+
+            DB::commit();
             return redirect()->route('subjects.index')->with('success', 'Subject created successfully.');
         } catch (Exception $e) {
+            DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Failed to create subject: ' . $e->getMessage()])->withInput();
         }
     }
@@ -49,31 +79,55 @@ class SubjectController extends Controller
     public function edit(Subject $subject)
     {
         $subjects = Subject::where('id', '!=', $subject->id)->get();
-        $assessmentTypes = $this->getAssessmentTypes();
-        return view('admin.subjects.edit', compact('subject', 'subjects', 'assessmentTypes'));
+        $prodis = Prodi::orderBy('nama_prodi')->get();
+        $bks = BahanKajian::orderBy('kode_bk')->get();
+        $plos = Plo::orderBy('kode_plo')->get();
+        $subject->load(['bks', 'plos', 'clos']);
+
+        return view('admin.subjects.edit', compact('subject', 'subjects', 'prodis', 'bks', 'plos'));
     }
 
     public function update(Request $request, Subject $subject)
     {
         $request->validate([
+            'id_prodi' => 'required|exists:prodis,id',
             'kode_subject' => 'required|string|unique:subjects,kode_subject,' . $subject->id,
             'nama_subject' => 'required|string|max:255',
             'sks_t' => 'required|integer|min:0',
             'sks_p' => 'required|integer|min:0',
             'total_sks' => 'required|integer|min:1',
             'semester' => 'required|integer|min:1|max:14',
-            'assesment_type' => 'required|array|min:1',
-            'assesment_type.*' => 'in:' . implode(',', $this->getAssessmentTypes()),
+            'jenis_subject' => 'required|in:Wajib Prodi,Wajib Universitas,Pilihan',
+            'deskripsi' => 'required|string',
             'prerequisite_id' => 'nullable|exists:subjects,id|different:id',
-        ], [
-            'assesment_type.required' => 'Pilih minimal 1 assessment type.',
-            'assesment_type.min' => 'Pilih minimal 1 assessment type.',
+            'status' => 'required|in:Aktif,Revisi,Tidak Aktif',
+            'bks' => 'nullable|array',
+            'bks.*' => 'exists:bahan_kajians,id',
+            'plos' => 'nullable|array',
+            'plos.*' => 'exists:plos,id',
+            'assessments' => 'nullable|array',
         ]);
 
+        DB::beginTransaction();
         try {
-            $subject->update($request->all());
+            $subject->update($request->except(['bks', 'plos']));
+            
+            if ($request->has('bks')) {
+                $subject->bks()->sync($request->bks);
+            } else {
+                $subject->bks()->detach();
+            }
+
+            if ($request->has('plos')) {
+                $subject->plos()->sync($request->plos);
+            } else {
+                $subject->plos()->detach();
+            }
+
+            DB::commit();
             return redirect()->route('subjects.index')->with('success', 'Subject updated successfully.');
         } catch (Exception $e) {
+            DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Failed to update subject: ' . $e->getMessage()])->withInput();
         }
     }
@@ -89,18 +143,25 @@ class SubjectController extends Controller
             $subject->delete();
             return redirect()->route('subjects.index')->with('success', 'Subject deleted successfully.');
         } catch (Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Failed to delete subject: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => $this->handleException($e, 'Failed to delete subject.')]);
         }
     }
 
-    private function getAssessmentTypes()
+    public function exportMappingBK(Prodi $prodi)
     {
-        return [
-            'Project', 'Prototype', 'Coding', 'Design Project', 
-            'Essay', 'Presentation', 'Case Study', 'SQL Lab',
-            'Quiz', 'Writing', 'Analisys', 'Problem Solving',
-            'Reflection', 'Investigation Report', 'Business Pitch',
-            'Proposal', 'Performance', 'Report'
-        ];
+        $subjects = Subject::where('id_prodi', $prodi->id)
+            ->with('bks')
+            ->orderBy('semester')
+            ->orderBy('kode_subject')
+            ->get();
+        
+        $bks = BahanKajian::where('id_prodi', $prodi->id)
+            ->orderBy('kode_bk')
+            ->get();
+
+        $pdf = Pdf::loadView('admin.subjects.pdf_mapping_bk', compact('subjects', 'bks', 'prodi'))
+            ->setPaper('a4', 'landscape');
+            
+        return $pdf->download('Mapping_BK_' . $prodi->short_name . '.pdf');
     }
 }

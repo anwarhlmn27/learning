@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('plos', function (Blueprint $table) {
-            $table->text('title_plo')->change();
-            $table->text('plo')->change();
-            $table->text('detail')->nullable()->change();
-            $table->text('deskripsi')->nullable()->change();
+            $table->text('plo_title')->change();
+            $table->text('rumusan_plo')->change();
+            $table->text('domain')->nullable()->change();
+            $table->text('target_capaian')->nullable()->change();
         });
     }
 

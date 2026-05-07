@@ -20,6 +20,7 @@ class Univ extends Model
         'address',
         'email',
         'website',
+        'rektor_id',
     ];
 
     public function fakultas()
@@ -30,5 +31,10 @@ class Univ extends Model
     public function visi()
     {
         return $this->morphOne(Visi::class, 'visible');
+    }
+
+    public function rektor()
+    {
+        return $this->belongsTo(User::class, 'rektor_id');
     }
 }

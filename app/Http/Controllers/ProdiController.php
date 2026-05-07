@@ -17,7 +17,10 @@ class ProdiController extends Controller
     public function create()
     {
         $fakultas = Fakultas::with('univ')->get();
-        return view('admin.prodi.create', compact('fakultas'));
+        $users = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'kaprodi');
+        })->get();
+        return view('admin.prodi.create', compact('fakultas', 'users'));
     }
 
     public function store(Request $request)
@@ -28,6 +31,7 @@ class ProdiController extends Controller
             'nama_prodi' => 'required|string|max:255',
             'short_name' => 'required|string|max:50',
             'nama_pimpinan' => 'required|string|max:255',
+            'kaprodi_id' => 'nullable|exists:user,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
@@ -60,7 +64,10 @@ class ProdiController extends Controller
     public function edit(Prodi $prodi)
     {
         $fakultas = Fakultas::with('univ')->get();
-        return view('admin.prodi.edit', compact('prodi', 'fakultas'));
+        $users = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'kaprodi');
+        })->get();
+        return view('admin.prodi.edit', compact('prodi', 'fakultas', 'users'));
     }
 
     public function update(Request $request, Prodi $prodi)
@@ -71,6 +78,7 @@ class ProdiController extends Controller
             'nama_prodi' => 'required|string|max:255',
             'short_name' => 'required|string|max:50',
             'nama_pimpinan' => 'required|string|max:255',
+            'kaprodi_id' => 'nullable|exists:user,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
@@ -101,10 +109,15 @@ class ProdiController extends Controller
 
     public function destroy(Prodi $prodi)
     {
-        if ($prodi->sign) {
-            \Storage::disk('public')->delete($prodi->sign);
+        try {
+            $signPath = $prodi->sign;
+            $prodi->delete();
+            if ($signPath) {
+                \Storage::disk('public')->delete($signPath);
+            }
+            return redirect()->route('prodi.index')->with('success', 'Study Program data deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('prodi.index')->withErrors(['error' => $this->handleException($e, 'Failed to delete Study Program data.')]);
         }
-        $prodi->delete();
-        return redirect()->route('prodi.index')->with('success', 'Study Program data deleted successfully.');
     }
 }

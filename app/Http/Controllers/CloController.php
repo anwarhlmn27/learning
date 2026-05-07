@@ -7,43 +7,51 @@ use App\Models\Subject;
 use App\Models\Plo;
 use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class CloController extends Controller
 {
     public function index()
     {
-        $subjects = Subject::withCount('clos')->with('prerequisite')->get();
+        $subjects = Subject::withCount('clos')->with(['prerequisite'])->get();
         return view('admin.clo.index', compact('subjects'));
     }
 
     public function manage(Subject $subject)
     {
-        $subject->load(['clos.plo']);
-        $plos = Plo::with('prodi', 'gp')->orderBy('title_plo')->get();
+        $subject->load(['clos.plos']);
+        // If 'plo_title' does not exist, use 'kode_plo' or whatever field PLO uses. Actually PLO has 'plo_title'. Wait, PLO model has 'kode_plo' and 'plo_title'. Let's use 'kode_plo'.
+        $plos = Plo::with('prodi')->orderBy('kode_plo')->get();
         return view('admin.clo.manage', compact('subject', 'plos'));
     }
 
     public function store(Request $request, Subject $subject)
     {
         $request->validate([
-            'id_plo'    => 'nullable|exists:plos,id',
-            'clo'       => 'required|string|max:50',
-            'deskripsi' => 'required|string',
-        ], [
-            'clo.required'       => 'CLO code is required.',
-            'deskripsi.required' => 'Description is required.',
+            'kode_clo'    => 'required|string|max:50',
+            'deskripsi'   => 'required|string',
+            'bloom_level' => 'required|string|max:50',
+            'plos'        => 'nullable|array',
+            'plos.*'      => 'exists:plos,id',
         ]);
 
+        DB::beginTransaction();
         try {
-            Clo::create([
-                'id_subject' => $subject->id,
-                'id_plo'     => $request->id_plo ?: null,
-                'clo'        => $request->clo,
-                'deskripsi'  => $request->deskripsi,
+            $clo = Clo::create([
+                'subject_id'  => $subject->id,
+                'kode_clo'    => $request->kode_clo,
+                'deskripsi'   => $request->deskripsi,
+                'bloom_level' => $request->bloom_level,
             ]);
 
+            if ($request->has('plos')) {
+                $clo->plos()->sync($request->plos);
+            }
+
+            DB::commit();
             return redirect()->back()->with('success', 'CLO added successfully.');
         } catch (Exception $e) {
+            DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Failed to add CLO: ' . $e->getMessage()])->withInput();
         }
     }
@@ -51,19 +59,31 @@ class CloController extends Controller
     public function update(Request $request, Clo $clo)
     {
         $request->validate([
-            'id_plo'    => 'nullable|exists:plos,id',
-            'clo'       => 'required|string|max:50',
-            'deskripsi' => 'required|string',
+            'kode_clo'    => 'required|string|max:50',
+            'deskripsi'   => 'required|string',
+            'bloom_level' => 'required|string|max:50',
+            'plos'        => 'nullable|array',
+            'plos.*'      => 'exists:plos,id',
         ]);
 
+        DB::beginTransaction();
         try {
             $clo->update([
-                'id_plo'    => $request->id_plo ?: null,
-                'clo'       => $request->clo,
-                'deskripsi' => $request->deskripsi,
+                'kode_clo'    => $request->kode_clo,
+                'deskripsi'   => $request->deskripsi,
+                'bloom_level' => $request->bloom_level,
             ]);
+            
+            if ($request->has('plos')) {
+                $clo->plos()->sync($request->plos);
+            } else {
+                $clo->plos()->detach();
+            }
+
+            DB::commit();
             return redirect()->back()->with('success', 'CLO updated successfully.');
         } catch (Exception $e) {
+            DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'Failed to update CLO: ' . $e->getMessage()]);
         }
     }
@@ -74,7 +94,7 @@ class CloController extends Controller
             $clo->delete();
             return redirect()->back()->with('success', 'CLO deleted successfully.');
         } catch (Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Failed to delete CLO: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => $this->handleException($e, 'Failed to delete CLO.')]);
         }
     }
 }

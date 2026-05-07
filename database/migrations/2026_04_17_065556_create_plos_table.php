@@ -11,18 +11,42 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Schema::create('plos', function (Blueprint $table) {
+        //     $table->uuid('id')->primary();
+        //     $table->uuid('id_prodi');
+        //     $table->uuid('id_gp');
+        //     $table->string('title_plo');
+        //     $table->string('plo');
+        //     $table->string('detail');
+        //     $table->string('deskripsi');
+        //     $table->timestamps();
+
+        //     $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+        //     $table->foreign('id_gp')->references('id')->on('gps')->onDelete('cascade');
+        // });
+
         Schema::create('plos', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('id_prodi');
-            $table->uuid('id_gp');
-            $table->string('title_plo');
-            $table->string('plo');
-            $table->string('detail');
-            $table->string('deskripsi');
+            
+            $table->string('kode_plo'); // Contoh: PLO-01
+            $table->string('plo_title');
+            $table->text('rumusan_plo'); // Rumusan kompetensi
+            
+            // Domain & Taksonomi
+            $table->enum('domain', ['Knowledge', 'Skill', 'Attitude', 'General Competency']);
+            $table->enum('bloom_level',['C1','C2','C3','C4','C5','C6']); // C1-C6
+            $table->string('kko'); // Kata Kerja Operasional
+            
+            // Indikator & Target
+            $table->text('indikator_ketercapaian');
+            $table->string('target_capaian'); // Contoh: 75% mencapai level Good
+            $table->enum('metode_pengukuran', ['Direct', 'Indirect', 'Both'])->default('Direct');
+            
+            $table->enum('status', ['Draft', 'Aktif', 'Revisi'])->default('Draft');
             $table->timestamps();
 
             $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
-            $table->foreign('id_gp')->references('id')->on('gps')->onDelete('cascade');
         });
         
     }

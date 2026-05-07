@@ -8,6 +8,7 @@ use App\Models\Prodi;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 
 class KurikulumController extends Controller
@@ -127,7 +128,7 @@ class KurikulumController extends Controller
             $kurikulumSubject->delete();
             return redirect()->back()->with('success', 'Subject removed from curriculum.');
         } catch (Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Failed to remove subject: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => $this->handleException($e, 'Failed to remove subject.')]);
         }
     }
 
@@ -143,7 +144,15 @@ class KurikulumController extends Controller
             $kurikulum->delete();
             return redirect()->route('kurikulum.index')->with('success', 'Curriculum deleted successfully.');
         } catch (Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Failed to delete curriculum: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => $this->handleException($e, 'Failed to delete curriculum.')]);
         }
+    }
+
+    public function exportPdf(Kurikulum $kurikulum)
+    {
+        $kurikulum->load(['subjects.subject.prerequisite', 'prodi']);
+        $pdf = Pdf::loadView('admin.kurikulum.export_pdf', compact('kurikulum'));
+        $pdf->setPaper('A4', 'portrait');
+        return $pdf->download('kurikulum_' . strtolower(str_replace(' ', '_', $kurikulum->prodi->nama_prodi)) . '.pdf');
     }
 }

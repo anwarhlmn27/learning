@@ -19,7 +19,7 @@ return new class extends Migration
             }
             // Ensure types are appropriate for long descriptions
             $table->text('deskripsi')->change();
-            $table->text('expertise')->change();
+            $table->text('kompetensi')->change();
         });
 
         // 2. Create gp_attachments table for flexible document storage

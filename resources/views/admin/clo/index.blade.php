@@ -84,9 +84,15 @@
                             <td>{{ $s->sks_t }} / {{ $s->sks_p }} / {{ $s->total_sks }}</td>
                             <td>{{ $s->semester }}</td>
                             <td>
-                                <span style="font-size: 0.75rem; background: #f3f4f6; padding: 2px 8px; border-radius: 4px;">
-                                    {{ is_array($s->assesment_type) ? implode(', ', $s->assesment_type) : $s->assesment_type }}
-                                </span>
+                                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                                    @forelse($s->assessments as $assessment)
+                                        <span style="font-size: 0.7rem; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; white-space: nowrap;">
+                                            {{ $assessment->name }}
+                                        </span>
+                                    @empty
+                                        <span style="font-size: 0.75rem; color: var(--text-muted);">None</span>
+                                    @endforelse
+                                </div>
                             </td>
                             <td>
                                 <span class="badge" style="background: {{ $s->clos_count > 0 ? 'var(--primary-light, #ede9fe)' : '#f3f4f6' }}; color: {{ $s->clos_count > 0 ? 'var(--primary)' : 'var(--text-muted)' }}; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">

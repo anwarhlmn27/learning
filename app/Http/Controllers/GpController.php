@@ -28,17 +28,27 @@ class GpController extends Controller
     public function storeProfile(Request $request, Prodi $prodi)
     {
         $request->validate([
+            'kode_profil' => 'required|string|unique:gps,kode_profil',
             'nm_profil' => 'required|string|max:255',
             'deskripsi' => 'required|string',
-            'expertise' => 'required|string',
+            'career_pathway' => 'required|string',
+            'kompetensi' => 'required|string',
+            'sumber_acuan' => 'required|string',
+            'stakeholders' => 'required|string',
+            'status' => 'required|in:Draft,Aktif,Revisi,Tidak Aktif',
         ]);
 
         try {
             Gp::create([
                 'id_prodi' => $prodi->id,
+                'kode_profil' => $request->kode_profil,
                 'nm_profil' => $request->nm_profil,
                 'deskripsi' => $request->deskripsi,
-                'expertise' => $request->expertise,
+                'career_pathway' => $request->career_pathway,
+                'kompetensi' => $request->kompetensi,
+                'sumber_acuan' => $request->sumber_acuan,
+                'stakeholders' => $request->stakeholders,
+                'status' => $request->status,
             ]);
 
             return redirect()->back()->with('success', 'Graduate Profile item added successfully.');
@@ -51,13 +61,21 @@ class GpController extends Controller
     public function updateProfile(Request $request, Gp $gp)
     {
         $request->validate([
+            'kode_profil' => 'required|string|unique:gps,kode_profil,' . $gp->id,
             'nm_profil' => 'required|string|max:255',
             'deskripsi' => 'required|string',
-            'expertise' => 'required|string',
+            'career_pathway' => 'required|string',
+            'kompetensi' => 'required|string',
+            'sumber_acuan' => 'required|string',
+            'stakeholders' => 'required|string',
+            'status' => 'required|in:Draft,Aktif,Revisi,Tidak Aktif',
         ]);
 
         try {
-            $gp->update($request->only(['nm_profil', 'deskripsi', 'expertise']));
+            $gp->update($request->only([
+                'kode_profil', 'nm_profil', 'deskripsi', 'career_pathway', 
+                'kompetensi', 'sumber_acuan', 'stakeholders', 'status'
+            ]));
             return redirect()->back()->with('success', 'Graduate Profile item updated successfully.');
         } catch (Exception $e) {
             return redirect()->back()->withErrors(['error' => 'Failed to update profile: ' . $e->getMessage()]);
@@ -71,7 +89,7 @@ class GpController extends Controller
             $gp->delete();
             return redirect()->back()->with('success', 'Graduate Profile item deleted successfully.');
         } catch (Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Failed to delete profile: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => $this->handleException($e, 'Failed to delete profile.')]);
         }
     }
 
@@ -114,7 +132,7 @@ class GpController extends Controller
             $attachment->delete();
             return redirect()->back()->with('success', 'Attachment deleted successfully.');
         } catch (Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Failed to delete attachment: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => $this->handleException($e, 'Failed to delete attachment.')]);
         }
     }
 }

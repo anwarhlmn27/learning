@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\ScopesByProdi;
 
 class Prodi extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, ScopesByProdi;
 
     protected $table = 'prodis';
 
@@ -19,6 +20,7 @@ class Prodi extends Model
         'short_name',
         'nama_pimpinan',
         'sign',
+        'kaprodi_id',
     ];
 
     public function fakultas()
@@ -49,5 +51,25 @@ class Prodi extends Model
     public function courseMapings()
     {
         return $this->hasMany(CourseMaping::class, 'id_prodi');
+    }
+
+    public function bahanKajians()
+    {
+        return $this->hasMany(BahanKajian::class, 'id_prodi');
+    }
+
+    public function kategoriBks()
+    {
+        return $this->hasMany(KategoriBK::class, 'id_prodi');
+    }
+
+    public function kaprodi()
+    {
+        return $this->belongsTo(User::class, 'kaprodi_id');
+    }
+
+    public function subjects()
+    {
+        return $this->hasMany(Subject::class, 'id_prodi');
     }
 }

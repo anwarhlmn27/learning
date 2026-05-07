@@ -57,8 +57,9 @@
                                     @endforeach
                                 </div>
                             </td>
-                            <td style="display: flex; gap: 0.5rem;">
+                            <td style="display: flex; gap: 0.5rem; align-items: center;">
                                 <a href="{{ route('kurikulum.edit', $k->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>
+                                <a href="{{ route('kurikulum.export_pdf', $k->id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #dc2626; color: white; border: none; border-radius: 4px; text-decoration: none;">Export PDF</a>
                                 <form action="{{ route('kurikulum.destroy', $k->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this curriculum?')">
                                     @csrf
                                     @method('DELETE')

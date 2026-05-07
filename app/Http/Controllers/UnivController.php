@@ -15,7 +15,10 @@ class UnivController extends Controller
 
     public function create()
     {
-        return view('admin.univ.create');
+        $users = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'rektor');
+        })->get();
+        return view('admin.univ.create', compact('users'));
     }
 
     public function store(Request $request)
@@ -24,6 +27,7 @@ class UnivController extends Controller
             'kode_univ' => 'required|string|max:50',
             'nama_univ' => 'required|string|max:255',
             'nama_pimpinan' => 'required|string|max:255',
+            'rektor_id' => 'nullable|exists:user,id',
             'sign_file' => 'required|image|mimes:png,jpg,jpeg|max:2048',
             'address' => 'required|string',
             'email' => 'required|email|max:255',
@@ -55,7 +59,10 @@ class UnivController extends Controller
 
     public function edit(Univ $univ)
     {
-        return view('admin.univ.edit', compact('univ'));
+        $users = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'rektor');
+        })->get();
+        return view('admin.univ.edit', compact('univ', 'users'));
     }
 
     public function update(Request $request, Univ $univ)
@@ -64,6 +71,7 @@ class UnivController extends Controller
             'kode_univ' => 'required|string|max:50',
             'nama_univ' => 'required|string|max:255',
             'nama_pimpinan' => 'required|string|max:255',
+            'rektor_id' => 'nullable|exists:user,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
             'address' => 'required|string',
@@ -98,7 +106,14 @@ class UnivController extends Controller
 
     public function destroy(Univ $univ)
     {
-        $univ->delete();
-        return redirect()->route('univ.index')->with('success', 'University data deleted successfully.');
+        try {
+            if ($univ->sign) {
+                \Storage::disk('public')->delete($univ->sign);
+            }
+            $univ->delete();
+            return redirect()->route('univ.index')->with('success', 'University data deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('univ.index')->withErrors(['error' => $this->handleException($e, 'Failed to delete University data.')]);
+        }
     }
 }

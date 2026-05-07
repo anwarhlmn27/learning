@@ -11,15 +11,52 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Schema::create('gps', function (Blueprint $table) {
+        //     $table->uuid('id')->primary();
+        //     $table->uuid('id_prodi');
+        //     $table->string('nm_profil');
+        //     $table->string('deskripsi');
+        //     $table->string('expertise');
+        //     $table->string('file')->nullable();
+        //     $table->timestamps();
+
+        //     $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+        // });
+
         Schema::create('gps', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('id_prodi');
+            
+            // Kode Profil (Contoh: GP-01)
+            $table->string('kode_profil')->unique();
+            
+            // Nama Profil (Contoh: System Analyst)
             $table->string('nm_profil');
-            $table->string('deskripsi');
-            $table->string('expertise');
+            
+            // Deskripsi lengkap
+            $table->text('deskripsi');
+            
+            // Bidang Kerja / Career Pathway
+            $table->text('career_pathway');
+            
+            // Kompetensi Utama
+            $table->text('kompetensi');
+            
+            // Sumber Acuan (Visi Misi, SKKNI, dll)
+            $table->text('sumber_acuan');
+            
+            // Stakeholder Terkait
+            $table->text('stakeholders');
+            
+            // Status Profil
+            $table->enum('status', ['Draft', 'Aktif', 'Revisi', 'Tidak Aktif'])->default('Draft');
+            
+            // File pendukung (opsional)
             $table->string('file')->nullable();
+            
             $table->timestamps();
 
+            // Relasi ke tabel prodi
             $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
         });
        

@@ -14,18 +14,7 @@ return new class extends Migration
         Schema::create('visis', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('id_prodi');
-            $table->string('visi');
-            $table->string('misi');
-            $table->string('tujuan1');
-            $table->string('tujuan2');
-            $table->string('tujuan3');
-            $table->string('tujuan4');
-            $table->string('tujuan5');
-            $table->string('strategi1');
-            $table->string('strategi2');
-            $table->string('strategi3');
-            $table->string('strategi4');
-            $table->string('strategi5');
+            $table->text('visi');
             $table->string('doc_penyusunan');
             $table->string('doc_pengesahan');
             $table->string('doc_sosialisasi');
@@ -33,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
 
             
-            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('restrict');
         });
         
     }

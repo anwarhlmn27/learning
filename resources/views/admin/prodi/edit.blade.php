@@ -46,6 +46,19 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label">Kaprodi User (Optional)</label>
+                <select name="kaprodi_id" class="form-control">
+                    <option value="">-- Select Kaprodi User --</option>
+                    @foreach($users as $u)
+                        <option value="{{ $u->id }}" {{ old('kaprodi_id', $prodi->kaprodi_id) == $u->id ? 'selected' : '' }}>
+                            {{ $u->name ?? $u->email }}
+                        </option>
+                    @endforeach
+                </select>
+                <small style="color: var(--text-muted);">Assign an existing user with 'kaprodi' role to manage this study program.</small>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">Head of Study Program Name</label>
                 <input type="text" name="nama_pimpinan" class="form-control" required value="{{ old('nama_pimpinan', $prodi->nama_pimpinan) }}">
             </div>

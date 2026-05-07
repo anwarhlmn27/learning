@@ -20,7 +20,7 @@ class AdminMiddleware
             return redirect()->route('login')->withErrors(['email' => 'Akun Anda sedang non-aktif.']);
         }
 
-        if ($request->user() && $request->user()->hasRole('admin')) {
+        if ($request->user() && $request->user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi'])) {
             return $next($request);
         }
 

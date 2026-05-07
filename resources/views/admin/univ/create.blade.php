@@ -51,6 +51,18 @@
                         <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
                     @enderror
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Rektor User (Optional)</label>
+                    <select name="rektor_id" class="form-control">
+                        <option value="">-- Select Rektor User --</option>
+                        @foreach($users as $u)
+                            <option value="{{ $u->id }}" {{ old('rektor_id') == $u->id ? 'selected' : '' }}>
+                                {{ $u->name ?? $u->email }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <small style="color: var(--text-muted);">Assign an existing user with 'rektor' role.</small>
+                </div>
             </div>
 
             <div class="form-group">

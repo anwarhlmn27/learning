@@ -73,6 +73,7 @@
             </thead>
             <tbody>
                 @foreach($users as $user)
+                @if(!$user->roles->contains('name', 'admin'))
                 <tr>
                     <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">{{ $user->name ?? '-' }}</td>
                     <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">{{ $user->email }}</td>
@@ -100,6 +101,7 @@
                         @endif
                     </td>
                 </tr>
+                @endif
                 @endforeach
             </tbody>
         </table>

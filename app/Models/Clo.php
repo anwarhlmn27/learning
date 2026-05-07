@@ -13,10 +13,10 @@ class Clo extends Model
     protected $table = 'clos';
 
     protected $fillable = [
-        'id_subject',
-        'id_plo',
-        'clo',
+        'subject_id',
+        'kode_clo',
         'deskripsi',
+        'bloom_level',
     ];
 
     /**
@@ -24,14 +24,23 @@ class Clo extends Model
      */
     public function subject()
     {
-        return $this->belongsTo(Subject::class, 'id_subject');
+        return $this->belongsTo(Subject::class, 'subject_id');
     }
 
     /**
-     * Get the PLO this CLO is mapped to.
+     * Get the PLOs this CLO is mapped to.
      */
-    public function plo()
+    public function plos()
     {
-        return $this->belongsTo(Plo::class, 'id_plo');
+        return $this->belongsToMany(Plo::class, 'clo_plo', 'clo_id', 'plo_id')->using(CloPlo::class)->withTimestamps();
     }
+
+    /**
+     * Get the Assessments this CLO is mapped to.
+     * Obsolete: Assessments are now managed at the RPS Session level.
+     */
+    // public function assessments()
+    // {
+    //     return $this->belongsToMany(SubjectAssessment::class, 'assessment_clo', 'clo_id', 'assessment_id');
+    // }
 }

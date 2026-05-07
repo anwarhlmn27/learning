@@ -18,7 +18,10 @@ class FakultasController extends Controller
     public function create()
     {
         $univs = Univ::all();
-        return view('admin.fakultas.create', compact('univs'));
+        $users = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'dekan');
+        })->get();
+        return view('admin.fakultas.create', compact('univs', 'users'));
     }
 
     public function store(Request $request)
@@ -29,6 +32,7 @@ class FakultasController extends Controller
             'nama_fakultas' => 'required|string|max:255',
             'short_name' => 'required|string|max:50',
             'nama_pimpinan' => 'required|string|max:255',
+            'dekan_id' => 'nullable|exists:user,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
@@ -63,7 +67,10 @@ class FakultasController extends Controller
     public function edit(Fakultas $fakulta)
     {
         $univs = Univ::all();
-        return view('admin.fakultas.edit', ['fakultas' => $fakulta, 'univs' => $univs]);
+        $users = \App\Models\User::whereHas('roles', function($q) {
+            $q->where('name', 'dekan');
+        })->get();
+        return view('admin.fakultas.edit', ['fakultas' => $fakulta, 'univs' => $univs, 'users' => $users]);
     }
 
     public function update(Request $request, Fakultas $fakulta)
@@ -74,6 +81,7 @@ class FakultasController extends Controller
             'nama_fakultas' => 'required|string|max:255',
             'short_name' => 'required|string|max:50',
             'nama_pimpinan' => 'required|string|max:255',
+            'dekan_id' => 'nullable|exists:user,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
@@ -104,10 +112,15 @@ class FakultasController extends Controller
 
     public function destroy(Fakultas $fakulta)
     {
-        if ($fakulta->sign) {
-            Storage::disk('public')->delete($fakulta->sign);
+        try {
+            $signPath = $fakulta->sign;
+            $fakulta->delete();
+            if ($signPath) {
+                Storage::disk('public')->delete($signPath);
+            }
+            return redirect()->route('fakultas.index')->with('success', 'Faculty data deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('fakultas.index')->withErrors(['error' => $this->handleException($e, 'Failed to delete faculty data.')]);
         }
-        $fakulta->delete();
-        return redirect()->route('fakultas.index')->with('success', 'Faculty data deleted successfully.');
     }
 }

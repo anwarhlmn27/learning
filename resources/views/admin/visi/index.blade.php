@@ -44,7 +44,20 @@
                                 @endif
                             </td>
                             <td>{{ Str::limit($v->visi, 50) }}</td>
-                            <td>{{ Str::limit($v->misi, 50) }}</td>
+                            <td>
+                                @php
+                                    $misiList = $v->details->where('type', 'misi')->sortBy('urutan');
+                                    $firstMisi = $misiList->first();
+                                @endphp
+                                @if($firstMisi)
+                                    {{ Str::limit($firstMisi->konten, 50) }} 
+                                    @if($misiList->count() > 1)
+                                        <span style="font-size: 0.75rem; color: var(--text-muted);"> (+{{ $misiList->count() - 1 }} more)</span>
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>
                                 <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
                                     @if($v->doc_penyusunan) <span title="Penyusunan">📄</span> @endif

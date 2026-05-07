@@ -19,6 +19,7 @@ class Fakultas extends Model
         'short_name',
         'nama_pimpinan',
         'sign',
+        'dekan_id',
     ];
 
     public function univ()
@@ -44,5 +45,10 @@ class Fakultas extends Model
     public function visi()
     {
         return $this->morphOne(Visi::class, 'visible');
+    }
+
+    public function dekan()
+    {
+        return $this->belongsTo(User::class, 'dekan_id');
     }
 }

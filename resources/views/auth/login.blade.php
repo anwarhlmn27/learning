@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistem OBE</title>
+    <link rel="icon" type="image/png" href="{{ asset(get_setting('favicon') ? 'img/favicon/' . get_setting('favicon') : 'img/icon_hui.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -31,7 +32,8 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
-            background: linear-gradient(rgba(17, 24, 39, 0.75), rgba(17, 24, 39, 0.75)), url('{{ asset("img/gedung.jpeg") }}') center center/cover no-repeat fixed;
+            /* background: linear-gradient(rgba(17, 24, 39, 0.75), rgba(17, 24, 39, 0.75)), url('{{ asset("img/gedung.jpeg") }}') center center/cover no-repeat fixed; */
+            background: url('{{ asset("img/gedung2.jpeg") }}') center center/cover no-repeat fixed;
             position: relative;
             -webkit-font-smoothing: antialiased;
         }
@@ -264,7 +266,7 @@
         <div class="login-card">
             <div class="login-header">
                 <div class="login">
-                    <img src="{{ asset('img/logo_hui.png') }}" alt="Logo HUI" width="250">
+                    <img src="{{ asset(get_setting('login_logo') ? 'img/logo_login/' . get_setting('login_logo') : 'img/logo_hui.png') }}" alt="Logo" width="250">
                 </div>
                 <!-- <h2>Welcome</h2> -->
                 <p>Please log in to your OBE System account</p>
@@ -295,7 +297,7 @@
             <form method="POST" action="{{ route('login') }}">
                 @csrf
                 <div class="form-group">
-                    <label for="email">Email Address</label>
+                    <label for="email">{{ __('Email Address') }}</label>
                     <div class="input-wrapper">
                         <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="name@institution.ac.id">
                         <span class="input-icon">
@@ -305,9 +307,9 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password">{{ __('Password') }}</label>
                     <div class="input-wrapper">
-                        <input type="password" id="password" name="password" required placeholder="Enter your password">
+                        <input type="password" id="password" name="password" required placeholder="{{ __('Password') }}">
                         <span class="input-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                         </span>
@@ -317,12 +319,12 @@
                 <div class="form-options" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
                     <label class="remember-me" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0;">
                         <input type="checkbox" name="remember" id="remember" style="width: 1rem; height: 1rem; accent-color: var(--primary);">
-                        <span style="font-weight: 400; color: var(--text-muted);">Remember me</span>
+                        <span style="font-weight: 400; color: var(--text-muted);">{{ __('Remember me') }}</span>
                     </label>
-                    <a href="{{ route('password.request') }}" class="forgot-password" style="font-size: 0.8rem; color: #a5b4fc; text-decoration: none; font-weight: 500; transition: color 0.2s ease;">Forgot Password?</a>
+                    <a href="{{ route('password.request') }}" class="forgot-password" style="font-size: 0.8rem; color: #a5b4fc; text-decoration: none; font-weight: 500; transition: color 0.2s ease;">{{ __('Forgot Password?') }}</a>
                 </div>
                 <input type="hidden" name="recaptcha_token" id="recaptcha_token">
-                <button type="submit">Sign In</button>
+                <button type="submit">{{ __('Sign In') }}</button>
             </form>
 
             <div class="footer">
@@ -330,6 +332,7 @@
             </div>
         </div>
     </div>
+    @if(env('APP_ENV') !== 'local')
     <script>
         document.querySelector('form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -344,5 +347,6 @@
         });
     </script>
     <script src="https://www.google.com/recaptcha/api.js?render={{ env('RECAPTCHA_SITE_KEY') }}"></script>
+    @endif
 </body>
 </html>

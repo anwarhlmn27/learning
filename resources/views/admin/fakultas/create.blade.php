@@ -43,6 +43,19 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label">Dekan User (Optional)</label>
+                <select name="dekan_id" class="form-control">
+                    <option value="">-- Select Dekan User --</option>
+                    @foreach($users as $u)
+                        <option value="{{ $u->id }}" {{ old('dekan_id') == $u->id ? 'selected' : '' }}>
+                            {{ $u->name ?? $u->email }}
+                        </option>
+                    @endforeach
+                </select>
+                <small style="color: var(--text-muted);">Assign an existing user with 'dekan' role to manage this faculty.</small>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">Leader Name (Dean)</label>
                 <input type="text" name="nama_pimpinan" class="form-control" required value="{{ old('nama_pimpinan') }}">
             </div>

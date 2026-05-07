@@ -31,14 +31,6 @@
                 <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Semester</span>
                 <div>Semester {{ $subject->semester }}</div>
             </div>
-            <div>
-                <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Assessment</span>
-                <div>
-                    <span style="font-size: 0.8rem; background: #ede9fe; color: var(--primary); padding: 2px 8px; border-radius: 4px; font-weight: 600;">
-                        {{ is_array($subject->assesment_type) ? implode(', ', $subject->assesment_type) : $subject->assesment_type }}
-                    </span>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -60,9 +52,9 @@
                     <tr>
                         <th style="width: 5%;">#</th>
                         <th style="width: 10%;">CLO Code</th>
-                        <th style="width: 45%;">Description</th>
-                        <th style="width: 28%;">Mapped PLO</th>
-                        <th style="width: 12%;">Actions</th>
+                        <th style="width: 15%;">Description & Bloom Level</th>
+                        <th style="width: 40%;">Mapped PLO</th>
+                        <th style="width: 10%;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,15 +63,21 @@
                             <td style="color: var(--text-muted); font-size: 0.75rem;">{{ $i + 1 }}</td>
                             <td>
                                 <span style="font-weight: 700; color: var(--primary); background: #ede9fe; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">
-                                    {{ $clo->clo }}
+                                    {{ $clo->kode_clo }}
                                 </span>
                             </td>
-                            <td style="font-size: 0.875rem;">{{ $clo->deskripsi }}</td>
                             <td>
-                                @if($clo->plo)
-                                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <span style="font-weight: 600; font-size: 0.8rem; color: #374151;">{{ $clo->plo->title_plo }}</span>
-                                        <span style="font-size: 0.75rem; color: var(--text-muted);">{{ Str::limit($clo->plo->plo, 70) }}</span>
+                                <div style="font-size: 0.875rem; margin-bottom: 0.25rem;">{{ $clo->deskripsi }}</div>
+                                <span style="font-size: 0.7rem; background: #f3f4f6; color: #4b5563; padding: 2px 6px; border-radius: 4px;">{{ $clo->bloom_level }}</span>
+                            </td>
+                            <td>
+                                @if($clo->plos->count() > 0)
+                                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                        @foreach($clo->plos as $plo)
+                                            <span style="font-size: 0.75rem; background: #f3f4f6; color: #374151; padding: 2px 6px; border-radius: 4px; border: 1px solid #e5e7eb; font-weight: 600;">
+                                                {{ $plo->kode_plo }}
+                                            </span>
+                                        @endforeach
                                     </div>
                                 @else
                                     <span style="color: var(--text-muted); font-size: 0.8rem;">— Not mapped —</span>
@@ -87,8 +85,12 @@
                             </td>
                             <td>
                                 <div style="display: flex; gap: 0.4rem; flex-wrap: nowrap;">
-                                    <button onclick='editClo({!! json_encode($clo) !!})' class="btn btn-primary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Edit</button>
-                                    <form action="{{ route('clo.destroy', $clo->id) }}" method="POST" onsubmit="return confirm('Delete CLO {{ $clo->clo }}?')">
+                                    @php
+                                        // Pluck IDs for edit mapping
+                                        $mappedPlos = $clo->plos->pluck('id')->toArray();
+                                    @endphp
+                                    <button onclick='editClo({!! json_encode($clo) !!}, {!! json_encode($mappedPlos) !!})' class="btn btn-primary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Edit</button>
+                                    <form action="{{ route('clo.destroy', $clo->id) }}" method="POST" onsubmit="return confirm('Delete CLO {{ $clo->kode_clo }}?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Delete</button>
@@ -121,53 +123,57 @@
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
 
-                <div class="form-group">
-                    <label class="form-label">CLO Code <span style="color: var(--danger);">*</span></label>
-                    <input type="text"
-                           name="clo"
-                           id="field_clo"
-                           class="form-control @error('clo') is-invalid @enderror"
-                           required
-                           placeholder="e.g. CLO-01, CPMK-1"
-                           maxlength="50">
-                    @error('clo')
-                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
-                    @enderror
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">CLO Code <span style="color: var(--danger);">*</span></label>
+                        <input type="text"
+                               name="kode_clo"
+                               id="field_kode_clo"
+                               class="form-control @error('kode_clo') is-invalid @enderror"
+                               required
+                               placeholder="e.g. CLO-01, CPMK-1"
+                               maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bloom Level <span style="color: var(--danger);">*</span></label>
+                        <select name="bloom_level" id="field_bloom_level" class="form-control" required>
+                            <option value="">- Select Level -</option>
+                            <option value="C1 (Mengingat)">C1 (Mengingat)</option>
+                            <option value="C2 (Memahami)">C2 (Memahami)</option>
+                            <option value="C3 (Mengaplikasikan)">C3 (Mengaplikasikan)</option>
+                            <option value="C4 (Menganalisis)">C4 (Menganalisis)</option>
+                            <option value="C5 (Mengevaluasi)">C5 (Mengevaluasi)</option>
+                            <option value="C6 (Mencipta)">C6 (Mencipta)</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" style="margin-top: 1rem;">
                     <label class="form-label">Description / Learning Outcome <span style="color: var(--danger);">*</span></label>
                     <textarea name="deskripsi"
                               id="field_deskripsi"
                               class="form-control @error('deskripsi') is-invalid @enderror"
-                              rows="4"
+                              rows="3"
                               required
                               placeholder="Describe the specific learning outcome for this course..."></textarea>
-                    @error('deskripsi')
-                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
-                    @enderror
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Mapped PLO (Optional)</label>
-                    <select name="id_plo" id="field_id_plo" class="form-control">
-                        <option value="">— Not mapped to a PLO —</option>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label class="form-label">Mapped PLO</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb;">
                         @foreach($plos as $plo)
-                            <option value="{{ $plo->id }}"
-                                    data-prodi="{{ $plo->prodi->nama_prodi ?? '' }}"
-                                    data-gp="{{ $plo->gp->nm_profil ?? '' }}">
-                                {{ $plo->title_plo }}
-                                @if($plo->prodi) ({{ $plo->prodi->nama_prodi }}) @endif
-                                — {{ Str::limit($plo->plo, 60) }}
-                            </option>
+                            <label style="display: flex; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; align-items: flex-start;">
+                                <input type="checkbox" name="plos[]" value="{{ $plo->id }}" class="plo-checkbox" style="margin-top: 0.2rem;">
+                                <span>
+                                    <strong>{{ $plo->kode_plo }}</strong>
+                                    <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">{{ Str::limit($plo->plo_title, 40) }}</span>
+                                </span>
+                            </label>
                         @endforeach
-                    </select>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                        Select the Program Learning Outcome (PLO/CPL) this CLO contributes to.
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
                     <button type="button" onclick="closeCloModal()" class="btn" style="background: #e5e7eb; color: #374151;">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="submitBtn">Save CLO</button>
                 </div>
@@ -184,20 +190,31 @@
         document.getElementById('modalTitle').textContent = 'Add CLO';
         document.getElementById('cloForm').action = storeUrl;
         document.getElementById('formMethod').value = 'POST';
-        document.getElementById('field_clo').value = '';
+        document.getElementById('field_kode_clo').value = '';
+        document.getElementById('field_bloom_level').value = '';
         document.getElementById('field_deskripsi').value = '';
-        document.getElementById('field_id_plo').value = '';
+        
+        // Uncheck all checkboxes
+        document.querySelectorAll('.plo-checkbox').forEach(cb => cb.checked = false);
+
         document.getElementById('submitBtn').textContent = 'Save CLO';
         document.getElementById('cloModal').style.display = 'flex';
     }
 
-    function editClo(clo) {
-        document.getElementById('modalTitle').textContent = 'Edit CLO: ' + clo.clo;
-        document.getElementById('cloForm').action = '/admin/clo/' + clo.id;
+    function editClo(clo, mappedPlos) {
+        document.getElementById('modalTitle').textContent = 'Edit CLO: ' + clo.kode_clo;
+        let updateUrl = "{{ route('clo.update', ':id') }}";
+        document.getElementById('cloForm').action = updateUrl.replace(':id', clo.id);
         document.getElementById('formMethod').value = 'PUT';
-        document.getElementById('field_clo').value = clo.clo;
+        document.getElementById('field_kode_clo').value = clo.kode_clo;
+        document.getElementById('field_bloom_level').value = clo.bloom_level;
         document.getElementById('field_deskripsi').value = clo.deskripsi;
-        document.getElementById('field_id_plo').value = clo.id_plo || '';
+        
+        // Check mapped checkboxes
+        document.querySelectorAll('.plo-checkbox').forEach(cb => {
+            cb.checked = mappedPlos.includes(cb.value);
+        });
+
         document.getElementById('submitBtn').textContent = 'Update CLO';
         document.getElementById('cloModal').style.display = 'flex';
     }

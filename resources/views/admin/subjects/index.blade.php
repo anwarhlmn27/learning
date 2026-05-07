@@ -1,177 +1,56 @@
 @extends('layouts.admin')
 
-@section('title', 'Subjects / Courses')
+@section('title', 'Course (Subject) Management')
 
 @section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Subjects Data</h1>
+    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Subjects Management</h1>
 @endsection
 
 @section('content')
-
-{{-- Filter Bar --}}
-<div class="card" style="margin-bottom: 1.25rem;">
-    <div class="card-body" style="padding: 1rem 1.25rem;">
-        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
-            {{-- Search --}}
-            <div style="flex: 1; min-width: 200px;">
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; text-transform: uppercase;">Search</label>
-                <input type="text" id="filterSearch" onkeyup="applyFilters()"
-                       placeholder="Code or subject name…"
-                       style="width: 100%; padding: 0.45rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; outline: none; box-sizing: border-box;">
-            </div>
-            {{-- Semester --}}
-            <div style="min-width: 140px;">
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; text-transform: uppercase;">Semester</label>
-                <select id="filterSemester" onchange="applyFilters()"
-                        style="width: 100%; padding: 0.45rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; background: #fff; outline: none;">
-                    <option value="">All Semesters</option>
-                    @for($i = 1; $i <= 8; $i++)
-                        <option value="{{ $i }}">Semester {{ $i }}</option>
-                    @endfor
-                </select>
-            </div>
-            {{-- Assessment Type --}}
-            <div style="min-width: 180px;">
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; text-transform: uppercase;">Assessment Type</label>
-                <select id="filterAssessment" onchange="applyFilters()"
-                        style="width: 100%; padding: 0.45rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; background: #fff; outline: none;">
-                    <option value="">All Types</option>
-                    @php
-                        $allTypes = [];
-                        foreach($subjects as $s) {
-                            $types = is_array($s->assesment_type) ? $s->assesment_type : (json_decode($s->assesment_type, true) ?? [$s->assesment_type]);
-                            foreach($types as $t) { if($t) $allTypes[$t] = $t; }
-                        }
-                        sort($allTypes);
-                    @endphp
-                    @foreach($allTypes as $t)
-                        <option value="{{ $t }}">{{ $t }}</option>
-                    @endforeach
-                </select>
-            </div>
-            {{-- Reset --}}
-            <div>
-                <button onclick="resetFilters()"
-                        style="padding: 0.45rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; background: #f9fafb; cursor: pointer; color: var(--text-muted); font-weight: 600;">
-                    ↺ Reset
-                </button>
-            </div>
-        </div>
-        <div id="filterInfo" style="margin-top: 0.6rem; font-size: 0.75rem; color: var(--text-muted); display: none;">
-            Menampilkan <strong id="filterCount">0</strong> dari <strong id="filterTotal">0</strong> subject
-        </div>
-    </div>
-</div>
-
 <div class="card">
-    <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
-        <span>Subject List</span>
-        <a href="{{ route('subjects.create') }}" class="btn btn-primary">Add Subject</a>
+    <div class="card-header">
+        <span>Select Study Program (Prodi) to View Subjects</span>
+        <a href="{{ route('subjects.create') }}" class="btn btn-primary">Add New Subject</a>
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table id="subjectTable">
+            <table>
                 <thead>
                     <tr>
-                        <th>Code</th>
-                        <th>Subject Name</th>
-                        <th>SKS (T/P/Total)</th>
-                        <th>Sem.</th>
-                        <th>Prerequisite</th>
-                        <th>Assessment</th>
-                        <th>Actions</th>
+                        <th>Prodi Code</th>
+                        <th>Study Program</th>
+                        <th>Faculty</th>
+                        <th>Total Subjects</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
-                <tbody id="subjectTbody">
-                    @forelse($subjects as $s)
-                        @php
-                            $types = is_array($s->assesment_type) ? $s->assesment_type : (json_decode($s->assesment_type, true) ?? [$s->assesment_type]);
-                        @endphp
-                        <tr class="subject-row"
-                            data-code="{{ strtolower($s->kode_subject) }}"
-                            data-name="{{ strtolower($s->nama_subject) }}"
-                            data-semester="{{ $s->semester }}"
-                            data-assessment="{{ strtolower(implode('|', $types)) }}">
-                            <td style="font-weight: 600;">{{ $s->kode_subject }}</td>
-                            <td>{{ $s->nama_subject }}</td>
-                            <td>{{ $s->sks_t }} / {{ $s->sks_p }} / {{ $s->total_sks }}</td>
-                            <td>{{ $s->semester }}</td>
+                <tbody>
+                    @forelse($prodis as $prodi)
+                        <tr>
+                            <td style="font-weight: 600;">{{ $prodi->kode_prodi }}</td>
+                            <td>{{ $prodi->nama_prodi }}</td>
+                            <td>{{ $prodi->fakultas->nama_fakultas }}</td>
                             <td>
-                                @if($s->prerequisite)
-                                    <span title="{{ $s->prerequisite->nama_subject }}">{{ $s->prerequisite->kode_subject }}</span>
-                                @else
-                                    <span style="color: var(--text-muted); font-size: 0.75rem;">-</span>
-                                @endif
+                                <span class="badge" style="background: #e0e7ff; color: #4338ca; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                                    {{ $prodi->subjects_count ?? 0 }} Subjects
+                                </span>
                             </td>
                             <td>
-                                <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-                                    @foreach($types as $type)
-                                        <span style="font-size: 0.7rem; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">{{ $type }}</span>
-                                    @endforeach
-                                </div>
-                            </td>
-                            <td style="display: flex; gap: 0.5rem;">
-                                <a href="{{ route('subjects.edit', $s->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>
-                                <form action="{{ route('subjects.destroy', $s->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this subject?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
-                                </form>
+                                <a href="{{ route('subjects.prodi', $prodi->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; text-decoration: none;">
+                                    View Subjects
+                                </a>
                             </td>
                         </tr>
                     @empty
-                        <tr id="noDataRow">
-                            <td colspan="7" style="text-align: center; color: var(--text-muted);">No subjects found.</td>
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                No Study Programs found. Please add a Study Program first.
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
-            <div id="noResultRow" style="display:none; text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.875rem;">
-                Tidak ada subject yang cocok dengan filter.
-            </div>
         </div>
     </div>
 </div>
-
-@section('scripts')
-<script>
-    const totalRows = document.querySelectorAll('.subject-row').length;
-    document.getElementById('filterTotal').textContent = totalRows;
-
-    function applyFilters() {
-        const search    = document.getElementById('filterSearch').value.toLowerCase().trim();
-        const semester  = document.getElementById('filterSemester').value;
-        const assessment = document.getElementById('filterAssessment').value.toLowerCase();
-
-        const rows = document.querySelectorAll('.subject-row');
-        let visible = 0;
-
-        rows.forEach(row => {
-            const matchSearch     = !search     || row.dataset.code.includes(search) || row.dataset.name.includes(search);
-            const matchSemester   = !semester   || row.dataset.semester === semester;
-            const matchAssessment = !assessment || row.dataset.assessment.split('|').some(t => t.trim() === assessment);
-
-            if (matchSearch && matchSemester && matchAssessment) {
-                row.style.display = '';
-                visible++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        const hasFilter = search || semester || assessment;
-        document.getElementById('filterInfo').style.display = hasFilter ? 'block' : 'none';
-        document.getElementById('filterCount').textContent = visible;
-        document.getElementById('noResultRow').style.display = (visible === 0 && totalRows > 0) ? 'block' : 'none';
-    }
-
-    function resetFilters() {
-        document.getElementById('filterSearch').value = '';
-        document.getElementById('filterSemester').value = '';
-        document.getElementById('filterAssessment').value = '';
-        applyFilters();
-    }
-</script>
-@endsection
-
 @endsection

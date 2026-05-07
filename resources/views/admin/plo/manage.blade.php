@@ -17,9 +17,15 @@
     </div>
 @endif
 
+@if(session('success'))
+    <div class="alert alert-success" style="padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+        {{ session('success') }}
+    </div>
+@endif
+
 <div class="card">
     <div class="card-header">
-        <span>PLO List</span>
+        <span>Program Learning Outcomes (PLO)</span>
         <button onclick="showPloModal()" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">+ Add PLO</button>
     </div>
     <div class="card-body" style="padding: 0;">
@@ -27,22 +33,47 @@
             <table>
                 <thead>
                     <tr>
-                        <th>GP Reference</th>
                         <th>PLO Code</th>
-                        <th>PLO Content</th>
+                        <th>PLO Title</th>
+                        <th>GP References</th>
+                        <th>Outcome (Rumusan)</th>
+                        <th>Domain</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($prodi->plos as $plo)
                         <tr>
+                            <td style="font-weight: 600; color: var(--primary);">{{ $plo->kode_plo }}</td>
+                            <td style="font-weight: 600;">{{ $plo->plo_title }}</td>
                             <td>
-                                <span class="badge" style="background: #f3f4f6; color: #374151;">{{ $plo->gp->nm_profil ?? 'N/A' }}</span>
+                                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                                    @forelse($plo->gps as $gp)
+                                        <span class="badge" style="background: #f3f4f6; color: #374151; font-size: 0.7rem;">{{ $gp->kode_profil }}</span>
+                                    @empty
+                                        <span class="badge" style="background: #fee2e2; color: #b91c1c; font-size: 0.7rem;">No GP</span>
+                                    @endforelse
+                                </div>
                             </td>
-                            <td style="font-weight: 600;">{{ $plo->title_plo }}</td>
-                            <td>{{ Str::limit($plo->plo, 100) }}</td>
+                            <td>{{ Str::limit($plo->rumusan_plo, 80) }}</td>
+                            <td>
+                                <span class="badge" style="background: #e0e7ff; color: #4338ca;">{{ $plo->domain }}</span>
+                            </td>
+                            <td>
+                                <span style="padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.75rem; 
+                                    {{ $plo->status == 'Aktif' ? 'background: #dcfce7; color: #166534;' : 
+                                       ($plo->status == 'Draft' ? 'background: #f3f4f6; color: #374151;' : 
+                                       ($plo->status == 'Revisi' ? 'background: #fef9c3; color: #854d0e;' : 'background: #fee2e2; color: #b91c1c;')) }}">
+                                    {{ $plo->status }}
+                                </span>
+                            </td>
                             <td style="display: flex; gap: 0.5rem;">
-                                <button onclick='editPlo({!! json_encode($plo) !!})' class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</button>
+                                @php
+                                    $ploData = $plo->toArray();
+                                    $ploData['id_gps'] = $plo->gps->pluck('id')->toArray();
+                                @endphp
+                                <button onclick='editPlo(@json($ploData))' class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</button>
                                 <form action="{{ route('plo.destroy', $plo->id) }}" method="POST" onsubmit="return confirm('Delete this PLO?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
@@ -50,7 +81,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No PLOs added yet.</td></tr>
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No PLOs added yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -60,58 +91,117 @@
 
 <!-- PLO MODAL -->
 <div id="ploModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 600px; margin: 0;">
-        <div class="card-header">
-            <span id="modalTitle">Add PLO Item</span>
-            <button onclick="closePloModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    <div class="card" style="width: 100%; max-width: 800px; margin: 0; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+        <div class="card-header" style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;">
+            <span id="modalTitle" style="font-weight: 600; font-size: 1.125rem;">Add PLO Item</span>
+            <button type="button" onclick="closePloModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1;">&times;</button>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="overflow-y: auto; padding: 1.5rem;">
             <form id="ploForm" method="POST">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 
-                <div class="form-group">
-                    <label class="form-label">Graduate Profile (GP) Reference</label>
-                    <select name="id_gp" id="field_id_gp" class="form-control @error('id_gp') is-invalid @enderror" required>
-                        <option value="">-- Select GP --</option>
-                        @foreach($prodi->gps as $gp)
-                            <option value="{{ $gp->id }}">{{ $gp->nm_profil }}</option>
-                        @endforeach
-                    </select>
-                    @error('id_gp')
-                        <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label class="form-label" style="font-weight: 600; color: var(--primary);">Graduate Profile (GP) References</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #f9fafb;">
+                        @forelse($prodi->gps as $gp)
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; cursor: pointer;">
+                                <input type="checkbox" name="id_gps[]" value="{{ $gp->id }}" class="gp-checkbox" style="width: 1rem; height: 1rem;">
+                                <span><strong>{{ $gp->kode_profil }}</strong> - {{ Str::limit($gp->nm_profil, 20) }}</span>
+                            </label>
+                        @empty
+                            <span style="color: var(--text-muted); font-size: 0.875rem;">No Graduate Profiles found. Please add GP first.</span>
+                        @endforelse
+                    </div>
+                    @error('id_gps')
+                        <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">PLO Code</label>
-                    <input type="text" name="title_plo" id="field_title_plo" class="form-control @error('title_plo') is-invalid @enderror" required placeholder="e.g. PLO-01">
-                    @error('title_plo')
-                        <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
-                    @enderror
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">PLO Code</label>
+                        <input type="text" name="kode_plo" id="field_kode_plo" class="form-control" required placeholder="e.g. PLO-01">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">PLO Title</label>
+                        <input type="text" name="plo_title" id="field_plo_title" class="form-control" required placeholder="e.g. Computing Fundamentals">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Domain</label>
+                        <select name="domain" id="field_domain" class="form-control" required>
+                            <option value="Knowledge">Knowledge</option>
+                            <option value="Skill">Skill</option>
+                            <option value="Attitude">Attitude</option>
+                            <option value="General Competency">General Competency</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Status</label>
+                        <select name="status" id="field_status" class="form-control" required>
+                            <option value="Draft">Draft</option>
+                            <option value="Aktif">Aktif</option>
+                            <option value="Revisi">Revisi</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">PLO Content</label>
-                    <textarea name="plo" id="field_plo" class="form-control @error('plo') is-invalid @enderror" rows="3" required placeholder="Outcome statement"></textarea>
-                    @error('plo')
-                        <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Detail (Optional)</label>
-                    <textarea name="detail" id="field_detail" class="form-control" rows="2"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Description (Optional)</label>
-                    <textarea name="deskripsi" id="field_deskripsi" class="form-control" rows="2"></textarea>
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
-                    <button type="button" onclick="closePloModal()" class="btn" style="background: #e5e7eb;">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save PLO</button>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <!-- Left Column -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Outcome (Rumusan PLO)</label>
+                            <textarea name="rumusan_plo" id="field_rumusan_plo" class="form-control" rows="3" required placeholder="Outcome statement"></textarea>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label">Bloom Level</label>
+                                <select name="bloom_level" id="field_bloom_level" class="form-control" required onchange="updateKKO()">
+                                    <option value="">-- Pilih Level --</option>
+                                    <option value="C1">C1 - Remember</option>
+                                    <option value="C2">C2 - Understand</option>
+                                    <option value="C3">C3 - Apply</option>
+                                    <option value="C4">C4 - Analyze</option>
+                                    <option value="C5">C5 - Evaluate</option>
+                                    <option value="C6">C6 - Create</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label">KKO</label>
+                                <select name="kko" id="field_kko" class="form-control" required>
+                                    <option value="">-- Pilih KKO --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Indicators of Achievement</label>
+                            <textarea name="indikator_ketercapaian" id="field_indikator_ketercapaian" class="form-control" rows="2" required placeholder="Achievement indicators"></textarea>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label">Target</label>
+                                <input type="text" name="target_capaian" id="field_target_capaian" class="form-control" required placeholder="e.g. 75%">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label">Measurement</label>
+                                <select name="metode_pengukuran" id="field_metode_pengukuran" class="form-control" required>
+                                    <option value="Direct">Direct</option>
+                                    <option value="Indirect">Indirect</option>
+                                    <option value="Both">Both</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: flex-end; justify-content: flex-end; flex: 1; margin-top: 1rem;">
+                            <div style="display: flex; gap: 0.75rem; width: 100%;">
+                                <button type="button" onclick="closePloModal()" class="btn" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;">Cancel</button>
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">Save PLO</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -119,15 +209,52 @@
 </div>
 
 <script>
+    const mappingKKO = {
+        'C1': ['Mengingat', 'Menyebutkan', 'Menghafal'],
+        'C2': ['Menjelaskan', 'Mengklasifikasikan', 'Merangkum'],
+        'C3': ['Menerapkan', 'Menggunakan', 'Mendemonstrasikan'],
+        'C4': ['Menganalisis', 'Memecahkan', 'Membandingkan'],
+        'C5': ['Mengevaluasi', 'Mengkritik', 'Menyimpulkan'],
+        'C6': ['Mendesain', 'Membangun', 'Merancang']
+    };
+
+    function updateKKO() {
+        const level = document.getElementById('field_bloom_level').value;
+        const kkoSelect = document.getElementById('field_kko');
+        
+        // Kosongkan daftar KKO sebelumnya
+        kkoSelect.innerHTML = '<option value="">-- Pilih KKO --</option>';
+        
+        if (level && mappingKKO[level]) {
+            mappingKKO[level].forEach(kko => {
+                let option = document.createElement('option');
+                option.value = kko;
+                option.text = kko;
+                kkoSelect.add(option);
+            });
+        }
+    }
+
     function showPloModal() {
         document.getElementById('modalTitle').textContent = 'Add PLO Item';
         document.getElementById('ploForm').action = "{{ route('plo.store', $prodi->id) }}";
         document.getElementById('formMethod').value = 'POST';
-        document.getElementById('field_id_gp').value = '';
-        document.getElementById('field_title_plo').value = '';
-        document.getElementById('field_plo').value = '';
-        document.getElementById('field_detail').value = '';
-        document.getElementById('field_deskripsi').value = '';
+        
+        // Reset checkboxes
+        document.querySelectorAll('.gp-checkbox').forEach(cb => cb.checked = false);
+        
+        document.getElementById('field_kode_plo').value = '';
+        document.getElementById('field_plo_title').value = '';
+        document.getElementById('field_rumusan_plo').value = '';
+        document.getElementById('field_domain').value = 'Knowledge';
+        document.getElementById('field_bloom_level').value = '';
+        updateKKO(); // Clear KKO
+        document.getElementById('field_kko').value = '';
+        document.getElementById('field_indikator_ketercapaian').value = '';
+        document.getElementById('field_target_capaian').value = '';
+        document.getElementById('field_metode_pengukuran').value = 'Direct';
+        document.getElementById('field_status').value = 'Draft';
+        
         document.getElementById('ploModal').style.display = 'flex';
     }
 
@@ -135,11 +262,24 @@
         document.getElementById('modalTitle').textContent = 'Edit PLO Item';
         document.getElementById('ploForm').action = "/admin/plo/" + plo.id;
         document.getElementById('formMethod').value = 'PUT';
-        document.getElementById('field_id_gp').value = plo.id_gp;
-        document.getElementById('field_title_plo').value = plo.title_plo;
-        document.getElementById('field_plo').value = plo.plo;
-        document.getElementById('field_detail').value = plo.detail || '';
-        document.getElementById('field_deskripsi').value = plo.deskripsi || '';
+        
+        // Set checkboxes
+        document.querySelectorAll('.gp-checkbox').forEach(cb => {
+            cb.checked = plo.id_gps.includes(cb.value);
+        });
+        
+        document.getElementById('field_kode_plo').value = plo.kode_plo;
+        document.getElementById('field_plo_title').value = plo.plo_title;
+        document.getElementById('field_rumusan_plo').value = plo.rumusan_plo;
+        document.getElementById('field_domain').value = plo.domain;
+        document.getElementById('field_bloom_level').value = plo.bloom_level;
+        updateKKO(); // Populate KKO based on the selected bloom level
+        document.getElementById('field_kko').value = plo.kko;
+        document.getElementById('field_indikator_ketercapaian').value = plo.indikator_ketercapaian;
+        document.getElementById('field_target_capaian').value = plo.target_capaian;
+        document.getElementById('field_metode_pengukuran').value = plo.metode_pengukuran;
+        document.getElementById('field_status').value = plo.status;
+        
         document.getElementById('ploModal').style.display = 'flex';
     }
 
@@ -149,13 +289,7 @@
 
     // Auto-open modal if validation errors exist
     @if($errors->any() && !$errors->has('error'))
-        @if(old('_method') == 'PUT')
-            // Note: This would need the ID of the item being edited, 
-            // for simplicity we just show the "Add" state or you can refine this.
-            showPloModal();
-        @else
-            showPloModal();
-        @endif
+        showPloModal();
     @endif
 </script>
 @endsection

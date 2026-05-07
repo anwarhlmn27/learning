@@ -4,21 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Dashboard') - OBE System</title>
-    <link rel="icon" type="image/png" href="{{ asset('img/icon_hui.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset(get_setting('favicon') ? 'img/favicon/' . get_setting('favicon') : 'img/icon_hui.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4f46e5;
             --primary-hover: #4338ca;
-            --bg: #f9fafb;
-            --sidebar: #111827;
-            --sidebar-text: #9ca3af;
+            --bg: {{ Auth::check() && Auth::user()->content_color ? Auth::user()->content_color : '#f9fafb' }};
+            --sidebar: {{ Auth::check() && Auth::user()->sidebar_color ? Auth::user()->sidebar_color : '#111827' }};
+            --sidebar-text: {{ Auth::check() && Auth::user()->sidebar_font_color ? Auth::user()->sidebar_font_color : '#9ca3af' }};
             --sidebar-hover: #1f2937;
             --card-bg: #ffffff;
             --text-main: #111827;
             --text-muted: #6b7280;
             --success: #10b981;
             --danger: #ef4444;
+            --header-bg: {{ Auth::check() && Auth::user()->navbar_color ? Auth::user()->navbar_color : '#ffffff' }};
+            --navbar-text: {{ Auth::check() && Auth::user()->navbar_font_color ? Auth::user()->navbar_font_color : '#111827' }};
         }
 
         html {
@@ -82,7 +84,8 @@
             font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
-            color: #4b5563;
+            color: var(--sidebar-text);
+            opacity: 0.8;
             letter-spacing: 0.05em;
             white-space: nowrap;
             transition: opacity 0.2s;
@@ -138,7 +141,7 @@
             font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
-            color: #4b5563;
+            color: var(--sidebar-text);
             letter-spacing: 0.05em;
             background: none;
             border: none;
@@ -236,7 +239,7 @@
         }
 
         header {
-            background-color: white;
+            background-color: var(--header-bg);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -250,7 +253,7 @@
         .toggle-btn {
             background: none;
             border: none;
-            color: var(--text-main);
+            color: var(--navbar-text);
             cursor: pointer;
             padding: 0.5rem;
             display: flex;
@@ -479,81 +482,105 @@
         }
     </style>
     @yield('styles')
+    @if(Auth::check() && Auth::user()->hasRole(['rektor', 'dekan']))
+    <style>
+        /* Sembunyikan tombol aksi untuk view-only roles */
+        .btn:not([href]), button[type="submit"], form button {
+            display: none !important;
+        }
+        /* Kecuali tombol filter/pencarian */
+        form[method="GET"] button {
+            display: inline-flex !important;
+        }
+        /* Tetap tampilkan toggle sidebar */
+        .toggle-btn {
+            display: inline-flex !important;
+        }
+    </style>
+    @endif
 </head>
 <body>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="{{ asset('img/logo_hui.png') }}" id="sidebar-logo" alt="Logo">
+            <img src="{{ asset(get_setting('dashboard_logo') ? 'img/logo_dashboard/' . get_setting('dashboard_logo') : 'img/logo_hui.png') }}" id="sidebar-logo" alt="Logo">
         </div>
         <nav class="sidebar-nav">
             <div class="nav-label">Main</div>
-            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" data-title="Dashboard">
-                <i>🏠</i><span>Dashboard</span>
+            <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" data-title="{{ __('Dashboard') }}">
+                <i>🏠</i><span>{{ __('Dashboard') }}</span>
             </a>
 
             @php 
                 $isLembagaActive = request()->routeIs('univ.*') || request()->routeIs('fakultas.*') || request()->routeIs('prodi.*'); 
             @endphp
-            <button class="nav-group-btn {{ $isLembagaActive ? 'open' : '' }}" onclick="toggleDropdown('dropdown-lembaga')" data-title="Institution">
+            <button class="nav-group-btn {{ $isLembagaActive ? 'open' : '' }}" onclick="toggleDropdown('dropdown-lembaga')" data-title="{{ __('Institution') }}">
                 <div style="display: flex; align-items: center;">
-                    <i>🏢</i><span>Institution</span>
+                    <i>🏢</i><span>{{ __('Institution') }}</span>
                 </div>
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
             <div class="nav-dropdown {{ $isLembagaActive ? 'show' : '' }}" id="dropdown-lembaga">
-                <a href="{{ route('univ.index') }}" class="nav-item {{ request()->routeIs('univ.*') ? 'active' : '' }}" data-title="University">
-                    <i>🏛️</i><span>University</span>
+                <a href="{{ route('univ.index') }}" class="nav-item {{ request()->routeIs('univ.*') ? 'active' : '' }}" data-title="{{ __('University') }}">
+                    <i>🏛️</i><span>{{ __('University') }}</span>
                 </a>
-                <a href="{{ route('fakultas.index') }}" class="nav-item {{ request()->routeIs('fakultas.*') ? 'active' : '' }}" data-title="Faculty">
-                    <i>🏫</i><span>Faculty</span>
+                <a href="{{ route('fakultas.index') }}" class="nav-item {{ request()->routeIs('fakultas.*') ? 'active' : '' }}" data-title="{{ __('Faculty') }}">
+                    <i>🏫</i><span>{{ __('Faculty') }}</span>
                 </a>
-                <a href="{{ route('prodi.index') }}" class="nav-item {{ request()->routeIs('prodi.*') ? 'active' : '' }}" data-title="Study Program">
-                    <i>📚</i><span>Study Program</span>
+                <a href="{{ route('prodi.index') }}" class="nav-item {{ request()->routeIs('prodi.*') ? 'active' : '' }}" data-title="{{ __('Study Program') }}">
+                    <i>📚</i><span>{{ __('Study Program') }}</span>
                 </a>
             </div>
 
             @php 
-                $isAkademikActive = request()->routeIs('visi.*') || request()->routeIs('gp.*') || request()->routeIs('plo.*') || request()->routeIs('kurikulum.*') || request()->routeIs('subjects.*') || request()->routeIs('clo.*'); 
+                $isAkademikActive = request()->routeIs('visi.*') || request()->routeIs('gp.*') || request()->routeIs('plo.*') || request()->routeIs('bahan_kajian.*') || request()->routeIs('kurikulum.*') || request()->routeIs('subjects.*') || request()->routeIs('clo.*') || request()->routeIs('admin.rps.*'); 
             @endphp
-            <button class="nav-group-btn {{ $isAkademikActive ? 'open' : '' }}" onclick="toggleDropdown('dropdown-akademik')" data-title="Academic & OBE">
+            <button class="nav-group-btn {{ $isAkademikActive ? 'open' : '' }}" onclick="toggleDropdown('dropdown-akademik')" data-title="{{ __('Academic & OBE') }}">
                 <div style="display: flex; align-items: center;">
-                    <i>🎓</i><span>Academic & OBE</span>
+                    <i>🎓</i><span>{{ __('Academic & OBE') }}</span>
                 </div>
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
             <div class="nav-dropdown {{ $isAkademikActive ? 'show' : '' }}" id="dropdown-akademik">
-                <a href="{{ route('visi.index') }}" class="nav-item {{ request()->routeIs('visi.*') ? 'active' : '' }}" data-title="Vision & Mission">
-                    <i>👁️</i><span>Vision & Mission</span>
+                <a href="{{ route('visi.index') }}" class="nav-item {{ request()->routeIs('visi.*') ? 'active' : '' }}" data-title="{{ __('Vision & Mission') }}">
+                    <i>👁️</i><span>{{ __('Vision & Mission') }}</span>
                 </a>
-                <a href="{{ route('gp.index') }}" class="nav-item {{ request()->routeIs('gp.*') ? 'active' : '' }}" data-title="Graduate Profile">
-                    <i>👤</i><span>Graduate Profile (GP)</span>
+                <a href="{{ route('gp.index') }}" class="nav-item {{ request()->routeIs('gp.*') ? 'active' : '' }}" data-title="{{ __('Graduate Profile (GP)') }}">
+                    <i>👤</i><span>{{ __('Graduate Profile (GP)') }}</span>
                 </a>
-                <a href="{{ route('plo.index') }}" class="nav-item {{ request()->routeIs('plo.index') || request()->routeIs('plo.manage') ? 'active' : '' }}" data-title="CPL (PLO)">
-                    <i>📝</i><span>CPL (PLO)</span>
+                <a href="{{ route('plo.index') }}" class="nav-item {{ request()->routeIs('plo.index') || request()->routeIs('plo.manage') ? 'active' : '' }}" data-title="{{ __('CPL (PLO)') }}">
+                    <i>📝</i><span>{{ __('CPL (PLO)') }}</span>
                 </a>
-                <a href="{{ route('kurikulum.index') }}" class="nav-item {{ request()->routeIs('kurikulum.*') ? 'active' : '' }}" data-title="Curriculum"><i>📖</i><span>Curriculum</span></a>
-                <a href="{{ route('subjects.index') }}" class="nav-item {{ request()->routeIs('subjects.*') ? 'active' : '' }}" data-title="Courses"><i>📘</i><span>Courses</span></a>
-                <a href="{{ route('clo.index') }}" class="nav-item {{ request()->routeIs('clo.*') ? 'active' : '' }}" data-title="CPMK (CLO)"><i>🎯</i><span>CPMK (CLO)</span></a>
+                <a href="{{ route('bahan_kajian.index') }}" class="nav-item {{ request()->routeIs('bahan_kajian.*') ? 'active' : '' }}" data-title="{{ __('Bahan Kajian (BK)') }}">
+                    <i>📚</i><span>{{ __('Bahan Kajian (BK)') }}</span>
+                </a>
+                <a href="{{ route('subjects.index') }}" class="nav-item {{ request()->routeIs('subjects.*') ? 'active' : '' }}" data-title="{{ __('Courses') }}"><i>📘</i><span>{{ __('Courses') }}</span></a>
+                <a href="{{ route('kurikulum.index') }}" class="nav-item {{ request()->routeIs('kurikulum.*') ? 'active' : '' }}" data-title="{{ __('Curriculum') }}"><i>📖</i><span>{{ __('Curriculum') }}</span></a>
+                <a href="{{ route('clo.index') }}" class="nav-item {{ request()->routeIs('clo.*') ? 'active' : '' }}" data-title="{{ __('CPMK (CLO)') }}"><i>🎯</i><span>{{ __('CPMK (CLO)') }}</span></a>
+                <a href="{{ route('admin.rps.index') }}" class="nav-item {{ request()->routeIs('admin.rps.*') ? 'active' : '' }}" data-title="{{ __('RPS') }}"><i>📑</i><span>{{ __('RPS') }}</span></a>
             </div>
 
-            <button class="nav-group-btn {{ request()->routeIs('course_mapping.*') ? 'open' : '' }}" onclick="toggleDropdown('dropdown-pemetaan')" data-title="Mapping">
+            <button class="nav-group-btn {{ request()->routeIs('course_mapping.*') ? 'open' : '' }}" onclick="toggleDropdown('dropdown-pemetaan')" data-title="{{ __('Mapping') }}">
                 <div style="display: flex; align-items: center;">
-                    <i>🗺️</i><span>Mapping</span>
+                    <i>🗺️</i><span>{{ __('Mapping') }}</span>
                 </div>
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
             <div class="nav-dropdown {{ request()->routeIs('course_mapping.*') ? 'show' : '' }}" id="dropdown-pemetaan">
-                <a href="{{ route('course_mapping.index') }}" class="nav-item {{ request()->routeIs('course_mapping.*') ? 'active' : '' }}" data-title="Curriculum Mapping"><i>🔗</i><span>Curriculum Mapping</span></a>
+                <a href="{{ route('course_mapping.index') }}" class="nav-item {{ request()->routeIs('course_mapping.*') ? 'active' : '' }}" data-title="{{ __('Curriculum Mapping') }}"><i>🔗</i><span>{{ __('Curriculum Mapping') }}</span></a>
             </div>
 
-            <button class="nav-group-btn" onclick="toggleDropdown('dropdown-pengaturan')" data-title="Settings">
+            <button class="nav-group-btn" onclick="toggleDropdown('dropdown-pengaturan')" data-title="{{ __('Settings') }}">
                 <div style="display: flex; align-items: center;">
-                    <i>⚙️</i><span>Settings</span>
+                    <i>⚙️</i><span>{{ __('Settings') }}</span>
                 </div>
                 <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
             </button>
             <div class="nav-dropdown" id="dropdown-pengaturan">
-                <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}" data-title="User Management"><i>👥</i><span>User Management</span></a>
+                @if(!Auth::user()->hasRole('kaprodi'))
+                    <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}" data-title="{{ __('User Management') }}"><i>👥</i><span>{{ __('User Management') }}</span></a>
+                @endif
+                <a href="{{ route('assessment_types.index') }}" class="nav-item {{ request()->routeIs('assessment_types.*') ? 'active' : '' }}" data-title="{{ __('Assessment Types') }}"><i>📝</i><span>{{ __('Assessment Types') }}</span></a>
+                <a href="{{ route('settings.index') }}" class="nav-item {{ request()->routeIs('settings.*') ? 'active' : '' }}" data-title="{{ __('Settings') }}"><i>🛠️</i><span>{{ __('Settings') }}</span></a>
             </div>
         </nav>
         <div class="sidebar-footer">
@@ -569,18 +596,24 @@
                 </button>
                 @yield('header_left')
             </div>
-            <div style="display: flex; align-items: center; gap: 1rem; position: relative;">
+            <div style="display: flex; align-items: center; gap: 1rem; position: relative; color: var(--navbar-text);">
                 <span class="header-user-email" style="font-size: 0.875rem; font-weight: 500;">{{ Auth::user()->name ?? Auth::user()->email }}</span>
                 <div class="avatar-dropdown-wrapper" style="position: relative;">
-                    <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; user-select: none;" onclick="toggleAvatarDropdown()">{{ strtoupper(substr(Auth::user()->name ?? Auth::user()->email, 0, 1)) }}</div>
+                    <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; user-select: none; overflow: hidden;" onclick="toggleAvatarDropdown()">
+                        @if(Auth::check() && Auth::user()->avatar)
+                            <img src="{{ asset('img/avatars/' . Auth::user()->avatar) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        @else
+                            {{ strtoupper(substr(Auth::user()->name ?? Auth::user()->email, 0, 1)) }}
+                        @endif
+                    </div>
                     <div id="avatar-dropdown" style="display: none; position: absolute; right: 0; top: 120%; background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); width: 180px; z-index: 100; overflow: hidden;">
                         <a href="{{ route('password.change') }}" style="display: block; padding: 0.75rem 1rem; color: #374151; text-decoration: none; font-size: 0.875rem; border-bottom: 1px solid #e5e7eb; transition: background 0.2s;">
-                            <i>🔑</i> Change Password
+                            <i>🔑</i> {{ __('Change Password') }}
                         </a>
                         <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                             @csrf
                             <button type="submit" style="width: 100%; text-align: left; background: none; border: none; padding: 0.75rem 1rem; color: #ef4444; font-size: 0.875rem; font-family: inherit; cursor: pointer; transition: background 0.2s;">
-                                <i>🚪</i> Logout
+                                <i>🚪</i> {{ __('Logout') }}
                             </button>
                         </form>
                     </div>
@@ -593,6 +626,16 @@
         <div class="content-padding">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+
+            @if($errors->any())
+                <div class="alert alert-danger" style="background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                    <ul style="margin: 0; padding-left: 1.5rem;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
 
             @yield('content')
@@ -635,9 +678,9 @@
             } else {
                 sidebar.classList.toggle('collapsed');
                 if (sidebar.classList.contains('collapsed')) {
-                    logo.src = "{{ asset('img/icon_hui.png') }}";
+                    logo.src = "{{ asset(get_setting('favicon') ? 'img/favicon/' . get_setting('favicon') : 'img/icon_hui.png') }}";
                 } else {
-                    logo.src = "{{ asset('img/logo_hui.png') }}";
+                    logo.src = "{{ asset(get_setting('dashboard_logo') ? 'img/logo_dashboard/' . get_setting('dashboard_logo') : 'img/logo_hui.png') }}";
                 }
                 // Save state to localStorage
                 const isCollapsed = sidebar.classList.contains('collapsed');
@@ -654,7 +697,7 @@
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             if (isCollapsed) {
                 sidebar.classList.add('collapsed');
-                logo.src = "{{ asset('img/icon_hui.png') }}";
+                logo.src = "{{ asset(get_setting('favicon') ? 'img/favicon/' . get_setting('favicon') : 'img/icon_hui.png') }}";
             }
 
             const alerts = document.querySelectorAll('.alert');

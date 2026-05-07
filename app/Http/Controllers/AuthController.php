@@ -23,26 +23,25 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         // Verify Google reCAPTCHA
-        // $response = Http::withoutVerifying()->asForm()->post(
-        $response = Http::timeout(10)->asForm()->post(
-            'https://www.google.com/recaptcha/api/siteverify',
-            [
-                'secret' => env('RECAPTCHA_SECRET_KEY'),
-                'response' => $request->recaptcha_token,
-                'remoteip' => $request->ip(),
-            ]
-        );
+        if (env('APP_ENV') !== 'local') {
+            $response = Http::timeout(10)->asForm()->post(
+                'https://www.google.com/recaptcha/api/siteverify',
+                [
+                    'secret' => env('RECAPTCHA_SECRET_KEY'),
+                    'response' => $request->recaptcha_token,
+                    'remoteip' => $request->ip(),
+                ]
+            );
 
-        $result = $response->json();
-        
-        // Cek jika success ada dan true. Jika di local kadang score bisa rendah.
-        if (!isset($result['success']) || !$result['success']) {
-            return back()->withErrors(['captcha' => 'Verifikasi Captcha gagal. Silakan coba lagi.']);
-        }
+            $result = $response->json();
+            
+            if (!isset($result['success']) || !$result['success']) {
+                return back()->withErrors(['captcha' => 'Verifikasi Captcha gagal. Silakan coba lagi.']);
+            }
 
-        // Score 0.3 biasanya cukup untuk local development jika 0.5 terlalu ketat
-        if (isset($result['score']) && $result['score'] < 0.3) {
-            return back()->withErrors(['captcha' => 'Aktivitas mencurigakan terdeteksi.']);
+            if (isset($result['score']) && $result['score'] < 0.3) {
+                return back()->withErrors(['captcha' => 'Aktivitas mencurigakan terdeteksi.']);
+            }
         }
 
         $credentials = $request->validate([
@@ -59,7 +58,7 @@ class AuthController extends Controller
             }
             $request->session()->regenerate();
 
-            if (Auth::user()->hasRole('admin')) {
+            if (Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi'])) {
                 return redirect()->intended(route('admin.dashboard'));
             }
 

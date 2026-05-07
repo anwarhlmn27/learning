@@ -45,32 +45,66 @@
                 @enderror
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Mission (Misi)</label>
-                <textarea name="misi" class="form-control @error('misi') is-invalid @enderror" rows="3" required placeholder="Enter Mission statement">{{ old('misi') }}</textarea>
+            <div class="dynamic-section" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">Missions (Misi)</h3>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('misi-container', 'misi[]', 'Enter Mission')">+ Add Misi</button>
+                </div>
+                <div id="misi-container">
+                    @if(old('misi'))
+                        @foreach(old('misi') as $i => $val)
+                            <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <input type="text" name="misi[]" class="form-control" value="{{ $val }}" required placeholder="Enter Mission">
+                                @if($i > 0)
+                                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
+                                @endif
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="text" name="misi[]" class="form-control" required placeholder="Enter Mission">
+                        </div>
+                    @endif
+                </div>
+                @error('misi.*')
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
+                @enderror
                 @error('misi')
-                    <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
+                    <div style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                <div>
-                    <h3 style="font-size: 1rem; font-weight: 600; margin: 1.5rem 0 1rem 0; color: var(--primary);">Objectives (Tujuan)</h3>
-                    @for($i=1; $i<=5; $i++)
-                        <div class="form-group">
-                            <label class="form-label">Objective {{ $i }}</label>
-                            <input type="text" name="tujuan{{ $i }}" class="form-control" value="{{ old('tujuan'.$i) }}">
-                        </div>
-                    @endfor
+            <div class="dynamic-section" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">Objectives (Tujuan)</h3>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('tujuan-container', 'tujuan[]', 'Enter Objective')">+ Add Tujuan</button>
                 </div>
-                <div>
-                    <h3 style="font-size: 1rem; font-weight: 600; margin: 1.5rem 0 1rem 0; color: var(--primary);">Strategies (Strategi)</h3>
-                    @for($i=1; $i<=5; $i++)
-                        <div class="form-group">
-                            <label class="form-label">Strategy {{ $i }}</label>
-                            <input type="text" name="strategi{{ $i }}" class="form-control" value="{{ old('strategi'.$i) }}">
-                        </div>
-                    @endfor
+                <div id="tujuan-container">
+                    @if(old('tujuan'))
+                        @foreach(old('tujuan') as $val)
+                            <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <input type="text" name="tujuan[]" class="form-control" value="{{ $val }}" required placeholder="Enter Objective">
+                                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+
+            <div class="dynamic-section" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">Strategies (Strategi)</h3>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('strategi-container', 'strategi[]', 'Enter Strategy')">+ Add Strategi</button>
+                </div>
+                <div id="strategi-container">
+                    @if(old('strategi'))
+                        @foreach(old('strategi') as $val)
+                            <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <input type="text" name="strategi[]" class="form-control" value="{{ $val }}" required placeholder="Enter Strategy">
+                                <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
             </div>
 
@@ -135,6 +169,19 @@
                 select.appendChild(option);
             });
         }
+    }
+
+    function addField(containerId, inputName, placeholder) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = 'input-group';
+        div.style = 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;';
+        
+        div.innerHTML = `
+            <input type="text" name="${inputName}" class="form-control" required placeholder="${placeholder}">
+            <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
+        `;
+        container.appendChild(div);
     }
 
     // Restore selection on validation error

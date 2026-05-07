@@ -48,30 +48,44 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>Code</th>
                             <th>Profile Name</th>
-                            <th>Expertise</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($prodi->gps as $gp)
                             <tr>
-                                <td style="font-weight: 600;">{{ $gp->nm_profil }}</td>
-                                <td>{{ Str::limit($gp->expertise, 50) }}</td>
+                                <td style="font-weight: 600; color: var(--primary);">{{ $gp->kode_profil }}</td>
+                                <td>{{ $gp->nm_profil }}</td>
+                                <td>
+                                    <span style="padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.75rem; 
+                                        {{ $gp->status == 'Aktif' ? 'background: #dcfce7; color: #166534;' : 
+                                           ($gp->status == 'Draft' ? 'background: #f3f4f6; color: #374151;' : 
+                                           ($gp->status == 'Revisi' ? 'background: #fef9c3; color: #854d0e;' : 'background: #fee2e2; color: #b91c1c;')) }}">
+                                        {{ $gp->status }}
+                                    </span>
+                                </td>
                                 <td>
                                     <div style="display: flex; gap: 0.5rem;">
                                         <button type="button" class="btn btn-primary edit-profile-btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
                                             data-id="{{ $gp->id }}"
+                                            data-kode_profil="{{ $gp->kode_profil }}"
                                             data-nm_profil="{{ $gp->nm_profil }}"
                                             data-deskripsi="{{ $gp->deskripsi }}"
-                                            data-expertise="{{ $gp->expertise }}">Edit</button>
+                                            data-career_pathway="{{ $gp->career_pathway }}"
+                                            data-kompetensi="{{ $gp->kompetensi }}"
+                                            data-sumber_acuan="{{ $gp->sumber_acuan }}"
+                                            data-stakeholders="{{ $gp->stakeholders }}"
+                                            data-status="{{ $gp->status }}">Edit</button>
                                         <button type="button" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
                                             onclick="if(confirm('Delete this profile item?')) document.getElementById('delete-profile-{{ $gp->id }}').submit();">Delete</button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No profiles added.</td></tr>
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No profiles added.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -136,30 +150,70 @@
 
 <!-- PROFILE MODAL -->
 <div id="profileModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 500px; margin: 0;">
-        <div class="card-header">
-            <span id="modalTitle">Add Profile Item</span>
-            <button onclick="closeProfileModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    <div class="card" style="width: 100%; max-width: 800px; margin: 0; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+        <div class="card-header" style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;">
+            <span id="modalTitle" style="font-weight: 600; font-size: 1.125rem;">Add Profile Item</span>
+            <button type="button" onclick="closeProfileModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1;">&times;</button>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="overflow-y: auto; padding: 1.5rem;">
             <form id="profileForm" method="POST">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
-                <div class="form-group">
-                    <label class="form-label">Profile Name</label>
-                    <input type="text" name="nm_profil" id="field_nm_profil" class="form-control" required placeholder="e.g. Software Engineer">
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Profile Code</label>
+                        <input type="text" name="kode_profil" id="field_kode_profil" class="form-control" required placeholder="e.g. GP-01">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Profile Name</label>
+                        <input type="text" name="nm_profil" id="field_nm_profil" class="form-control" required placeholder="e.g. Software Engineer">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Status</label>
+                        <select name="status" id="field_status" class="form-control" required>
+                            <option value="Draft">Draft</option>
+                            <option value="Aktif">Aktif</option>
+                            <option value="Revisi">Revisi</option>
+                            <option value="Tidak Aktif">Tidak Aktif</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <textarea name="deskripsi" id="field_deskripsi" class="form-control" rows="3" required placeholder="General description"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Expertise (Technical Skills)</label>
-                    <textarea name="expertise" id="field_expertise" class="form-control" rows="3" required placeholder="List of expertise/competencies"></textarea>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
-                    <button type="button" onclick="closeProfileModal()" class="btn" style="background: #e5e7eb;">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Profile</button>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <!-- Left Column -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Description</label>
+                            <textarea name="deskripsi" id="field_deskripsi" class="form-control" rows="3" required placeholder="General description of the profile"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Competency (Skills)</label>
+                            <textarea name="kompetensi" id="field_kompetensi" class="form-control" rows="3" required placeholder="List of competencies required"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Stakeholders</label>
+                            <textarea name="stakeholders" id="field_stakeholders" class="form-control" rows="3" required placeholder="Involved parties or target audience"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Career Pathway</label>
+                            <textarea name="career_pathway" id="field_career_pathway" class="form-control" rows="3" required placeholder="Potential career opportunities"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Reference Sources</label>
+                            <textarea name="sumber_acuan" id="field_sumber_acuan" class="form-control" rows="3" required placeholder="e.g. SKKNI, Vision Mission"></textarea>
+                        </div>
+                        <div style="display: flex; align-items: flex-end; justify-content: flex-end; flex: 1; margin-top: 1rem;">
+                            <div style="display: flex; gap: 0.75rem; width: 100%;">
+                                <button type="button" onclick="closeProfileModal()" class="btn" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;">Cancel</button>
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Profile</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -171,19 +225,29 @@
         document.getElementById('modalTitle').textContent = 'Add Profile Item';
         document.getElementById('profileForm').action = "{{ route('gp.profile.store', $prodi->id) }}";
         document.getElementById('formMethod').value = 'POST';
+        document.getElementById('field_kode_profil').value = '';
         document.getElementById('field_nm_profil').value = '';
         document.getElementById('field_deskripsi').value = '';
-        document.getElementById('field_expertise').value = '';
+        document.getElementById('field_career_pathway').value = '';
+        document.getElementById('field_kompetensi').value = '';
+        document.getElementById('field_sumber_acuan').value = '';
+        document.getElementById('field_stakeholders').value = '';
+        document.getElementById('field_status').value = 'Draft';
         document.getElementById('profileModal').style.display = 'flex';
     }
 
-    function editProfile(id, nm_profil, deskripsi, expertise) {
+    function editProfile(data) {
         document.getElementById('modalTitle').textContent = 'Edit Profile Item';
-        document.getElementById('profileForm').action = "/admin/gp/profile/" + id;
+        document.getElementById('profileForm').action = "/admin/gp/profile/" + data.id;
         document.getElementById('formMethod').value = 'PUT';
-        document.getElementById('field_nm_profil').value = nm_profil;
-        document.getElementById('field_deskripsi').value = deskripsi;
-        document.getElementById('field_expertise').value = expertise;
+        document.getElementById('field_kode_profil').value = data.kode_profil;
+        document.getElementById('field_nm_profil').value = data.nm_profil;
+        document.getElementById('field_deskripsi').value = data.deskripsi;
+        document.getElementById('field_career_pathway').value = data.career_pathway;
+        document.getElementById('field_kompetensi').value = data.kompetensi;
+        document.getElementById('field_sumber_acuan').value = data.sumber_acuan;
+        document.getElementById('field_stakeholders').value = data.stakeholders;
+        document.getElementById('field_status').value = data.status;
         document.getElementById('profileModal').style.display = 'flex';
     }
 
@@ -195,11 +259,18 @@
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.edit-profile-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
-                var id = this.getAttribute('data-id');
-                var nm_profil = this.getAttribute('data-nm_profil');
-                var deskripsi = this.getAttribute('data-deskripsi');
-                var expertise = this.getAttribute('data-expertise');
-                editProfile(id, nm_profil, deskripsi, expertise);
+                var data = {
+                    id: this.getAttribute('data-id'),
+                    kode_profil: this.getAttribute('data-kode_profil'),
+                    nm_profil: this.getAttribute('data-nm_profil'),
+                    deskripsi: this.getAttribute('data-deskripsi'),
+                    career_pathway: this.getAttribute('data-career_pathway'),
+                    kompetensi: this.getAttribute('data-kompetensi'),
+                    sumber_acuan: this.getAttribute('data-sumber_acuan'),
+                    stakeholders: this.getAttribute('data-stakeholders'),
+                    status: this.getAttribute('data-status')
+                };
+                editProfile(data);
             });
         });
     });
