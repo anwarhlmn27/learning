@@ -15,13 +15,20 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('rps_id');
             $table->integer('session_number'); // 1-14
-            $table->string('topic_name');
-            $table->text('sub_clo'); // Topic Learning Objective
-            $table->text('materi_pembelajaran');
+            $table->string('topic_name'); // Topic Pembelajaran
+            $table->text('sub_clo'); // Topic Learning Objective sub-CMPK
+            $table->text('assessment_indicators'); //Indikator Penilaian
+            $table->text('evaluation_criteria'); //Kriteria Evaluasi
+            $table->text('learning_materials'); //pengganti materi pembelajaran
+            //Learning activity ada di tabel Rps_activity
             // Assessment per Session
-            $table->string('assessment_type')->nullable();
-            $table->text('assessment_output')->nullable();
-            $table->integer('weight')->default(0);
+            $table->string('assessment_type')->nullable(); //Tugas
+            $table->text('assignment_activities')->nullable(); //Aktivitas Penugasan
+            $table->text('assessment_scope')->nullable(); //Ruang Lingkup Tugas
+            $table->text('how_worked')->nullable(); //Cara Pengerjaan Tugas (Individu, kelompok, dll)
+            $table->integer('time_worked')->nullable(); //Waktu Pengerjaan Tugas
+            $table->text('assessment_output')->nullable(); //Luaran Tugas
+            $table->integer('weight')->default(0); //Bobot CPMK
             
             $table->timestamps();
 

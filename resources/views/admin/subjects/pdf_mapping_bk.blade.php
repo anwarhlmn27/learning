@@ -28,7 +28,7 @@
         <p>PROGRAM STUDI: {{ strtoupper($prodi->nama_prodi) }}</p>
     </div>
 
-    <div class="table-title">Tabel 3 BK-MK</div>
+    <!-- <div class="table-title">Tabel 3 BK-MK</div> -->
     <table>
         <thead>
             <tr>
