@@ -43,13 +43,7 @@ class Subject extends Model
         return $this->belongsTo(Subject::class, 'prerequisite_id');
     }
 
-    /**
-     * Get the assessments for this subject.
-     */
-    public function assessments()
-    {
-        return $this->hasMany(SubjectAssessment::class, 'subject_id');
-    }
+
 
     /**
      * Get the bahan kajian mapping for this subject.

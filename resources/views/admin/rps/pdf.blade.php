@@ -199,8 +199,8 @@
                 <td style="text-align: center;">{{ $session->session_number }}</td>
                 <td>{{ $session->sub_clo }}</td>
                 <td>
-                    @if($session->materi_pembelajaran)
-                        <div style="white-space: pre-wrap;">{{ $session->materi_pembelajaran }}</div>
+                    @if($session->learning_materials)
+                        <div style="white-space: pre-wrap;">{{ $session->learning_materials }}</div>
                     @else
                         {{ $session->topic_name }}
                     @endif
@@ -209,7 +209,7 @@
                     @if($session->activities->count() > 0)
                         <ul style="margin: 0; padding-left: 15px;">
                         @foreach($session->activities as $activity)
-                            <li><strong>{{ $activity->type }}:</strong> {{ $activity->content }}</li>
+                            <li><strong>{{ $activity->type }} ({{ $activity->duration }}'):</strong> {{ $activity->content }}</li>
                         @endforeach
                         </ul>
                     @else
@@ -217,18 +217,29 @@
                     @endif
                 </td>
                 <td>
+                    @if($session->assessment_indicators)
+                        <div style="margin-bottom: 5px;"><strong>Indikator:</strong><br>{{ $session->assessment_indicators }}</div>
+                    @endif
+                    @if($session->evaluation_criteria)
+                        <div style="margin-bottom: 5px;"><strong>Kriteria:</strong><br>{{ $session->evaluation_criteria }}</div>
+                    @endif
+
                     @if($session->assessments->count() > 0)
+                        <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #eee;">
                         @foreach($session->assessments as $assess)
-                            <div style="margin-bottom: 5px; border-bottom: 1px dotted #ccc; padding-bottom: 2px;">
-                                <strong>{{ $assess->type->name }}:</strong><br>
-                                Mapping: {{ $assess->clo->kode_clo }}<br>
-                                Weight: {{ $assess->weight }}%
+                            <div style="margin-bottom: 8px; border-bottom: 1px dotted #eee; padding-bottom: 5px;">
+                                <strong>{{ $assess->type->name }} ({{ $assess->clo->kode_clo }}):</strong><br>
+                                @if($assess->assessment_output) Luaran: {{ $assess->assessment_output }}<br> @endif
+                                @if($assess->assignment_activities) <span style="font-size: 10px;">Aktivitas: {{ $assess->assignment_activities }}</span><br> @endif
+                                <strong>Weight: {{ $assess->weight }}%</strong>
                             </div>
                         @endforeach
+                        </div>
                     @endif
-                    <div style="margin-top: 5px;"><strong>Output:</strong> {{ $session->assessment_output ?? '-' }}</div>
                 </td>
-                <td style="text-align: center;">{{ $session->assessments->sum('weight') }}%</td>
+                <td style="text-align: center;">
+                    {{ $session->assessments->sum('weight') }}%
+                </td>
             </tr>
             @endforeach
         </tbody>

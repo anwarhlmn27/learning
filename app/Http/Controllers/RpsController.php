@@ -22,10 +22,22 @@ class RpsController extends Controller
 {
     public function index()
     {
-        $rps = Rps::with(['subject', 'kurikulum'])->latest()->get();
-        $subjects = Subject::all();
+        $prodis = Prodi::withCount(['rps' => function($query) {
+            $query->whereHas('subject');
+        }])->with('fakultas')->get();
+        return view('admin.rps.index', compact('prodis'));
+    }
+
+    public function prodiRps(Prodi $prodi)
+    {
+        $rps = Rps::whereHas('subject', function($q) use ($prodi) {
+            $q->where('id_prodi', $prodi->id);
+        })->with(['subject', 'kurikulum'])->latest()->get();
+        
+        $subjects = Subject::where('id_prodi', $prodi->id)->get();
         $kurikulums = Kurikulum::orderBy('tahun_akademik', 'desc')->get();
-        return view('admin.rps.index', compact('rps', 'subjects', 'kurikulums'));
+        
+        return view('admin.rps.prodi_rps', compact('rps', 'subjects', 'kurikulums', 'prodi'));
     }
 
     public function store(Request $request)
@@ -169,7 +181,9 @@ class RpsController extends Controller
                 ], [
                     'topic_name' => 'Session ' . $i,
                     'sub_clo' => '',
-                    'materi_pembelajaran' => '',
+                    'learning_materials' => '',
+                    'assessment_indicators' => '',
+                    'evaluation_criteria' => '',
                 ]);
             }
             $rp->load('sessions.activities', 'sessions.clos', 'sessions.assessments.type');
@@ -183,15 +197,22 @@ class RpsController extends Controller
         $request->validate([
             'topic_name' => 'required|string',
             'sub_clo' => 'nullable|string',
-            'materi_pembelajaran' => 'nullable|string',
-            'assessment_output' => 'nullable|string',
+            'learning_materials' => 'nullable|string',
+            'assessment_indicators' => 'nullable|string',
+            'evaluation_criteria' => 'nullable|string',
             'clos' => 'nullable|array',
             'activities' => 'nullable|array',
             'activities.*.type' => 'required_with:activities|string',
+            'activities.*.duration' => 'required_with:activities|integer|min:1',
             'activities.*.content' => 'required_with:activities|string',
             'assessments' => 'nullable|array',
             'assessments.*.clo_id' => 'required_with:assessments|exists:clos,id',
             'assessments.*.assessment_type_id' => 'required_with:assessments|exists:assessment_types,id',
+            'assessments.*.assignment_activities' => 'nullable|string',
+            'assessments.*.assessment_scope' => 'nullable|string',
+            'assessments.*.how_worked' => 'nullable|string',
+            'assessments.*.time_worked' => 'nullable|integer',
+            'assessments.*.assessment_output' => 'nullable|string',
             'assessments.*.weight' => 'required_with:assessments|integer|min:0|max:100',
         ]);
 
@@ -201,8 +222,14 @@ class RpsController extends Controller
             if (array_key_exists('sub_clo', $data) && is_null($data['sub_clo'])) {
                 $data['sub_clo'] = '';
             }
-            if (array_key_exists('materi_pembelajaran', $data) && is_null($data['materi_pembelajaran'])) {
-                $data['materi_pembelajaran'] = '';
+            if (array_key_exists('learning_materials', $data) && is_null($data['learning_materials'])) {
+                $data['learning_materials'] = '';
+            }
+            if (array_key_exists('assessment_indicators', $data) && is_null($data['assessment_indicators'])) {
+                $data['assessment_indicators'] = '';
+            }
+            if (array_key_exists('evaluation_criteria', $data) && is_null($data['evaluation_criteria'])) {
+                $data['evaluation_criteria'] = '';
             }
             
             $session->update($data);
@@ -215,6 +242,11 @@ class RpsController extends Controller
                     $session->assessments()->create([
                         'clo_id' => $assess['clo_id'],
                         'assessment_type_id' => $assess['assessment_type_id'],
+                        'assignment_activities' => $assess['assignment_activities'] ?? null,
+                        'assessment_scope' => $assess['assessment_scope'] ?? null,
+                        'how_worked' => $assess['how_worked'] ?? null,
+                        'time_worked' => $assess['time_worked'] ?? null,
+                        'assessment_output' => $assess['assessment_output'] ?? null,
                         'weight' => $assess['weight'],
                     ]);
                 }
@@ -234,6 +266,7 @@ class RpsController extends Controller
                     if (!empty($activity['content'])) {
                         $session->activities()->create([
                             'type' => $activity['type'],
+                            'duration' => $activity['duration'] ?? 0,
                             'content' => $activity['content']
                         ]);
                     }
@@ -252,6 +285,7 @@ class RpsController extends Controller
     {
         $request->validate([
             'type' => 'required|in:Connect,Coach,Check,Wrap-up',
+            'duration' => 'required|integer|min:1',
             'content' => 'required|string',
         ]);
 

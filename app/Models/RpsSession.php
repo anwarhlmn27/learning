@@ -17,8 +17,9 @@ class RpsSession extends Model
         'session_number',
         'topic_name',
         'sub_clo',
-        'materi_pembelajaran',
-        'assessment_output',
+        'assessment_indicators',
+        'evaluation_criteria',
+        'learning_materials',
     ];
 
     public function rps()

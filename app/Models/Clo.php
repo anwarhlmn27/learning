@@ -35,12 +35,5 @@ class Clo extends Model
         return $this->belongsToMany(Plo::class, 'clo_plo', 'clo_id', 'plo_id')->using(CloPlo::class)->withTimestamps();
     }
 
-    /**
-     * Get the Assessments this CLO is mapped to.
-     * Obsolete: Assessments are now managed at the RPS Session level.
-     */
-    // public function assessments()
-    // {
-    //     return $this->belongsToMany(SubjectAssessment::class, 'assessment_clo', 'clo_id', 'assessment_id');
-    // }
+
 }

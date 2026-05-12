@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Clo;
 use App\Models\Subject;
 use App\Models\Plo;
+use App\Models\Prodi;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -13,8 +14,14 @@ class CloController extends Controller
 {
     public function index()
     {
-        $subjects = Subject::withCount('clos')->with(['prerequisite'])->get();
-        return view('admin.clo.index', compact('subjects'));
+        $prodis = Prodi::withCount('subjects')->with('fakultas')->get();
+        return view('admin.clo.index', compact('prodis'));
+    }
+
+    public function prodiSubjects(Prodi $prodi)
+    {
+        $subjects = Subject::where('id_prodi', $prodi->id)->withCount('clos')->with(['prerequisite'])->get();
+        return view('admin.clo.prodi_subjects', compact('subjects', 'prodi'));
     }
 
     public function manage(Subject $subject)

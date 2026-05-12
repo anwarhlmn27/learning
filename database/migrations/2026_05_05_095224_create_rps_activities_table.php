@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('rps_session_id');
             $table->enum('type', ['Connect', 'Coach', 'Check', 'Wrap-up']);
+            $table->integer('duration'); //Durasi Waktu per Aktivitas
             $table->text('content'); // Isi aktivitas
             $table->timestamps();
 

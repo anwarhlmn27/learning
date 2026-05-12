@@ -90,14 +90,20 @@
                 <textarea name="sub_clo" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->sub_clo }}</textarea>
             </div>
 
-            <div style="margin-bottom: 1rem;">
-                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Materi Pembelajaran (Bahan Kajian)</label>
-                <textarea name="materi_pembelajaran" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->materi_pembelajaran }}</textarea>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Assessment Indicators (Indikator Penilaian)</label>
+                    <textarea name="assessment_indicators" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->assessment_indicators }}</textarea>
+                </div>
+                <div>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Evaluation Criteria (Kriteria Evaluasi)</label>
+                    <textarea name="evaluation_criteria" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->evaluation_criteria }}</textarea>
+                </div>
             </div>
 
             <div style="margin-bottom: 1rem;">
-                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Assessment Output (Luaran Tugas/Pertemuan)</label>
-                <textarea name="assessment_output" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="Contoh: Makalah, Prototipe, Jawaban Quiz">{{ $session->assessment_output }}</textarea>
+                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Learning Materials (Bahan Kajian)</label>
+                <textarea name="learning_materials" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->learning_materials }}</textarea>
             </div>
 
             <!-- Multi Assessment Section -->
@@ -107,7 +113,7 @@
             <div id="assessments_container_{{ $session->id }}">
                 @foreach($session->assessments as $index => $assessment)
                     <div class="assessment-row">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
                             <div>
                                 <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Target CLO</label>
                                 <select name="assessments[{{ $index }}][clo_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
@@ -132,6 +138,31 @@
                                 <button type="button" onclick="this.parentElement.parentElement.parentElement.remove(); updateGlobalWeight();" class="btn btn-danger" style="padding: 0.5rem; border-radius: 0.375rem; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; height: 38px;">&times;</button>
                             </div>
                         </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assignment Activities (Aktivitas Penugasan)</label>
+                            <textarea name="assessments[{{ $index }}][assignment_activities]" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $assessment->assignment_activities }}</textarea>
+                        </div>
+
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assessment Scope (Ruang Lingkup Tugas)</label>
+                            <textarea name="assessments[{{ $index }}][assessment_scope]" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $assessment->assessment_scope }}</textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">How Worked (Cara Pengerjaan)</label>
+                                <input type="text" name="assessments[{{ $index }}][how_worked]" value="{{ $assessment->how_worked }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Individu, Kelompok">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Time Worked (Minutes)</label>
+                                <input type="number" name="assessments[{{ $index }}][time_worked]" value="{{ $assessment->time_worked }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. 60">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assessment Output (Luaran)</label>
+                                <input type="text" name="assessments[{{ $index }}][assessment_output]" value="{{ $assessment->assessment_output }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Makalah, Video">
+                            </div>
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -153,6 +184,10 @@
                                 <option value="Check" {{ $activity->type == 'Check' ? 'selected' : '' }}>Check</option>
                                 <option value="Wrap-up" {{ $activity->type == 'Wrap-up' ? 'selected' : '' }}>Wrap-up</option>
                             </select>
+                        </div>
+                        <div style="width: 100px;">
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Dur (Min)</label>
+                            <input type="number" name="activities[{{ $index }}][duration]" value="{{ $activity->duration }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                         </div>
                         <div style="flex: 1;">
                             <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Activity Content</label>
@@ -222,7 +257,7 @@
         const row = document.createElement('div');
         row.className = 'assessment-row';
         row.innerHTML = `
-            <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Target CLO</label>
                     <select name="assessments[${index}][clo_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
@@ -241,6 +276,31 @@
                 </div>
                 <div>
                     <button type="button" onclick="this.parentElement.parentElement.parentElement.remove(); updateGlobalWeight();" class="btn btn-danger" style="padding: 0.5rem; border-radius: 0.375rem; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; height: 38px;">&times;</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assignment Activities (Aktivitas Penugasan)</label>
+                <textarea name="assessments[${index}][assignment_activities]" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assessment Scope (Ruang Lingkup Tugas)</label>
+                <textarea name="assessments[${index}][assessment_scope]" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;"></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">How Worked (Cara Pengerjaan)</label>
+                    <input type="text" name="assessments[${index}][how_worked]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Individu, Kelompok">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Time Worked (Minutes)</label>
+                    <input type="number" name="assessments[${index}][time_worked]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. 60">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assessment Output (Luaran)</label>
+                    <input type="text" name="assessments[${index}][assessment_output]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Makalah, Video">
                 </div>
             </div>
         `;
@@ -265,6 +325,10 @@
                     <option value="Check">Check</option>
                     <option value="Wrap-up">Wrap-up</option>
                 </select>
+            </div>
+            <div style="width: 100px;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Dur (Min)</label>
+                <input type="number" name="activities[${index}][duration]" value="0" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
             </div>
             <div style="flex: 1;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Activity Content</label>

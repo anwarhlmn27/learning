@@ -15,6 +15,7 @@ class RpsActivity extends Model
     protected $fillable = [
         'rps_session_id',
         'type',
+        'duration',
         'content',
     ];
 

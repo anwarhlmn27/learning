@@ -14,6 +14,11 @@ class RpsAssessment extends Model
         'rps_session_id',
         'clo_id',
         'assessment_type_id',
+        'assignment_activities',
+        'assessment_scope',
+        'how_worked',
+        'time_worked',
+        'assessment_output',
         'weight',
     ];
 

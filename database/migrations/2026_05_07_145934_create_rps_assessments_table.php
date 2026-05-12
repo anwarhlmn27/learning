@@ -16,7 +16,13 @@ return new class extends Migration
             $table->uuid('rps_session_id'); // Relasi ke Pertemuan 1-14
             $table->uuid('clo_id');        // Langsung tunjuk ke CLO mana
             $table->uuid('assessment_type_id'); // Relasi ke master data assessment_types
-            $table->integer('weight');      // Bobot (misal: 5, 10, 20)
+            // Assessment per Session
+            $table->text('assignment_activities')->nullable(); //Aktivitas Penugasan
+            $table->text('assessment_scope')->nullable(); //Ruang Lingkup Tugas
+            $table->text('how_worked')->nullable(); //Cara Pengerjaan Tugas (Individu, kelompok, dll)
+            $table->integer('time_worked')->nullable(); //Waktu Pengerjaan Tugas
+            $table->text('assessment_output')->nullable(); //Luaran Tugas   
+            $table->integer('weight')->nullable();      // Bobot (misal: 5, 10, 20)
             $table->timestamps();
 
             $table->foreign('rps_session_id')->references('id')->on('rps_sessions')->onDelete('cascade');

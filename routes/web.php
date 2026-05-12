@@ -58,14 +58,15 @@ Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
     Route::delete('/admin/bahan-kajian/kategori/{kategori}', [BahanKajianController::class, 'destroyKategori'])->name('bahan_kajian.kategori.destroy');
 
     // Subject (Course) Routes
-    Route::resource('/admin/subjects', \App\Http\Controllers\SubjectController::class)->names('subjects');
     Route::get('/admin/subjects/prodi/{prodi}', [\App\Http\Controllers\SubjectController::class, 'prodiSubjects'])->name('subjects.prodi');
     Route::get('/admin/subjects/export-bk/{prodi}', [\App\Http\Controllers\SubjectController::class, 'exportMappingBK'])->name('subjects.export-bk');
+    Route::resource('/admin/subjects', \App\Http\Controllers\SubjectController::class)->names('subjects');
 
     // CLO (CPMK) Routes
 
     // CLO (CPMK) Routes
     Route::get('/admin/clo', [CloController::class, 'index'])->name('clo.index');
+    Route::get('/admin/clo/prodi/{prodi}', [CloController::class, 'prodiSubjects'])->name('clo.prodi');
     Route::get('/admin/clo/{subject}/manage', [CloController::class, 'manage'])->name('clo.manage');
     Route::post('/admin/clo/{subject}', [CloController::class, 'store'])->name('clo.store');
     Route::put('/admin/clo/{clo}', [CloController::class, 'update'])->name('clo.update');
@@ -87,6 +88,7 @@ Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
     Route::delete('/admin/course-mapping/{courseMaping}', [\App\Http\Controllers\CourseMapingController::class, 'destroy'])->name('course_mapping.destroy');
 
     // RPS Routes
+    Route::get('/admin/rps/prodi/{prodi}', [\App\Http\Controllers\RpsController::class, 'prodiRps'])->name('admin.rps.prodi');
     Route::resource('/admin/rps', \App\Http\Controllers\RpsController::class)->names('admin.rps')->except(['show', 'create']);
     Route::post('/admin/rps/{rp}/new-version', [\App\Http\Controllers\RpsController::class, 'createNewVersion'])->name('admin.rps.new_version');
     Route::post('/admin/rps/{rp}/copy', [\App\Http\Controllers\RpsController::class, 'copyToKurikulum'])->name('admin.rps.copy');

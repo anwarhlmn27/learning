@@ -20,16 +20,7 @@ return new class extends Migration
             $table->text('assessment_indicators'); //Indikator Penilaian
             $table->text('evaluation_criteria'); //Kriteria Evaluasi
             $table->text('learning_materials'); //pengganti materi pembelajaran
-            //Learning activity ada di tabel Rps_activity
-            // Assessment per Session
-            $table->string('assessment_type')->nullable(); //Tugas
-            $table->text('assignment_activities')->nullable(); //Aktivitas Penugasan
-            $table->text('assessment_scope')->nullable(); //Ruang Lingkup Tugas
-            $table->text('how_worked')->nullable(); //Cara Pengerjaan Tugas (Individu, kelompok, dll)
-            $table->integer('time_worked')->nullable(); //Waktu Pengerjaan Tugas
-            $table->text('assessment_output')->nullable(); //Luaran Tugas
-            $table->integer('weight')->default(0); //Bobot CPMK
-            
+            //Learning activity ada di tabel Rps_activity            
             $table->timestamps();
 
             $table->foreign('rps_id')->references('id')->on('rps')->onDelete('cascade');
