@@ -58,10 +58,6 @@ class AuthController extends Controller
             }
             $request->session()->regenerate();
 
-            if (Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi'])) {
-                return redirect()->intended(route('admin.dashboard'));
-            }
-
             return redirect()->intended(route('dashboard'));
         }
 

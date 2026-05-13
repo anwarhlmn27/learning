@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('gelar')->nullable();
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('prodi_id')->references('id')->on('prodis')->onDelete('cascade');
         });
     }

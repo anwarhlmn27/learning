@@ -269,7 +269,7 @@
                     <img src="{{ asset(get_setting('login_logo') ? 'img/logo_login/' . get_setting('login_logo') : 'img/logo_hui.png') }}" alt="Logo" width="250">
                 </div>
                 <!-- <h2>Welcome</h2> -->
-                <p>Please log in to your OBE System account</p>
+                <p>Please log in to your LMS account</p>
             </div>
             
             @if (session('status'))

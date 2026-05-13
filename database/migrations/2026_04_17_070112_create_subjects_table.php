@@ -37,6 +37,7 @@ return new class extends Migration
             $table->integer('semester');
             $table->integer('sks_t');
             $table->integer('sks_p');
+            $table->integer('sks_pl');//PL = Praktik Lapangan, untuk Fakultas Kesehatan
             $table->integer('total_sks');
             
             // Tambahan baru

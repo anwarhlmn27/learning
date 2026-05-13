@@ -8,29 +8,60 @@
     <p style="color: var(--text-muted); margin: 0;">Here is a summary of your Outcome-Based Education (OBE) system today.</p>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-    <div class="card" style="margin-bottom: 0;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="margin-bottom: 0; border-left: 4px solid #4f46e5;">
         <div class="card-body">
-            <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Total Users</div>
-            <div style="font-size: 1.5rem; font-weight: 700;">1,284</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Fakultas</div>
+                    <div style="font-size: 1.75rem; font-weight: 700;">{{ $count['fakultas'] }}</div>
+                </div>
+                <div style="font-size: 2rem; opacity: 0.2;">🏫</div>
+            </div>
         </div>
     </div>
-    <div class="card" style="margin-bottom: 0;">
+    <div class="card" style="margin-bottom: 0; border-left: 4px solid #10b981;">
         <div class="card-body">
-            <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Active Courses</div>
-            <div style="font-size: 1.5rem; font-weight: 700;">42</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Program Studi</div>
+                    <div style="font-size: 1.75rem; font-weight: 700;">{{ $count['prodi'] }}</div>
+                </div>
+                <div style="font-size: 2rem; opacity: 0.2;">📚</div>
+            </div>
         </div>
     </div>
-    <div class="card" style="margin-bottom: 0;">
+    <div class="card" style="margin-bottom: 0; border-left: 4px solid #f59e0b;">
         <div class="card-body">
-            <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Learning Outcomes</div>
-            <div style="font-size: 1.5rem; font-weight: 700;">85%</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Kurikulum</div>
+                    <div style="font-size: 1.75rem; font-weight: 700;">{{ $count['kurikulum'] }}</div>
+                </div>
+                <div style="font-size: 2rem; opacity: 0.2;">📖</div>
+            </div>
         </div>
     </div>
-    <div class="card" style="margin-bottom: 0;">
+    <div class="card" style="margin-bottom: 0; border-left: 4px solid #3b82f6;">
         <div class="card-body">
-            <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">New Notifications</div>
-            <div style="font-size: 1.5rem; font-weight: 700;">12</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Mata Kuliah</div>
+                    <div style="font-size: 1.75rem; font-weight: 700;">{{ $count['subject'] }}</div>
+                </div>
+                <div style="font-size: 2rem; opacity: 0.2;">📘</div>
+            </div>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom: 0; border-left: 4px solid #ef4444;">
+        <div class="card-body">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Users</div>
+                    <div style="font-size: 1.75rem; font-weight: 700;">{{ $count['user'] }}</div>
+                </div>
+                <div style="font-size: 2rem; opacity: 0.2;">👥</div>
+            </div>
         </div>
     </div>
 </div>

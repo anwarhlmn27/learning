@@ -505,7 +505,7 @@
             <img src="{{ asset(get_setting('dashboard_logo') ? 'img/logo_dashboard/' . get_setting('dashboard_logo') : 'img/logo_hui.png') }}" id="sidebar-logo" alt="Logo">
         </div>
         <nav class="sidebar-nav">
-            <div class="nav-label">Main</div>
+            <div class="nav-label">{{ __('Main') }}</div>
             <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" data-title="{{ __('Dashboard') }}">
                 <i>🏠</i><span>{{ __('Dashboard') }}</span>
             </a>
@@ -559,15 +559,6 @@
                 <a href="{{ route('admin.rps.index') }}" class="nav-item {{ request()->routeIs('admin.rps.*') ? 'active' : '' }}" data-title="{{ __('RPS') }}"><i>📑</i><span>{{ __('RPS') }}</span></a>
             </div>
 
-            <button class="nav-group-btn {{ request()->routeIs('course_mapping.*') ? 'open' : '' }}" onclick="toggleDropdown('dropdown-pemetaan')" data-title="{{ __('Mapping') }}">
-                <div style="display: flex; align-items: center;">
-                    <i>🗺️</i><span>{{ __('Mapping') }}</span>
-                </div>
-                <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-            </button>
-            <div class="nav-dropdown {{ request()->routeIs('course_mapping.*') ? 'show' : '' }}" id="dropdown-pemetaan">
-                <a href="{{ route('course_mapping.index') }}" class="nav-item {{ request()->routeIs('course_mapping.*') ? 'active' : '' }}" data-title="{{ __('Curriculum Mapping') }}"><i>🔗</i><span>{{ __('Curriculum Mapping') }}</span></a>
-            </div>
 
             <button class="nav-group-btn" onclick="toggleDropdown('dropdown-pengaturan')" data-title="{{ __('Settings') }}">
                 <div style="display: flex; align-items: center;">
@@ -582,6 +573,10 @@
                 <a href="{{ route('assessment_types.index') }}" class="nav-item {{ request()->routeIs('assessment_types.*') ? 'active' : '' }}" data-title="{{ __('Assessment Types') }}"><i>📝</i><span>{{ __('Assessment Types') }}</span></a>
                 <a href="{{ route('settings.index') }}" class="nav-item {{ request()->routeIs('settings.*') ? 'active' : '' }}" data-title="{{ __('Settings') }}"><i>🛠️</i><span>{{ __('Settings') }}</span></a>
             </div>
+
+            <a href="{{ route('dashboard') }}" class="nav-item" data-title="{{ __('Back to LMS') }}">
+                <i>🎓</i><span>{{ __('Back to LMS') }}</span>
+            </a>
         </nav>
         <div class="sidebar-footer">
             <!-- Logout moved to avatar dropdown -->

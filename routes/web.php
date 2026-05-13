@@ -20,102 +20,93 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
-    Route::get('/admin/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::resource('/admin/univ', \App\Http\Controllers\UnivController::class)->names('univ');
-    Route::resource('/admin/fakultas', \App\Http\Controllers\FakultasController::class)->names('fakultas');
-    Route::resource('/admin/prodi', \App\Http\Controllers\ProdiController::class)->names('prodi');
-    Route::resource('/admin/visi', \App\Http\Controllers\VisiController::class)->names('visi');
+    Route::get('/obe/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::resource('/obe/univ', \App\Http\Controllers\UnivController::class)->names('univ');
+    Route::resource('/obe/fakultas', \App\Http\Controllers\FakultasController::class)->names('fakultas');
+    Route::resource('/obe/prodi', \App\Http\Controllers\ProdiController::class)->names('prodi');
+    Route::resource('/obe/visi', \App\Http\Controllers\VisiController::class)->names('visi');
 
     // Graduate Profile (GP) Routes
-    Route::get('/admin/gp', [\App\Http\Controllers\GpController::class, 'index'])->name('gp.index');
-    Route::get('/admin/gp/{prodi}/manage', [\App\Http\Controllers\GpController::class, 'manage'])->name('gp.manage');
-    Route::post('/admin/gp/{prodi}/profile', [\App\Http\Controllers\GpController::class, 'storeProfile'])->name('gp.profile.store');
-    Route::put('/admin/gp/profile/{gp}', [\App\Http\Controllers\GpController::class, 'updateProfile'])->name('gp.profile.update');
-    Route::delete('/admin/gp/profile/{gp}', [\App\Http\Controllers\GpController::class, 'destroyProfile'])->name('gp.profile.destroy');
-    Route::post('/admin/gp/{prodi}/attachment', [\App\Http\Controllers\GpController::class, 'storeAttachment'])->name('gp.attachment.store');
-    Route::delete('/admin/gp/attachment/{attachment}', [\App\Http\Controllers\GpController::class, 'destroyAttachment'])->name('gp.attachment.destroy');
+    Route::get('/obe/gp', [\App\Http\Controllers\GpController::class, 'index'])->name('gp.index');
+    Route::get('/obe/gp/{prodi}/manage', [\App\Http\Controllers\GpController::class, 'manage'])->name('gp.manage');
+    Route::post('/obe/gp/{prodi}/profile', [\App\Http\Controllers\GpController::class, 'storeProfile'])->name('gp.profile.store');
+    Route::put('/obe/gp/profile/{gp}', [\App\Http\Controllers\GpController::class, 'updateProfile'])->name('gp.profile.update');
+    Route::delete('/obe/gp/profile/{gp}', [\App\Http\Controllers\GpController::class, 'destroyProfile'])->name('gp.profile.destroy');
+    Route::post('/obe/gp/{prodi}/attachment', [\App\Http\Controllers\GpController::class, 'storeAttachment'])->name('gp.attachment.store');
+    Route::delete('/obe/gp/attachment/{attachment}', [\App\Http\Controllers\GpController::class, 'destroyAttachment'])->name('gp.attachment.destroy');
 
     // Program Learning Outcomes (PLO/CPL) Routes
-    Route::get('/admin/plo', [\App\Http\Controllers\PloController::class, 'index'])->name('plo.index');
-    Route::get('/admin/plo/{prodi}/export-pdf', [\App\Http\Controllers\PloController::class, 'exportMappingPdf'])->name('plo.export_pdf');
-    Route::get('/admin/plo/{prodi}/manage', [\App\Http\Controllers\PloController::class, 'manage'])->name('plo.manage');
-    Route::post('/admin/plo/{prodi}', [\App\Http\Controllers\PloController::class, 'store'])->name('plo.store');
-    Route::put('/admin/plo/{plo}', [\App\Http\Controllers\PloController::class, 'update'])->name('plo.update');
-    Route::delete('/admin/plo/{plo}', [\App\Http\Controllers\PloController::class, 'destroy'])->name('plo.destroy');
+    Route::get('/obe/plo', [\App\Http\Controllers\PloController::class, 'index'])->name('plo.index');
+    Route::get('/obe/plo/{prodi}/export-pdf', [\App\Http\Controllers\PloController::class, 'exportMappingPdf'])->name('plo.export_pdf');
+    Route::get('/obe/plo/{prodi}/manage', [\App\Http\Controllers\PloController::class, 'manage'])->name('plo.manage');
+    Route::post('/obe/plo/{prodi}', [\App\Http\Controllers\PloController::class, 'store'])->name('plo.store');
+    Route::put('/obe/plo/{plo}', [\App\Http\Controllers\PloController::class, 'update'])->name('plo.update');
+    Route::delete('/obe/plo/{plo}', [\App\Http\Controllers\PloController::class, 'destroy'])->name('plo.destroy');
 
     // Bahan Kajian (BK) Routes
-    Route::get('/admin/bahan-kajian', [BahanKajianController::class, 'index'])->name('bahan_kajian.index');
-    Route::get('/admin/bahan-kajian/{prodi}/export-pdf', [BahanKajianController::class, 'exportMappingPdf'])->name('bahan_kajian.export_pdf');
-    Route::get('/admin/bahan-kajian/{prodi}/manage', [BahanKajianController::class, 'manage'])->name('bahan_kajian.manage');
-    Route::post('/admin/bahan-kajian/{prodi}', [BahanKajianController::class, 'store'])->name('bahan_kajian.store');
-    Route::put('/admin/bahan-kajian/{bahanKajian}', [BahanKajianController::class, 'update'])->name('bahan_kajian.update');
-    Route::delete('/admin/bahan-kajian/{bahanKajian}', [BahanKajianController::class, 'destroy'])->name('bahan_kajian.destroy');
+    Route::get('/obe/bahan-kajian', [BahanKajianController::class, 'index'])->name('bahan_kajian.index');
+    Route::get('/obe/bahan-kajian/{prodi}/export-pdf', [BahanKajianController::class, 'exportMappingPdf'])->name('bahan_kajian.export_pdf');
+    Route::get('/obe/bahan-kajian/{prodi}/manage', [BahanKajianController::class, 'manage'])->name('bahan_kajian.manage');
+    Route::post('/obe/bahan-kajian/{prodi}', [BahanKajianController::class, 'store'])->name('bahan_kajian.store');
+    Route::put('/obe/bahan-kajian/{bahanKajian}', [BahanKajianController::class, 'update'])->name('bahan_kajian.update');
+    Route::delete('/obe/bahan-kajian/{bahanKajian}', [BahanKajianController::class, 'destroy'])->name('bahan_kajian.destroy');
     
     // Kategori Bahan Kajian Routes
-    Route::get('/admin/bahan-kajian/{prodi}/kategori', [BahanKajianController::class, 'manageKategori'])->name('bahan_kajian.kategori.manage');
-    Route::post('/admin/bahan-kajian/{prodi}/kategori', [BahanKajianController::class, 'storeKategori'])->name('bahan_kajian.kategori.store');
-    Route::put('/admin/bahan-kajian/kategori/{kategori}', [BahanKajianController::class, 'updateKategori'])->name('bahan_kajian.kategori.update');
-    Route::delete('/admin/bahan-kajian/kategori/{kategori}', [BahanKajianController::class, 'destroyKategori'])->name('bahan_kajian.kategori.destroy');
+    Route::get('/obe/bahan-kajian/{prodi}/kategori', [BahanKajianController::class, 'manageKategori'])->name('bahan_kajian.kategori.manage');
+    Route::post('/obe/bahan-kajian/{prodi}/kategori', [BahanKajianController::class, 'storeKategori'])->name('bahan_kajian.kategori.store');
+    Route::put('/obe/bahan-kajian/kategori/{kategori}', [BahanKajianController::class, 'updateKategori'])->name('bahan_kajian.kategori.update');
+    Route::delete('/obe/bahan-kajian/kategori/{kategori}', [BahanKajianController::class, 'destroyKategori'])->name('bahan_kajian.kategori.destroy');
 
     // Subject (Course) Routes
-    Route::get('/admin/subjects/prodi/{prodi}', [\App\Http\Controllers\SubjectController::class, 'prodiSubjects'])->name('subjects.prodi');
-    Route::get('/admin/subjects/export-bk/{prodi}', [\App\Http\Controllers\SubjectController::class, 'exportMappingBK'])->name('subjects.export-bk');
-    Route::resource('/admin/subjects', \App\Http\Controllers\SubjectController::class)->names('subjects');
+    Route::get('/obe/subjects/prodi/{prodi}', [\App\Http\Controllers\SubjectController::class, 'prodiSubjects'])->name('subjects.prodi');
+    Route::get('/obe/subjects/export-bk/{prodi}', [\App\Http\Controllers\SubjectController::class, 'exportMappingBK'])->name('subjects.export-bk');
+    Route::get('/obe/subjects/export-plo/{prodi}', [\App\Http\Controllers\SubjectController::class, 'exportMappingPLO'])->name('subjects.export-plo');
+    Route::resource('/obe/subjects', \App\Http\Controllers\SubjectController::class)->names('subjects');
 
     // CLO (CPMK) Routes
 
     // CLO (CPMK) Routes
-    Route::get('/admin/clo', [CloController::class, 'index'])->name('clo.index');
-    Route::get('/admin/clo/prodi/{prodi}', [CloController::class, 'prodiSubjects'])->name('clo.prodi');
-    Route::get('/admin/clo/{subject}/manage', [CloController::class, 'manage'])->name('clo.manage');
-    Route::post('/admin/clo/{subject}', [CloController::class, 'store'])->name('clo.store');
-    Route::put('/admin/clo/{clo}', [CloController::class, 'update'])->name('clo.update');
-    Route::delete('/admin/clo/{clo}', [CloController::class, 'destroy'])->name('clo.destroy');
+    Route::get('/obe/clo', [CloController::class, 'index'])->name('clo.index');
+    Route::get('/obe/clo/prodi/{prodi}', [CloController::class, 'prodiSubjects'])->name('clo.prodi');
+    Route::get('/obe/clo/{subject}/manage', [CloController::class, 'manage'])->name('clo.manage');
+    Route::post('/obe/clo/{subject}', [CloController::class, 'store'])->name('clo.store');
+    Route::put('/obe/clo/{clo}', [CloController::class, 'update'])->name('clo.update');
+    Route::delete('/obe/clo/{clo}', [CloController::class, 'destroy'])->name('clo.destroy');
 
     // Curriculum Routes
-    Route::resource('/admin/kurikulum', \App\Http\Controllers\KurikulumController::class)->names('kurikulum');
-    Route::get('/admin/kurikulum/{kurikulum}/manage', [\App\Http\Controllers\KurikulumController::class, 'manage'])->name('kurikulum.manage');
-    Route::get('/admin/kurikulum/{kurikulum}/export-pdf', [\App\Http\Controllers\KurikulumController::class, 'exportPdf'])->name('kurikulum.export_pdf');
-    Route::post('/admin/kurikulum/{kurikulum}/add-subject', [\App\Http\Controllers\KurikulumController::class, 'addSubject'])->name('kurikulum.add-subject');
-    Route::delete('/admin/kurikulum/remove-subject/{kurikulumSubject}', [\App\Http\Controllers\KurikulumController::class, 'removeSubject'])->name('kurikulum.remove-subject');
-
-    // Course Mapping (Curriculum Mapping) Routes
-    Route::get('/admin/course-mapping', [\App\Http\Controllers\CourseMapingController::class, 'index'])->name('course_mapping.index');
-    Route::get('/admin/course-mapping/{prodi}/manage', [\App\Http\Controllers\CourseMapingController::class, 'manage'])->name('course_mapping.manage');
-    Route::get('/admin/course-mapping/{prodi}/export-pdf', [\App\Http\Controllers\CourseMapingController::class, 'exportPdf'])->name('course_mapping.export_pdf');
-    Route::post('/admin/course-mapping/{prodi}', [\App\Http\Controllers\CourseMapingController::class, 'store'])->name('course_mapping.store');
-    Route::put('/admin/course-mapping/{courseMaping}', [\App\Http\Controllers\CourseMapingController::class, 'update'])->name('course_mapping.update');
-    Route::delete('/admin/course-mapping/{courseMaping}', [\App\Http\Controllers\CourseMapingController::class, 'destroy'])->name('course_mapping.destroy');
+    Route::resource('/obe/kurikulum', \App\Http\Controllers\KurikulumController::class)->names('kurikulum');
+    Route::get('/obe/kurikulum/{kurikulum}/manage', [\App\Http\Controllers\KurikulumController::class, 'manage'])->name('kurikulum.manage');
+    Route::get('/obe/kurikulum/{kurikulum}/export-pdf', [\App\Http\Controllers\KurikulumController::class, 'exportPdf'])->name('kurikulum.export_pdf');
+    Route::post('/obe/kurikulum/{kurikulum}/add-subject', [\App\Http\Controllers\KurikulumController::class, 'addSubject'])->name('kurikulum.add-subject');
+    Route::delete('/obe/kurikulum/remove-subject/{kurikulumSubject}', [\App\Http\Controllers\KurikulumController::class, 'removeSubject'])->name('kurikulum.remove-subject');
 
     // RPS Routes
-    Route::get('/admin/rps/prodi/{prodi}', [\App\Http\Controllers\RpsController::class, 'prodiRps'])->name('admin.rps.prodi');
-    Route::resource('/admin/rps', \App\Http\Controllers\RpsController::class)->names('admin.rps')->except(['show', 'create']);
-    Route::post('/admin/rps/{rp}/new-version', [\App\Http\Controllers\RpsController::class, 'createNewVersion'])->name('admin.rps.new_version');
-    Route::post('/admin/rps/{rp}/copy', [\App\Http\Controllers\RpsController::class, 'copyToKurikulum'])->name('admin.rps.copy');
-    Route::get('/admin/rps/{rp}/sessions', [\App\Http\Controllers\RpsController::class, 'manageSessions'])->name('admin.rps.sessions');
-    Route::put('/admin/rps/sessions/{session}', [\App\Http\Controllers\RpsController::class, 'updateSession'])->name('admin.rps.sessions.update');
-    Route::post('/admin/rps/sessions/{session}/activity', [\App\Http\Controllers\RpsController::class, 'storeActivity'])->name('admin.rps.activity.store');
-    Route::delete('/admin/rps/activity/{activity}', [\App\Http\Controllers\RpsController::class, 'destroyActivity'])->name('admin.rps.activity.destroy');
-    Route::get('/admin/rps/{rp}/export-pdf', [\App\Http\Controllers\RpsController::class, 'exportPdf'])->name('admin.rps.export_pdf');
+    Route::get('/obe/rps/prodi/{prodi}', [\App\Http\Controllers\RpsController::class, 'prodiRps'])->name('admin.rps.prodi');
+    Route::resource('/obe/rps', \App\Http\Controllers\RpsController::class)->names('admin.rps')->except(['show', 'create']);
+    Route::post('/obe/rps/{rp}/new-version', [\App\Http\Controllers\RpsController::class, 'createNewVersion'])->name('admin.rps.new_version');
+    Route::post('/obe/rps/{rp}/copy', [\App\Http\Controllers\RpsController::class, 'copyToKurikulum'])->name('admin.rps.copy');
+    Route::get('/obe/rps/{rp}/sessions', [\App\Http\Controllers\RpsController::class, 'manageSessions'])->name('admin.rps.sessions');
+    Route::put('/obe/rps/sessions/{session}', [\App\Http\Controllers\RpsController::class, 'updateSession'])->name('admin.rps.sessions.update');
+    Route::post('/obe/rps/sessions/{session}/activity', [\App\Http\Controllers\RpsController::class, 'storeActivity'])->name('admin.rps.activity.store');
+    Route::delete('/obe/rps/activity/{activity}', [\App\Http\Controllers\RpsController::class, 'destroyActivity'])->name('admin.rps.activity.destroy');
+    Route::get('/obe/rps/{rp}/export-pdf', [\App\Http\Controllers\RpsController::class, 'exportPdf'])->name('admin.rps.export_pdf');
 
     // Assessment Types Master Data
-    Route::get('/admin/assessment-types', [\App\Http\Controllers\AssessmentTypeController::class, 'index'])->name('assessment_types.index');
-    Route::post('/admin/assessment-types', [\App\Http\Controllers\AssessmentTypeController::class, 'store'])->name('assessment_types.store');
-    Route::put('/admin/assessment-types/{assessmentType}', [\App\Http\Controllers\AssessmentTypeController::class, 'update'])->name('assessment_types.update');
-    Route::delete('/admin/assessment-types/{assessmentType}', [\App\Http\Controllers\AssessmentTypeController::class, 'destroy'])->name('assessment_types.destroy');
+    Route::get('/obe/assessment-types', [\App\Http\Controllers\AssessmentTypeController::class, 'index'])->name('assessment_types.index');
+    Route::post('/obe/assessment-types', [\App\Http\Controllers\AssessmentTypeController::class, 'store'])->name('assessment_types.store');
+    Route::put('/obe/assessment-types/{assessmentType}', [\App\Http\Controllers\AssessmentTypeController::class, 'update'])->name('assessment_types.update');
+    Route::delete('/obe/assessment-types/{assessmentType}', [\App\Http\Controllers\AssessmentTypeController::class, 'destroy'])->name('assessment_types.destroy');
 
 
     // User Management
-    Route::resource('/admin/users', \App\Http\Controllers\UserController::class)->names('users');
-    Route::post('/admin/users/import', [\App\Http\Controllers\UserController::class, 'import'])->name('users.import');
-    Route::get('/admin/users-template', [\App\Http\Controllers\UserController::class, 'downloadTemplate'])->name('users.template');
-    Route::patch('/admin/users/{user}/toggle-status', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::resource('/obe/users', \App\Http\Controllers\UserController::class)->names('users');
+    Route::post('/obe/users/import', [\App\Http\Controllers\UserController::class, 'import'])->name('users.import');
+    Route::get('/obe/users-template', [\App\Http\Controllers\UserController::class, 'downloadTemplate'])->name('users.template');
+    Route::patch('/obe/users/{user}/toggle-status', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\LmsController::class, 'dashboard'])->name('dashboard');
 
     Route::get('/change-password', [\App\Http\Controllers\ChangePasswordController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/change-password', [\App\Http\Controllers\ChangePasswordController::class, 'updatePassword'])->name('password.update_auth');

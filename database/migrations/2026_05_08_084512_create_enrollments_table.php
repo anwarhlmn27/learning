@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('enrollments', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('student_id'); // Relasi ke tabel users (role student)
-            $table->uuid('subject_id'); // Relasi ke tabel subjects
-            $table->string('semester');  // Contoh: 2023/2024 Ganjil
+            $table->uuid('student_id');   // Relasi ke tabel mahasiswas
+            $table->uuid('class_room_id'); // Relasi ke tabel class_rooms
             $table->timestamps();
 
             $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade');
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
+            $table->foreign('class_room_id')->references('id')->on('class_rooms')->onDelete('cascade');
         });
     }
 

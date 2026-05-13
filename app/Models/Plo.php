@@ -40,8 +40,4 @@ class Plo extends Model
         return $this->belongsToMany(Clo::class, 'clo_plo', 'plo_id', 'clo_id')->withTimestamps();
     }
 
-    public function courseMapings()
-    {
-        return $this->hasMany(CourseMaping::class, 'id_plo');
-    }
 }

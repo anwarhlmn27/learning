@@ -22,7 +22,7 @@ class RoleAccessMiddleware
         }
 
         // Kaprodi restriction: cannot access user management
-        if ($user->hasRole('kaprodi') && $request->is('admin/users*')) {
+        if ($user->hasRole('kaprodi') && $request->is('obe/users*')) {
             abort(403, 'Akses ditolak. Kaprodi tidak dapat mengakses manajemen pengguna.');
         }
 
@@ -35,12 +35,12 @@ class RoleAccessMiddleware
 
         // Restriksi khusus Kaprodi pada menu Institusi (Univ, Fakultas, Prodi)
         if ($user->hasRole('kaprodi')) {
-            if ($request->is('admin/univ*') || $request->is('admin/fakultas*')) {
+            if ($request->is('obe/univ*') || $request->is('obe/fakultas*')) {
                 // Univ dan Fakultas: View Only
                 if (!in_array($request->method(), ['GET', 'HEAD'])) {
                     abort(403, 'Akses ditolak. Kaprodi hanya dapat melihat data Universitas dan Fakultas.');
                 }
-            } elseif ($request->is('admin/prodi*')) {
+            } elseif ($request->is('obe/prodi*')) {
                 // Prodi: View & Edit (PUT/PATCH) diperbolehkan, tapi Create(POST) dan Delete(DELETE) ditolak
                 if (in_array($request->method(), ['POST', 'DELETE'])) {
                     abort(403, 'Akses ditolak. Kaprodi hanya dapat mengubah data Prodi, bukan menambah atau menghapusnya.');

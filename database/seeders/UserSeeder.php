@@ -13,7 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $roles = ['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak', 'finance', 'kemahasiswaan'];
+        $roles = ['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak', 'finance', 'kemahasiswaan','student'];
         foreach ($roles as $role) {
             \App\Models\Role::firstOrCreate(['name' => $role]);
         }
@@ -23,7 +23,8 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin System',
                 'password' => Hash::make('Password#123'),
-                'status' => 'active'
+                'status' => 'active',
+                'role' => 1
             ]
         );
 

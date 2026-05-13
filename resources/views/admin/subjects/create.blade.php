@@ -54,7 +54,7 @@
                 <textarea name="deskripsi" class="form-control" rows="3" required placeholder="Isi dan tujuan MK">{{ old('deskripsi') }}</textarea>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
                     <label class="form-label">SKS Theory (T)</label>
                     <input type="number" name="sks_t" id="sks_t" class="form-control" min="0" required value="{{ old('sks_t', 0) }}">
@@ -64,7 +64,11 @@
                     <input type="number" name="sks_p" id="sks_p" class="form-control" min="0" required value="{{ old('sks_p', 0) }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Total SKS</label>
+                    <label class="form-label">SKS Praktik Lapangan (PL)</label>
+                    <input type="number" name="sks_pl" id="sks_pl" class="form-control" min="0" required value="{{ old('sks_pl', 0) }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><b>Total SKS</b></label>
                     <input type="number" name="total_sks" id="total_sks" class="form-control" readonly value="{{ old('total_sks', 0) }}">
                 </div>
             </div>
@@ -123,14 +127,37 @@
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label class="form-label">PLO (Mapping)</label>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb; max-height: 150px; overflow-y: auto;">
-                    @foreach($plos as $plo)
-                        <label style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; cursor: pointer;">
-                            <input type="checkbox" name="plos[]" value="{{ $plo->id }}" {{ is_array(old('plos')) && in_array($plo->id, old('plos')) ? 'checked' : '' }}
-                                style="accent-color: var(--primary); width: 16px; height: 16px; margin-top: 0.2rem;">
-                            <span><strong>{{ $plo->kode_plo }}</strong><br><span style="color: var(--text-muted); font-size: 0.75rem;">{{ $plo->plo_title }}</span></span>
-                        </label>
-                    @endforeach
+                <div style="padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb; max-height: 250px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                <th style="text-align: left; padding: 0.5rem; font-size: 0.75rem;">PLO Code</th>
+                                <th style="text-align: left; padding: 0.5rem; font-size: 0.75rem;">Level Mapping</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($plos as $plo)
+                                <tr style="border-bottom: 1px solid #f3f4f6;">
+                                    <td style="padding: 0.5rem;">
+                                        <label style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; cursor: pointer;">
+                                            <input type="checkbox" name="plos[]" value="{{ $plo->id }}" {{ is_array(old('plos')) && in_array($plo->id, old('plos')) ? 'checked' : '' }}
+                                                class="plo-checkbox" data-plo-id="{{ $plo->id }}"
+                                                style="accent-color: var(--primary); width: 16px; height: 16px; margin-top: 0.2rem;">
+                                            <span><strong>{{ $plo->kode_plo }}</strong><br><span style="color: var(--text-muted); font-size: 0.75rem;">{{ $plo->plo_title }}</span></span>
+                                        </label>
+                                    </td>
+                                    <td style="padding: 0.5rem;">
+                                        <select name="plo_levels[{{ $plo->id }}]" class="form-control plo-level-select" style="padding: 0.25rem; font-size: 0.75rem; width: auto;" 
+                                            {{ is_array(old('plos')) && in_array($plo->id, old('plos')) ? '' : 'disabled' }}>
+                                            <option value="I" {{ old("plo_levels.$plo->id") == 'I' ? 'selected' : '' }}>I - Introduced</option>
+                                            <option value="R" {{ old("plo_levels.$plo->id") == 'R' ? 'selected' : '' }}>R - Reinforced</option>
+                                            <option value="M" {{ old("plo_levels.$plo->id") == 'M' ? 'selected' : '' }}>M - Mastered</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -147,14 +174,28 @@
     document.addEventListener('DOMContentLoaded', function() {
         const sksT = document.getElementById('sks_t');
         const sksP = document.getElementById('sks_p');
+        const sksPl = document.getElementById('sks_pl');
         const totalSks = document.getElementById('total_sks');
 
         function calculateTotal() {
-            totalSks.value = (parseInt(sksT.value) || 0) + (parseInt(sksP.value) || 0);
+            totalSks.value = (parseInt(sksT.value) || 0) + (parseInt(sksP.value) || 0) + (parseInt(sksPl.value) || 0);
         }
 
         sksT.addEventListener('input', calculateTotal);
         sksP.addEventListener('input', calculateTotal);
+        sksPl.addEventListener('input', calculateTotal);
+
+        // Handle PLO checkbox and level select
+        const ploCheckboxes = document.querySelectorAll('.plo-checkbox');
+        ploCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                const ploId = this.dataset.ploId;
+                const select = document.querySelector(`select[name="plo_levels[${ploId}]"]`);
+                if (select) {
+                    select.disabled = !this.checked;
+                }
+            });
+        });
     });
 </script>
 @endsection

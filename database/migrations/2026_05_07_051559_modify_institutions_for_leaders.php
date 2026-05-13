@@ -10,20 +10,20 @@ return new class extends Migration
     {
         // Add leader columns to institution tables
         Schema::table('univs', function (Blueprint $table) {
-            $table->foreignUuid('rektor_id')->nullable()->constrained('user')->nullOnDelete();
+            $table->foreignUuid('rektor_id')->nullable()->constrained('users')->nullOnDelete();
         });
 
         Schema::table('fakultas', function (Blueprint $table) {
-            $table->foreignUuid('dekan_id')->nullable()->constrained('user')->nullOnDelete();
+            $table->foreignUuid('dekan_id')->nullable()->constrained('users')->nullOnDelete();
         });
 
         Schema::table('prodis', function (Blueprint $table) {
-            $table->foreignUuid('kaprodi_id')->nullable()->constrained('user')->nullOnDelete();
+            $table->foreignUuid('kaprodi_id')->nullable()->constrained('users')->nullOnDelete();
         });
 
         // Ensure id_prodi is dropped if it somehow still exists
-        if (Schema::hasColumn('user', 'id_prodi')) {
-            Schema::table('user', function (Blueprint $table) {
+        if (Schema::hasColumn('users', 'id_prodi')) {
+            Schema::table('users', function (Blueprint $table) {
                 // Drop foreign key first
                 $table->dropForeign(['id_prodi']);
                 $table->dropColumn('id_prodi');

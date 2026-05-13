@@ -19,6 +19,7 @@ class Subject extends Model
         'nama_subject',
         'sks_t',
         'sks_p',
+        'sks_pl',
         'total_sks',
         'jenis_subject',
         'deskripsi',
@@ -58,7 +59,9 @@ class Subject extends Model
      */
     public function plos()
     {
-        return $this->belongsToMany(Plo::class, 'subject_plo', 'subject_id', 'plo_id');
+        return $this->belongsToMany(Plo::class, 'subject_plo', 'subject_id', 'plo_id')
+                    ->withPivot('mapping_level')
+                    ->withTimestamps();
     }
 
     /**
@@ -77,8 +80,4 @@ class Subject extends Model
         return $this->hasMany(Subject::class, 'prerequisite_id');
     }
 
-    public function courseMapings()
-    {
-        return $this->hasMany(CourseMaping::class, 'id_subject');
-    }
 }

@@ -21,8 +21,17 @@ class SubjectController extends Controller
 
     public function prodiSubjects(Prodi $prodi)
     {
-        $subjects = Subject::where('id_prodi', $prodi->id)->with(['prerequisite', 'prodi'])->get();
-        return view('admin.subjects.prodi_subjects', compact('subjects', 'prodi'));
+        $subjects = Subject::where('id_prodi', $prodi->id)
+            ->with(['prerequisite', 'prodi', 'plos'])
+            ->orderBy('semester')
+            ->orderBy('kode_subject')
+            ->get();
+            
+        $plos = Plo::where('id_prodi', $prodi->id)
+            ->orderBy('kode_plo')
+            ->get();
+            
+        return view('admin.subjects.prodi_subjects', compact('subjects', 'prodi', 'plos'));
     }
 
     public function create(Request $request)
@@ -44,6 +53,7 @@ class SubjectController extends Controller
             'nama_subject' => 'required|string|max:255',
             'sks_t' => 'required|integer|min:0',
             'sks_p' => 'required|integer|min:0',
+            'sks_pl' => 'required|integer|min:0',
             'total_sks' => 'required|integer|min:1',
             'semester' => 'required|integer|min:1|max:14',
             'jenis_subject' => 'required|in:Wajib Prodi,Wajib Universitas,Pilihan',
@@ -59,13 +69,17 @@ class SubjectController extends Controller
 
         DB::beginTransaction();
         try {
-            $subject = Subject::create($request->except(['bks', 'plos']));
+            $subject = Subject::create($request->except(['bks', 'plos', 'plo_levels']));
             
             if ($request->has('bks')) {
                 $subject->bks()->sync($request->bks);
             }
             if ($request->has('plos')) {
-                $subject->plos()->sync($request->plos);
+                $syncData = [];
+                foreach ($request->plos as $ploId) {
+                    $syncData[$ploId] = ['mapping_level' => $request->plo_levels[$ploId] ?? 'I'];
+                }
+                $subject->plos()->sync($syncData);
             }
 
             DB::commit();
@@ -95,6 +109,7 @@ class SubjectController extends Controller
             'nama_subject' => 'required|string|max:255',
             'sks_t' => 'required|integer|min:0',
             'sks_p' => 'required|integer|min:0',
+            'sks_pl' => 'required|integer|min:0',
             'total_sks' => 'required|integer|min:1',
             'semester' => 'required|integer|min:1|max:14',
             'jenis_subject' => 'required|in:Wajib Prodi,Wajib Universitas,Pilihan',
@@ -105,12 +120,13 @@ class SubjectController extends Controller
             'bks.*' => 'exists:bahan_kajians,id',
             'plos' => 'nullable|array',
             'plos.*' => 'exists:plos,id',
+            'plo_levels' => 'nullable|array',
             'assessments' => 'nullable|array',
         ]);
 
         DB::beginTransaction();
         try {
-            $subject->update($request->except(['bks', 'plos']));
+            $subject->update($request->except(['bks', 'plos', 'plo_levels']));
             
             if ($request->has('bks')) {
                 $subject->bks()->sync($request->bks);
@@ -119,7 +135,11 @@ class SubjectController extends Controller
             }
 
             if ($request->has('plos')) {
-                $subject->plos()->sync($request->plos);
+                $syncData = [];
+                foreach ($request->plos as $ploId) {
+                    $syncData[$ploId] = ['mapping_level' => $request->plo_levels[$ploId] ?? 'I'];
+                }
+                $subject->plos()->sync($syncData);
             } else {
                 $subject->plos()->detach();
             }
@@ -161,7 +181,25 @@ class SubjectController extends Controller
 
         $pdf = Pdf::loadView('admin.subjects.pdf_mapping_bk', compact('subjects', 'bks', 'prodi'))
             ->setPaper('a4', 'landscape');
-            
         return $pdf->download('Mapping_BK_' . $prodi->short_name . '.pdf');
     }
+
+    public function exportMappingPLO(Prodi $prodi)
+    {
+        $subjects = Subject::where('id_prodi', $prodi->id)
+            ->with('plos')
+            ->orderBy('semester')
+            ->orderBy('kode_subject')
+            ->get();
+        
+        $plos = Plo::where('id_prodi', $prodi->id)
+            ->orderBy('kode_plo')
+            ->get();
+
+        $pdf = Pdf::loadView('admin.subjects.pdf_mapping_plo', compact('subjects', 'plos', 'prodi'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('Mapping_PLO_' . $prodi->short_name . '.pdf');
+    }
+
 }
