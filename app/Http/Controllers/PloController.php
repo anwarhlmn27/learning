@@ -41,7 +41,8 @@ class PloController extends Controller
             'rumusan_plo' => 'required|string',
             'domain' => 'required|in:Knowledge,Skill,Attitude,General Competency',
             'bloom_level' => 'required|in:C1,C2,C3,C4,C5,C6',
-            'kko' => 'required|string',
+            'kko' => 'required|array|min:1',
+            'kko.*' => 'string',
             'indikator_ketercapaian' => 'required|string',
             'target_capaian' => 'required|string',
             'metode_pengukuran' => 'required|in:Direct,Indirect,Both',
@@ -56,7 +57,7 @@ class PloController extends Controller
                 'rumusan_plo' => $request->rumusan_plo,
                 'domain' => $request->domain,
                 'bloom_level' => $request->bloom_level,
-                'kko' => $request->kko,
+                'kko' => implode(', ', $request->kko),
                 'indikator_ketercapaian' => $request->indikator_ketercapaian,
                 'target_capaian' => $request->target_capaian,
                 'metode_pengukuran' => $request->metode_pengukuran,
@@ -81,7 +82,8 @@ class PloController extends Controller
             'rumusan_plo' => 'required|string',
             'domain' => 'required|in:Knowledge,Skill,Attitude,General Competency',
             'bloom_level' => 'required|in:C1,C2,C3,C4,C5,C6',
-            'kko' => 'required|string',
+            'kko' => 'required|array|min:1',
+            'kko.*' => 'string',
             'indikator_ketercapaian' => 'required|string',
             'target_capaian' => 'required|string',
             'metode_pengukuran' => 'required|in:Direct,Indirect,Both',
@@ -89,10 +91,13 @@ class PloController extends Controller
         ]);
 
         try {
-            $plo->update($request->only([
-                'kode_plo', 'plo_title', 'rumusan_plo', 'domain', 'bloom_level', 'kko', 
+            $data = $request->only([
+                'kode_plo', 'plo_title', 'rumusan_plo', 'domain', 'bloom_level', 
                 'indikator_ketercapaian', 'target_capaian', 'metode_pengukuran', 'status'
-            ]));
+            ]);
+            $data['kko'] = implode(', ', $request->kko);
+            
+            $plo->update($data);
 
             $plo->gps()->sync($request->id_gps);
 

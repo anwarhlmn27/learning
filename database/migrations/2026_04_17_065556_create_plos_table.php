@@ -11,19 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Schema::create('plos', function (Blueprint $table) {
-        //     $table->uuid('id')->primary();
-        //     $table->uuid('id_prodi');
-        //     $table->uuid('id_gp');
-        //     $table->string('title_plo');
-        //     $table->string('plo');
-        //     $table->string('detail');
-        //     $table->string('deskripsi');
-        //     $table->timestamps();
-
-        //     $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
-        //     $table->foreign('id_gp')->references('id')->on('gps')->onDelete('cascade');
-        // });
 
         Schema::create('plos', function (Blueprint $table) {
             $table->uuid('id')->primary();

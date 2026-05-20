@@ -2,6 +2,21 @@
 
 @section('title', 'Manage PLO - ' . $prodi->nama_prodi)
 
+@section('styles')
+<style>
+    .multiselect-control:hover {
+        border-color: #9ca3af !important;
+    }
+    .multiselect-control:focus-within {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    .multiselect-option:hover {
+        background-color: #f3f4f6;
+    }
+</style>
+@endsection
+
 @section('header_left')
     <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Manage PLO: {{ $prodi->nama_prodi }}</h1>
 @endsection
@@ -164,9 +179,26 @@
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">KKO <span style="color: red;">*</span></label>
-                                <select name="kko" id="field_kko" class="form-control" required>
-                                    <option value="">-- Pilih KKO --</option>
-                                </select>
+                                <div class="custom-multiselect-container" style="position: relative; width: 100%;">
+                                    <!-- Control box -->
+                                    <div class="multiselect-control" id="kko-control" style="min-height: 38px; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.375rem 0.75rem; background: #fff; cursor: pointer; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; justify-content: space-between; transition: border-color 0.15s, box-shadow 0.15s;">
+                                        <div id="kko-placeholder" style="color: #6b7280; font-size: 0.875rem;">Pilih KKO...</div>
+                                        <div id="kko-tags" style="display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center;"></div>
+                                        <span style="font-size: 0.75rem; color: #6b7280; margin-left: auto;">▼</span>
+                                    </div>
+
+                                    <!-- Dropdown list -->
+                                    <div class="multiselect-dropdown" id="kko-dropdown" style="display: none; position: absolute; top: 105%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); z-index: 50; max-height: 250px; overflow-y: auto; padding: 0.5rem;">
+                                        <!-- Search bar inside dropdown -->
+                                        <input type="text" id="kko-search" placeholder="Cari KKO..." style="width: 100%; border: 1px solid #e5e7eb; border-radius: 0.25rem; padding: 0.375rem 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; outline: none; box-sizing: border-box;" onclick="event.stopPropagation()">
+                                        
+                                        <!-- Options -->
+                                        <div id="kko-options-list">
+                                            <!-- Dynamically populated options -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <small style="color: var(--text-muted); font-size: 0.7rem; display: block; margin-top: 0.25rem;">Pilih KKO dari daftar di atas.</small>
                             </div>
                         </div>
                     </div>
@@ -205,29 +237,124 @@
 </div>
 
 <script>
+    // const mappingKKO = {
+    //     'C1': ['Mengingat', 'Menyebutkan', 'Menghafal'],
+    //     'C2': ['Menjelaskan', 'Mengklasifikasikan', 'Merangkum'],
+    //     'C3': ['Menerapkan', 'Menggunakan', 'Mendemonstrasikan'],
+    //     'C4': ['Menganalisis', 'Memecahkan', 'Membandingkan'],
+    //     'C5': ['Mengevaluasi', 'Mengkritik', 'Menyimpulkan'],
+    //     'C6': ['Mendesain', 'Membangun', 'Merancang']
+    // };
     const mappingKKO = {
-        'C1': ['Mengingat', 'Menyebutkan', 'Menghafal'],
-        'C2': ['Menjelaskan', 'Mengklasifikasikan', 'Merangkum'],
-        'C3': ['Menerapkan', 'Menggunakan', 'Mendemonstrasikan'],
-        'C4': ['Menganalisis', 'Memecahkan', 'Membandingkan'],
-        'C5': ['Mengevaluasi', 'Mengkritik', 'Menyimpulkan'],
-        'C6': ['Mendesain', 'Membangun', 'Merancang']
+        'C1': [
+            'Mengingat', 'Menyebutkan', 'Menghafal', 'Mencatat', 'Mengulang', 
+            'Menunjukkan', 'Menyatakan', 'Mengenali', 'Membaca', 'Menuliskan', 
+            'Mendaftar', 'Memilih', 'Mendefinisikan'
+        ],
+        'C2': [
+            'Menjelaskan', 'Mengklasifikasikan', 'Merangkum', 'Mengidentifikasi', 'Menguraikan', 
+            'Menginterpretasikan', 'Mengubah', 'Memperkirakan', 'Menerjemahkan', 'Mencontohkan', 
+            'Membedakan', 'Menjustifikasi', 'Memetakan', 'Menerangkan', 'Mengasosiasikan'
+        ],
+        'C3': [
+            'Menerapkan', 'Menggunakan', 'Mendemonstrasikan', 'Mengimplementasikan', 'Menghitung', 
+            'Menjalankan', 'Mengoperasikan', 'Membuat', 'Memanipulasi', 'Memodifikasi', 
+            'Menyesuaikan', 'Memecahkan Masalah', 'Mempraktikkan', 'Menjadwalkan', 'Menentukan'
+        ],
+        'C4': [
+            'Menganalisis', 'Memecahkan', 'Membandingkan', 'Mendiagnosis', 'Mengaudit', 
+            'Menelaah', 'Menguji', 'Menemukan', 'Mengoreksi', 'Memisahkan', 
+            'Menghubungkan', 'Bagi Menjadi Bagian', 'Mendeteksi', 'Mengorganisasikan', 'Menstrukturkan'
+        ],
+        'C5': [
+            'Mengevaluasi', 'Mengkritik', 'Menyimpulkan', 'Menilai', 'Merekomendasikan', 
+            'Memvalidasi', 'Memprediksi', 'Memutuskan', 'Memilih Terbaik', 'Mengukur', 
+            'Mempertahankan', 'Memproyeksikan', 'Mendukung', 'Menimbang', 'Menaksir'
+        ],
+        'C6': [
+            'Mendesain', 'Membangun', 'Merancang', 'Mengembangkan', 'Membuat Baru', 
+            'Menciptakan', 'Memformulasikan', 'Menyusun', 'Merakit', 'Mengintegrasikan', 
+            'Mengonstruksi', 'Membuat Prototipe', 'Memproduksi', 'Menghasilkan', 'Menginisiasi'
+        ]
     };
 
     function updateKKO() {
         const level = document.getElementById('field_bloom_level').value;
-        const kkoSelect = document.getElementById('field_kko');
+        const optionsList = document.getElementById('kko-options-list');
         
         // Kosongkan daftar KKO sebelumnya
-        kkoSelect.innerHTML = '<option value="">-- Pilih KKO --</option>';
+        optionsList.innerHTML = '';
         
         if (level && mappingKKO[level]) {
             mappingKKO[level].forEach(kko => {
-                let option = document.createElement('option');
-                option.value = kko;
-                option.text = kko;
-                kkoSelect.add(option);
+                let label = document.createElement('label');
+                label.className = 'multiselect-option';
+                label.dataset.searchText = kko.toLowerCase();
+                label.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; cursor: pointer; user-select: none; transition: background 0.15s; margin-bottom: 2px;';
+                
+                let checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'kko[]';
+                checkbox.value = kko;
+                checkbox.className = 'kko-checkbox';
+                checkbox.style.cssText = 'width: 16px; height: 16px; accent-color: var(--primary);';
+                
+                let span = document.createElement('span');
+                span.textContent = kko;
+                
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                
+                optionsList.appendChild(label);
+                
+                // Add event listener to checkbox
+                checkbox.addEventListener('change', updateKKOTags);
             });
+        }
+        
+        // Update tags after dynamic rebuild
+        updateKKOTags();
+    }
+
+    function updateKKOTags() {
+        const tagsContainer = document.getElementById('kko-tags');
+        const placeholder = document.getElementById('kko-placeholder');
+        const checkboxes = document.querySelectorAll('.kko-checkbox');
+        
+        tagsContainer.innerHTML = '';
+        let checkedCount = 0;
+
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                checkedCount++;
+                const text = cb.nextElementSibling.textContent;
+                
+                // Create badge
+                const badge = document.createElement('span');
+                badge.style.cssText = 'background: var(--primary); color: white; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem; font-weight: 500; margin: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
+                badge.innerHTML = `${text} <span class="remove-kko-badge" data-val="${cb.value}" style="cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-left: 4px; opacity: 0.8; transition: opacity 0.15s;">&times;</span>`;
+                
+                // Remove on click
+                badge.querySelector('.remove-kko-badge').addEventListener('mouseover', function() {
+                    this.style.opacity = '1';
+                });
+                badge.querySelector('.remove-kko-badge').addEventListener('mouseout', function() {
+                    this.style.opacity = '0.8';
+                });
+                badge.querySelector('.remove-kko-badge').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    cb.checked = false;
+                    updateKKOTags();
+                });
+
+                tagsContainer.appendChild(badge);
+            }
+        });
+
+        if (checkedCount > 0) {
+            placeholder.style.display = 'none';
+        } else {
+            placeholder.style.display = 'block';
         }
     }
 
@@ -244,8 +371,7 @@
         document.getElementById('field_rumusan_plo').value = '';
         document.getElementById('field_domain').value = 'Knowledge';
         document.getElementById('field_bloom_level').value = '';
-        updateKKO(); // Clear KKO
-        document.getElementById('field_kko').value = '';
+        updateKKO(); // Clear KKO options & tags
         document.getElementById('field_indikator_ketercapaian').value = '';
         document.getElementById('field_target_capaian').value = '';
         document.getElementById('field_metode_pengukuran').value = 'Direct';
@@ -270,8 +396,20 @@
         document.getElementById('field_rumusan_plo').value = plo.rumusan_plo;
         document.getElementById('field_domain').value = plo.domain;
         document.getElementById('field_bloom_level').value = plo.bloom_level;
+        
         updateKKO(); // Populate KKO based on the selected bloom level
-        document.getElementById('field_kko').value = plo.kko;
+        
+        // Set KKO checkboxes
+        if (plo.kko) {
+            const selectedKKOs = plo.kko.split(', ');
+            document.querySelectorAll('.kko-checkbox').forEach(cb => {
+                if (selectedKKOs.includes(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+        }
+        updateKKOTags(); // Render the tags
+        
         document.getElementById('field_indikator_ketercapaian').value = plo.indikator_ketercapaian;
         document.getElementById('field_target_capaian').value = plo.target_capaian;
         document.getElementById('field_metode_pengukuran').value = plo.metode_pengukuran;
@@ -283,6 +421,43 @@
     function closePloModal() {
         document.getElementById('ploModal').style.display = 'none';
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const control = document.getElementById('kko-control');
+        const dropdown = document.getElementById('kko-dropdown');
+        const searchInput = document.getElementById('kko-search');
+
+        // Toggle dropdown
+        control.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isOpen = dropdown.style.display === 'block';
+            dropdown.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) {
+                searchInput.focus();
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-multiselect-container')) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // Filter search
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const optionsList = document.querySelectorAll('.multiselect-option');
+            optionsList.forEach(opt => {
+                const text = opt.dataset.searchText;
+                if (text.includes(query)) {
+                    opt.style.display = 'flex';
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+        });
+    });
 
     // Auto-open modal if validation errors exist
     @if($errors->any() && !$errors->has('error'))
