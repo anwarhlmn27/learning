@@ -176,11 +176,13 @@
 
     function openEditModal(id) {
         document.getElementById('modalTitle').innerText = 'Edit RPS';
-        document.getElementById('rpsForm').action = `/admin/rps/${id}`;
+        let updateUrl = "{{ route('admin.rps.update', ':id') }}";
+        document.getElementById('rpsForm').action = updateUrl.replace(':id', id);
         document.getElementById('formMethod').value = 'PUT';
         document.getElementById('statusGroup').style.display = 'block'; // Tampilkan status di Edit
         
-        fetch(`/admin/rps/${id}/edit`)
+        let editUrl = "{{ route('admin.rps.edit', ':id') }}";
+        fetch(editUrl.replace(':id', id))
             .then(response => response.json())
             .then(data => {
                 document.getElementById('subject_id').value = data.rps.subject_id;

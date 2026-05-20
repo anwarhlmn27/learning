@@ -17,11 +17,7 @@
     </div>
 @endif
 
-@if(session('success'))
-    <div class="alert alert-success" style="padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-        {{ session('success') }}
-    </div>
-@endif
+
 
 <div class="card">
     <div class="card-header">
@@ -214,7 +210,8 @@
 
     function editBk(bk) {
         document.getElementById('modalTitle').textContent = 'Edit Bahan Kajian';
-        document.getElementById('bkForm').action = "/admin/bahan-kajian/" + bk.id;
+        let updateUrl = "{{ route('bahan_kajian.update', ':id') }}";
+        document.getElementById('bkForm').action = updateUrl.replace(':id', bk.id);
         document.getElementById('formMethod').value = 'PUT';
         
         // Set checkboxes

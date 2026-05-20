@@ -11,11 +11,7 @@
     <a href="{{ route('gp.index') }}" style="color: var(--text-muted); font-size: 0.875rem;">← Back to List</a>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success" style="padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-        {{ session('success') }}
-    </div>
-@endif
+
 
 @if($errors->has('error'))
     <div class="alert alert-danger" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
@@ -238,7 +234,8 @@
 
     function editProfile(data) {
         document.getElementById('modalTitle').textContent = 'Edit Profile Item';
-        document.getElementById('profileForm').action = "/admin/gp/profile/" + data.id;
+        let updateUrl = "{{ route('gp.profile.update', ':id') }}";
+        document.getElementById('profileForm').action = updateUrl.replace(':id', data.id);
         document.getElementById('formMethod').value = 'PUT';
         document.getElementById('field_kode_profil').value = data.kode_profil;
         document.getElementById('field_nm_profil').value = data.nm_profil;

@@ -21,11 +21,7 @@
     </div>
 @endif
 
-@if(session('success'))
-    <div class="alert alert-success" style="padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-        {{ session('success') }}
-    </div>
-@endif
+
 
 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
     {{-- Form Section --}}
@@ -96,7 +92,8 @@
 <script>
     function editKategori(kat) {
         document.getElementById('formTitle').textContent = 'Edit Category';
-        document.getElementById('kategoriForm').action = "/admin/bahan-kajian/kategori/" + kat.id;
+        let updateUrl = "{{ route('bahan_kajian.kategori.update', ':id') }}";
+        document.getElementById('kategoriForm').action = updateUrl.replace(':id', kat.id);
         document.getElementById('formMethod').value = 'PUT';
         document.getElementById('field_nm_kategori').value = kat.nm_kategori;
         document.getElementById('btnCancel').style.display = 'inline-block';

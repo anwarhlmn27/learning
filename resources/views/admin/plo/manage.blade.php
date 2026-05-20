@@ -17,11 +17,7 @@
     </div>
 @endif
 
-@if(session('success'))
-    <div class="alert alert-success" style="padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-        {{ session('success') }}
-    </div>
-@endif
+
 
 <div class="card">
     <div class="card-header">
@@ -260,7 +256,8 @@
 
     function editPlo(plo) {
         document.getElementById('modalTitle').textContent = 'Edit PLO Item';
-        document.getElementById('ploForm').action = "/admin/plo/" + plo.id;
+        let updateUrl = "{{ route('plo.update', ':id') }}";
+        document.getElementById('ploForm').action = updateUrl.replace(':id', plo.id);
         document.getElementById('formMethod').value = 'PUT';
         
         // Set checkboxes
