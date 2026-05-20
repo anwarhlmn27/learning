@@ -18,7 +18,7 @@
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Entity Type</label>
+                    <label class="form-label">Entity Type <span style="color: red;">*</span></label>
                     <select name="entity_type" id="entity_type" class="form-control" required onchange="toggleEntities()">
                         <option value="">-- Select Type --</option>
                         <option value="Univ" {{ old('entity_type') == 'Univ' ? 'selected' : '' }}>University</option>
@@ -27,7 +27,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Select Target Entity</label>
+                    <label class="form-label">Select Target Entity <span style="color: red;">*</span></label>
                     <select name="entity_id" id="entity_id" class="form-control @error('entity_id') is-invalid @enderror" required>
                         <option value="">-- Select Entity --</option>
                     </select>
@@ -38,7 +38,7 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Vision (Visi)</label>
+                <label class="form-label">Vision (Visi) <span style="color: red;">*</span></label>
                 <textarea name="visi" class="form-control @error('visi') is-invalid @enderror" rows="3" required placeholder="Enter Vision statement">{{ old('visi') }}</textarea>
                 @error('visi')
                     <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>

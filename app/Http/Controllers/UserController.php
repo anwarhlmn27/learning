@@ -42,7 +42,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:user',
+            'email' => 'required|string|email|max:255|unique:users,email',
             'role_id' => 'required|exists:roles,id',
             'password' => 'nullable|string|min:8',
         ]);
@@ -51,7 +51,7 @@ class UserController extends Controller
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => $request->password ? Hash::make($request->password) : Hash::make('UserOBE_072023'),
+                'password' => $request->password ? Hash::make($request->password) : Hash::make('LmsHorizon$01'),
                 'status' => 'active',
             ]);
 
@@ -118,7 +118,7 @@ class UserController extends Controller
                         $user = User::create([
                             'name' => $name,
                             'email' => $email,
-                            'password' => Hash::make('UserOBE_072023'),
+                            'password' => Hash::make('LmsHorizon$01'),
                             'status' => 'active',
                         ]);
 

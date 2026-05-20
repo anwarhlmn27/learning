@@ -304,7 +304,7 @@ class RpsController extends Controller
     {
         $rp->load([
             'subject.prodi.fakultas', 
-            'subject.prerequisite', 
+            'subject.prerequisites', 
             'subject.plos', 
             'subject.clos', 
             'sessions.activities', 

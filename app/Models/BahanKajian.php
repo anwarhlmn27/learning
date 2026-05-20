@@ -37,4 +37,9 @@ class BahanKajian extends Model
     {
         return $this->belongsToMany(Plo::class, 'bk_plos', 'id_bk', 'id_plo')->using(BkPlo::class)->withTimestamps();
     }
+
+    public function subjects()
+    {
+        return $this->belongsToMany(Subject::class, 'subject_bk', 'bk_id', 'subject_id')->using(SubjectBk::class)->withTimestamps();
+    }
 }

@@ -123,15 +123,15 @@
             <form action="{{ route('users.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">Name</label>
+                    <label class="form-label">Name <span style="color: red;">*</span></label>
                     <input type="text" name="name" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label">Email <span style="color: red;">*</span></label>
                     <input type="email" name="email" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Role</label>
+                    <label class="form-label">Role <span style="color: red;">*</span></label>
                     <select name="role_id" class="form-control" required>
                         <option value="">Select Role</option>
                         @foreach($roles as $role)
@@ -140,7 +140,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Leave empty for default: UserOBE_072023)</span></label>
+                    <label class="form-label">Password <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Leave empty for default: LmsHorizon$01)</span></label>
                     <input type="password" name="password" class="form-control">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
@@ -165,12 +165,12 @@
                 Column 1: <code>name</code><br>
                 Column 2: <code>email</code><br>
                 Column 3: <code>role</code> (admin, rektor, dekan, kaprodi, dosen, baak, finance, kemahasiswaan)<br>
-                <em>Default password will be applied to all imported users: <strong>UserOBE_072023</strong></em>
+                <em>Default password will be applied to all imported users: <strong>LmsHorizon$01</strong></em>
             </div>
             <form action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">Upload CSV File</label>
+                    <label class="form-label">Upload CSV File <span style="color: red;">*</span></label>
                     <input type="file" name="file" accept=".csv" class="form-control" required style="padding: 0.5rem;">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">

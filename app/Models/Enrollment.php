@@ -15,4 +15,8 @@ class Enrollment extends Model
     public function classRoom() {
         return $this->belongsTo(ClassRoom::class, 'class_room_id');
     }
+
+    public function student() {
+        return $this->belongsTo(Student::class, 'student_id');
+    }
 }

@@ -18,7 +18,7 @@
             @method('PUT')
             
             <div class="form-group">
-                <label class="form-label">University</label>
+                <label class="form-label">University <span style="color: red;">*</span></label>
                 <select name="id_univs" class="form-control" required>
                     <option value="">-- Select University --</option>
                     @foreach($univs as $u)
@@ -29,17 +29,17 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Faculty Code</label>
+                    <label class="form-label">Faculty Code <span style="color: red;">*</span></label>
                     <input type="text" name="kode_fakultas" class="form-control" required value="{{ old('kode_fakultas', $fakultas->kode_fakultas) }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Abbreviation</label>
+                    <label class="form-label">Abbreviation <span style="color: red;">*</span></label>
                     <input type="text" name="short_name" class="form-control" required value="{{ old('short_name', $fakultas->short_name) }}">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Faculty Name</label>
+                <label class="form-label">Faculty Name <span style="color: red;">*</span></label>
                 <input type="text" name="nama_fakultas" class="form-control" required value="{{ old('nama_fakultas', $fakultas->nama_fakultas) }}">
             </div>
 
@@ -57,7 +57,7 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Leader Name (Dean)</label>
+                <label class="form-label">Leader Name (Dean) <span style="color: red;">*</span></label>
                 <input type="text" name="nama_pimpinan" class="form-control" required value="{{ old('nama_pimpinan', $fakultas->nama_pimpinan) }}">
             </div>
 

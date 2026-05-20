@@ -22,6 +22,15 @@ class User extends Authenticatable
         'navbar_color',
         'navbar_font_color',
         'content_color',
+        'content_font_color',
+        'font_family',
+        'lms_sidebar_color',
+        'lms_sidebar_font_color',
+        'lms_navbar_color',
+        'lms_navbar_font_color',
+        'lms_content_color',
+        'lms_content_font_color',
+        'lms_font_family',
         'language',
     ];
 
@@ -47,5 +56,21 @@ class User extends Authenticatable
             return $this->roles()->whereIn('name', $roleName)->exists();
         }
         return $this->roles()->where('name', $roleName)->exists();
+    }
+
+    public function dosen()
+    {
+        return $this->hasOne(Dosen::class, 'user_id');
+    }
+
+    public function student()
+    {
+        return $this->hasOne(Student::class, 'user_id');
+    }
+
+    public function classRooms()
+    {
+        return $this->belongsToMany(ClassRoom::class, 'class_users', 'user_id', 'class_room_id')
+                    ->withTimestamps();
     }
 }

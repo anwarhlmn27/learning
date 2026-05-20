@@ -48,6 +48,8 @@ class SettingController extends Controller
             'navbar_color' => 'nullable|string|max:20',
             'navbar_font_color' => 'nullable|string|max:20',
             'content_color' => 'nullable|string|max:20',
+            'content_font_color' => 'nullable|string|max:20',
+            'font_family' => 'nullable|string|max:50',
             'language' => 'required|in:id,en',
         ]);
 
@@ -69,6 +71,8 @@ class SettingController extends Controller
         $user->navbar_color = $request->navbar_color;
         $user->navbar_font_color = $request->navbar_font_color;
         $user->content_color = $request->content_color;
+        $user->content_font_color = $request->content_font_color;
+        $user->font_family = $request->font_family;
         $user->language = $request->language;
         $user->save();
 
@@ -97,5 +101,53 @@ class SettingController extends Controller
                 ['value' => $filename]
             );
         }
+    }
+
+    public function lmsIndex()
+    {
+        $user = Auth::user();
+        return view('lms.settings', compact('user'));
+    }
+
+    public function updateLmsPersonal(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'sidebar_color' => 'nullable|string|max:20',
+            'sidebar_font_color' => 'nullable|string|max:20',
+            'navbar_color' => 'nullable|string|max:20',
+            'navbar_font_color' => 'nullable|string|max:20',
+            'content_color' => 'nullable|string|max:20',
+            'content_font_color' => 'nullable|string|max:20',
+            'font_family' => 'nullable|string|max:50',
+            'language' => 'required|in:id,en',
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $filename = 'avatar_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('img/avatars'), $filename);
+            
+            // Delete old avatar if exists
+            if ($user->avatar && File::exists(public_path('img/avatars/' . $user->avatar))) {
+                File::delete(public_path('img/avatars/' . $user->avatar));
+            }
+            
+            $user->avatar = $filename;
+        }
+
+        $user->lms_sidebar_color = $request->sidebar_color;
+        $user->lms_sidebar_font_color = $request->sidebar_font_color;
+        $user->lms_navbar_color = $request->navbar_color;
+        $user->lms_navbar_font_color = $request->navbar_font_color;
+        $user->lms_content_color = $request->content_color;
+        $user->lms_content_font_color = $request->content_font_color;
+        $user->lms_font_family = $request->font_family;
+        $user->language = $request->language;
+        $user->save();
+
+        return redirect()->back()->with('success', __('Personal settings updated successfully.'));
     }
 }

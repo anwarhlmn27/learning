@@ -13,7 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $roles = ['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak', 'finance', 'kemahasiswaan','student'];
+        $roles = ['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak', 'finance', 'kemahasiswaan','mahasiswa'];
         foreach ($roles as $role) {
             \App\Models\Role::firstOrCreate(['name' => $role]);
         }

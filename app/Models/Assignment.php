@@ -11,4 +11,24 @@ class Assignment extends Model
     use HasUuids;
 
     protected $guarded = [];
+
+    public function classRoom()
+    {
+        return $this->belongsTo(ClassRoom::class);
+    }
+
+    public function classSession()
+    {
+        return $this->belongsTo(ClassSession::class);
+    }
+
+    public function rpsAssessment()
+    {
+        return $this->belongsTo(RpsAssessment::class);
+    }
+
+    public function submissions()
+    {
+        return $this->hasMany(AssignmentSubmission::class);
+    }
 }

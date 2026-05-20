@@ -22,7 +22,7 @@ class SubjectController extends Controller
     public function prodiSubjects(Prodi $prodi)
     {
         $subjects = Subject::where('id_prodi', $prodi->id)
-            ->with(['prerequisite', 'prodi', 'plos'])
+            ->with(['prerequisites', 'prodi', 'plos'])
             ->orderBy('semester')
             ->orderBy('kode_subject')
             ->get();
@@ -58,7 +58,8 @@ class SubjectController extends Controller
             'semester' => 'required|integer|min:1|max:14',
             'jenis_subject' => 'required|in:Wajib Prodi,Wajib Universitas,Pilihan',
             'deskripsi' => 'required|string',
-            'prerequisite_id' => 'nullable|exists:subjects,id',
+            'prerequisite_ids' => 'nullable|array',
+            'prerequisite_ids.*' => 'exists:subjects,id',
             'status' => 'required|in:Aktif,Revisi,Tidak Aktif',
             'bks' => 'nullable|array',
             'bks.*' => 'exists:bahan_kajians,id',
@@ -69,8 +70,11 @@ class SubjectController extends Controller
 
         DB::beginTransaction();
         try {
-            $subject = Subject::create($request->except(['bks', 'plos', 'plo_levels']));
+            $subject = Subject::create($request->except(['bks', 'plos', 'plo_levels', 'prerequisite_ids']));
             
+            if ($request->has('prerequisite_ids')) {
+                $subject->prerequisites()->sync($request->prerequisite_ids);
+            }
             if ($request->has('bks')) {
                 $subject->bks()->sync($request->bks);
             }
@@ -96,7 +100,7 @@ class SubjectController extends Controller
         $prodis = Prodi::orderBy('nama_prodi')->get();
         $bks = BahanKajian::orderBy('kode_bk')->get();
         $plos = Plo::orderBy('kode_plo')->get();
-        $subject->load(['bks', 'plos', 'clos']);
+        $subject->load(['bks', 'plos', 'clos', 'prerequisites']);
 
         return view('admin.subjects.edit', compact('subject', 'subjects', 'prodis', 'bks', 'plos'));
     }
@@ -114,7 +118,8 @@ class SubjectController extends Controller
             'semester' => 'required|integer|min:1|max:14',
             'jenis_subject' => 'required|in:Wajib Prodi,Wajib Universitas,Pilihan',
             'deskripsi' => 'required|string',
-            'prerequisite_id' => 'nullable|exists:subjects,id|different:id',
+            'prerequisite_ids' => 'nullable|array',
+            'prerequisite_ids.*' => 'exists:subjects,id',
             'status' => 'required|in:Aktif,Revisi,Tidak Aktif',
             'bks' => 'nullable|array',
             'bks.*' => 'exists:bahan_kajians,id',
@@ -126,8 +131,17 @@ class SubjectController extends Controller
 
         DB::beginTransaction();
         try {
-            $subject->update($request->except(['bks', 'plos', 'plo_levels']));
+            $subject->update($request->except(['bks', 'plos', 'plo_levels', 'prerequisite_ids']));
             
+            if ($request->has('prerequisite_ids')) {
+                $prereqs = array_filter($request->prerequisite_ids, function($val) use ($subject) {
+                    return $val !== $subject->id;
+                });
+                $subject->prerequisites()->sync($prereqs);
+            } else {
+                $subject->prerequisites()->detach();
+            }
+
             if ($request->has('bks')) {
                 $subject->bks()->sync($request->bks);
             } else {

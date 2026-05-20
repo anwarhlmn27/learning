@@ -16,7 +16,7 @@
             @csrf
             <div style="display: flex; gap: 1rem; align-items: flex-end;">
                 <div style="flex: 1;">
-                    <label class="form-label">Type Name (e.g. Quiz, Project, UAS)</label>
+                    <label class="form-label">Type Name (e.g. Quiz, Project, UAS) <span style="color: red;">*</span></label>
                     <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
                     @error('name')
                         <div style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">{{ $message }}</div>

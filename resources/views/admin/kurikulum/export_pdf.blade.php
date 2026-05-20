@@ -154,7 +154,7 @@
                                     <td class="text-center">0</td>
                                     <td class="text-center">{{ $ks->subject->total_sks }}</td>
                                     <td class="text-center" style="font-size: 7px;">
-                                        {{ $ks->subject->prerequisite ? $ks->subject->prerequisite->kode_subject : 'Tidak Ada (none)' }}
+                                        {{ $ks->subject->prerequisites->count() > 0 ? $ks->subject->prerequisites->pluck('kode_subject')->implode(', ') : 'Tidak Ada (none)' }}
                                     </td>
                                 </tr>
                                 @php

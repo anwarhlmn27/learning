@@ -29,7 +29,7 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Vision (Visi)</label>
+                <label class="form-label">Vision (Visi) <span style="color: red;">*</span></label>
                 <textarea name="visi" class="form-control @error('visi') is-invalid @enderror" rows="3" required placeholder="Enter Vision statement">{{ old('visi', $visi->visi) }}</textarea>
                 @error('visi')
                     <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>

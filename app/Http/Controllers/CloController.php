@@ -20,15 +20,15 @@ class CloController extends Controller
 
     public function prodiSubjects(Prodi $prodi)
     {
-        $subjects = Subject::where('id_prodi', $prodi->id)->withCount('clos')->with(['prerequisite'])->get();
+        $subjects = Subject::where('id_prodi', $prodi->id)->withCount('clos')->with(['prerequisites'])->get();
         return view('admin.clo.prodi_subjects', compact('subjects', 'prodi'));
     }
 
     public function manage(Subject $subject)
     {
-        $subject->load(['clos.plos']);
-        // If 'plo_title' does not exist, use 'kode_plo' or whatever field PLO uses. Actually PLO has 'plo_title'. Wait, PLO model has 'kode_plo' and 'plo_title'. Let's use 'kode_plo'.
-        $plos = Plo::with('prodi')->orderBy('kode_plo')->get();
+        $subject->load(['clos.plos', 'plos']);
+        // Only show PLOs that are mapped to this subject
+        $plos = $subject->plos;
         return view('admin.clo.manage', compact('subject', 'plos'));
     }
 

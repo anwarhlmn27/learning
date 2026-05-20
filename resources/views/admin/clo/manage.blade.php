@@ -52,8 +52,8 @@
                     <tr>
                         <th style="width: 5%;">#</th>
                         <th style="width: 10%;">CLO Code</th>
-                        <th style="width: 15%;">Description & Bloom Level</th>
-                        <th style="width: 40%;">Mapped PLO</th>
+                        <th style="width: 40%;">Description & Bloom Level</th>
+                        <th style="width: 15%;">Mapped PLO</th>
                         <th style="width: 10%;">Actions</th>
                     </tr>
                 </thead>
@@ -125,7 +125,7 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label class="form-label">CLO Code <span style="color: var(--danger);">*</span></label>
+                        <label class="form-label">CLO Code <span style="color: red;">*</span></label>
                         <input type="text"
                                name="kode_clo"
                                id="field_kode_clo"
@@ -135,7 +135,7 @@
                                maxlength="50">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Bloom Level <span style="color: var(--danger);">*</span></label>
+                        <label class="form-label">Bloom Level <span style="color: red;">*</span></label>
                         <select name="bloom_level" id="field_bloom_level" class="form-control" required>
                             <option value="">- Select Level -</option>
                             <option value="C1 (Mengingat)">C1 (Mengingat)</option>
@@ -149,7 +149,7 @@
                 </div>
 
                 <div class="form-group" style="margin-top: 1rem;">
-                    <label class="form-label">Description / Learning Outcome <span style="color: var(--danger);">*</span></label>
+                    <label class="form-label">Description / Learning Outcome <span style="color: red;">*</span></label>
                     <textarea name="deskripsi"
                               id="field_deskripsi"
                               class="form-control @error('deskripsi') is-invalid @enderror"
@@ -159,9 +159,9 @@
                 </div>
 
                 <div class="form-group" style="margin-top: 1rem;">
-                    <label class="form-label">Mapped PLO</label>
+                    <label class="form-label">Mapped PLO <span style="color: red;">*</span></label>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb;">
-                        @foreach($plos as $plo)
+                        @forelse($plos as $plo)
                             <label style="display: flex; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; align-items: flex-start;">
                                 <input type="checkbox" name="plos[]" value="{{ $plo->id }}" class="plo-checkbox" style="margin-top: 0.2rem;">
                                 <span>
@@ -169,7 +169,12 @@
                                     <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">{{ Str::limit($plo->plo_title, 40) }}</span>
                                 </span>
                             </label>
-                        @endforeach
+                        @empty
+                            <div style="grid-column: span 2; color: var(--danger); font-size: 0.8rem; padding: 0.5rem; text-align: center;">
+                                ⚠️ Belum ada CPL (PLO) yang dipetakan ke mata kuliah ini. <br>
+                                Harap petakan CPL ke mata kuliah terlebih dahulu di menu <strong>Mapping Subject</strong>.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
 

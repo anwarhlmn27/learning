@@ -28,17 +28,17 @@
             @method('PUT')
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Curriculum Name</label>
+                    <label class="form-label">Curriculum Name <span style="color: red;">*</span></label>
                     <input type="text" name="nm_kurikulum" class="form-control" required value="{{ old('nm_kurikulum', $kurikulum->nm_kurikulum) }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Academic Year</label>
+                    <label class="form-label">Academic Year <span style="color: red;">*</span></label>
                     <input type="number" name="tahun_akademik" class="form-control" required value="{{ old('tahun_akademik', $kurikulum->tahun_akademik) }}">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Study Program (Prodi)</label>
+                <label class="form-label">Study Program (Prodi) <span style="color: red;">*</span></label>
                 <select name="id_prodi" class="form-control" required>
                     @foreach($prodis as $p)
                         <option value="{{ $p->id }}" {{ old('id_prodi', $kurikulum->id_prodi) == $p->id ? 'selected' : '' }}>{{ $p->nama_prodi }}</option>

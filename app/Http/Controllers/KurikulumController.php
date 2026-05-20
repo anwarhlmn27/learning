@@ -150,7 +150,7 @@ class KurikulumController extends Controller
 
     public function exportPdf(Kurikulum $kurikulum)
     {
-        $kurikulum->load(['subjects.subject.prerequisite', 'prodi']);
+        $kurikulum->load(['subjects.subject.prerequisites', 'prodi']);
         $pdf = Pdf::loadView('admin.kurikulum.export_pdf', compact('kurikulum'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->download('kurikulum_' . strtolower(str_replace(' ', '_', $kurikulum->prodi->nama_prodi)) . '.pdf');

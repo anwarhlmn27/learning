@@ -11,22 +11,28 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Tabel Utama Kelas
         Schema::create('class_rooms', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('subject_id');
-            $table->uuid('dosen_id');
+            $table->string('nama_kelas');
+            $table->string('tahun_akademik');
+            $table->enum('semester', ['Ganjil', 'Genap', 'Antara']);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
             
-            $table->string('nama_kelas'); // Contoh: Kelas A, Kelas B
-            
-            // Penambahan kolom periode
-            $table->string('tahun_akademik'); // Contoh: 2024/2025, 2025/2026
-            $table->enum('semester', ['Ganjil', 'Genap', 'Antara']); 
-            
-            $table->boolean('is_active')->default(true); // Untuk menandai semester yang sedang berjalan
+            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
+        });
+
+        // Tabel Pivot Peserta Kelas (Dosen, Mahasiswa, BAAK)
+        Schema::create('class_users', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('class_room_id');
+            $table->uuid('user_id'); // Merujuk ke tabel user kamu
             $table->timestamps();
 
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
-            $table->foreign('dosen_id')->references('id')->on('dosens')->onDelete('cascade');
+            $table->foreign('class_room_id')->references('id')->on('class_rooms')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -35,6 +41,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('class_users');
         Schema::dropIfExists('class_rooms');
     }
 };

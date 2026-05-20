@@ -23,7 +23,6 @@ class Subject extends Model
         'total_sks',
         'jenis_subject',
         'deskripsi',
-        'prerequisite_id',
         'semester',
         'status',
     ];
@@ -37,11 +36,13 @@ class Subject extends Model
     }
 
     /**
-     * Get the prerequisite subject.
+     * Get the prerequisite subjects.
      */
-    public function prerequisite()
+    public function prerequisites()
     {
-        return $this->belongsTo(Subject::class, 'prerequisite_id');
+        return $this->belongsToMany(Subject::class, 'subject_prerequisite', 'subject_id', 'prerequisite_id')
+                    ->using(SubjectPrerequisite::class)
+                    ->withTimestamps();
     }
 
 
@@ -51,7 +52,9 @@ class Subject extends Model
      */
     public function bks()
     {
-        return $this->belongsToMany(BahanKajian::class, 'subject_bk', 'subject_id', 'bk_id');
+        return $this->belongsToMany(BahanKajian::class, 'subject_bk', 'subject_id', 'bk_id')
+                    ->using(SubjectBk::class)
+                    ->withTimestamps();
     }
 
     /**
@@ -60,6 +63,7 @@ class Subject extends Model
     public function plos()
     {
         return $this->belongsToMany(Plo::class, 'subject_plo', 'subject_id', 'plo_id')
+                    ->using(SubjectPlo::class)
                     ->withPivot('mapping_level')
                     ->withTimestamps();
     }
@@ -77,7 +81,9 @@ class Subject extends Model
      */
     public function dependents()
     {
-        return $this->hasMany(Subject::class, 'prerequisite_id');
+        return $this->belongsToMany(Subject::class, 'subject_prerequisite', 'prerequisite_id', 'subject_id')
+                    ->using(SubjectPrerequisite::class)
+                    ->withTimestamps();
     }
 
 }

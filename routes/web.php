@@ -97,12 +97,18 @@ Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
     Route::put('/obe/assessment-types/{assessmentType}', [\App\Http\Controllers\AssessmentTypeController::class, 'update'])->name('assessment_types.update');
     Route::delete('/obe/assessment-types/{assessmentType}', [\App\Http\Controllers\AssessmentTypeController::class, 'destroy'])->name('assessment_types.destroy');
 
+    // OBE Analytics
+    Route::get('/obe/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
+
 
     // User Management
     Route::resource('/obe/users', \App\Http\Controllers\UserController::class)->names('users');
     Route::post('/obe/users/import', [\App\Http\Controllers\UserController::class, 'import'])->name('users.import');
     Route::get('/obe/users-template', [\App\Http\Controllers\UserController::class, 'downloadTemplate'])->name('users.template');
     Route::patch('/obe/users/{user}/toggle-status', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+
+    // Student Management (Moved to LMS)
+
 });
 
 Route::middleware('auth')->group(function () {
@@ -111,10 +117,47 @@ Route::middleware('auth')->group(function () {
     Route::get('/change-password', [\App\Http\Controllers\ChangePasswordController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/change-password', [\App\Http\Controllers\ChangePasswordController::class, 'updatePassword'])->name('password.update_auth');
 
+    // LMS Specific Change Password & Settings
+    Route::get('/lms/change-password', [\App\Http\Controllers\ChangePasswordController::class, 'showLmsChangePasswordForm'])->name('lms.password.change');
+    Route::post('/lms/change-password', [\App\Http\Controllers\ChangePasswordController::class, 'updateLmsPassword'])->name('lms.password.update_auth');
+    Route::get('/lms/settings', [\App\Http\Controllers\SettingController::class, 'lmsIndex'])->name('lms.settings.index');
+    Route::post('/lms/settings/personal', [\App\Http\Controllers\SettingController::class, 'updateLmsPersonal'])->name('lms.settings.personal');
+
     // Settings
     Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/personal', [\App\Http\Controllers\SettingController::class, 'updatePersonal'])->name('settings.personal');
+
+    // Dosen & Mahasiswa Management (LMS Side)
+    Route::resource('/dosen', \App\Http\Controllers\DosenController::class)->names('dosen');
+    Route::post('/dosen/import', [\App\Http\Controllers\DosenController::class, 'import'])->name('dosen.import');
+    Route::get('/dosen-template', [\App\Http\Controllers\DosenController::class, 'downloadTemplate'])->name('dosen.template');
+
+    Route::resource('/mahasiswa', \App\Http\Controllers\StudentController::class)->names('mahasiswa');
+    Route::post('/mahasiswa/import', [\App\Http\Controllers\StudentController::class, 'import'])->name('mahasiswa.import');
+    Route::get('/mahasiswa-template', [\App\Http\Controllers\StudentController::class, 'downloadTemplate'])->name('mahasiswa.template');
+
+    // Class Enrollment & Management
+    Route::resource('/classes', \App\Http\Controllers\ClassRoomController::class)->names('classes');
+    Route::post('/classes/{class}/generate-lms', [\App\Http\Controllers\ClassRoomController::class, 'generateLmsFromRps'])->name('classes.generate_lms');
+    Route::post('/classes/{class}/enroll', [\App\Http\Controllers\ClassRoomController::class, 'enroll'])->name('classes.enroll');
+    Route::post('/classes/{class}/import-students', [\App\Http\Controllers\ClassRoomController::class, 'importStudents'])->name('classes.import_students');
+    Route::get('/classes-template', [\App\Http\Controllers\ClassRoomController::class, 'downloadTemplate'])->name('classes.template');
+    Route::delete('/classes/{class}/unenroll/{enrollment}', [\App\Http\Controllers\ClassRoomController::class, 'unenroll'])->name('classes.unenroll');
+    Route::post('/classes/{class}/material', [\App\Http\Controllers\ClassRoomController::class, 'storeMaterial'])->name('classes.store_material');
+    Route::post('/classes/{class}/assignment', [\App\Http\Controllers\ClassRoomController::class, 'storeAssignment'])->name('classes.store_assignment');
+    Route::post('/classes/{class}/forum', [\App\Http\Controllers\ClassRoomController::class, 'storeForum'])->name('classes.store_forum');
+    Route::post('/classes/{class}/quiz', [\App\Http\Controllers\ClassRoomController::class, 'storeQuiz'])->name('classes.store_quiz');
+    Route::get('/classes/{class}/quiz/{quiz}', [\App\Http\Controllers\ClassRoomController::class, 'takeQuiz'])->name('classes.take_quiz');
+    Route::post('/classes/{class}/quiz/{quiz}/submit', [\App\Http\Controllers\ClassRoomController::class, 'submitQuiz'])->name('classes.submit_quiz');
+
+    // Assignments & Grading
+    Route::get('/assignments', [\App\Http\Controllers\AssignmentController::class, 'index'])->name('assignments.index');
+    Route::get('/assignments/{assignment}', [\App\Http\Controllers\AssignmentController::class, 'show'])->name('assignments.show');
+    Route::post('/assignments/{assignment}/publish', [\App\Http\Controllers\AssignmentController::class, 'publish'])->name('assignments.publish');
+    Route::post('/assignments/{assignment}/submit', [\App\Http\Controllers\AssignmentController::class, 'submit'])->name('assignments.submit');
+    Route::post('/assignments/{assignment}/grade/{enrollment}', [\App\Http\Controllers\AssignmentController::class, 'grade'])->name('assignments.grade');
 });
+
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/settings/global', [\App\Http\Controllers\SettingController::class, 'updateGlobal'])

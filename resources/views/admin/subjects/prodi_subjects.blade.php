@@ -36,7 +36,7 @@
                         <th>{{ __('SKS') }} (T-P-PL)</th>
                         <th>{{ __('Sem') }}</th>
                         <th>{{ __('Prerequisite') }}</th>
-                        <th>{{ __('Type') }}</th>
+                        <!-- <th>{{ __('Type') }}</th> -->
                         <th>{{ __('Status') }}</th>
                         <th>{{ __('Actions') }}</th>
                     </tr>
@@ -49,13 +49,19 @@
                             <td>{{ $s->sks_t }} - {{ $s->sks_p }} - {{ $s->sks_pl }} ({{ $s->total_sks }})</td>
                             <td>{{ $s->semester }}</td>
                             <td>
-                                @if($s->prerequisite)
-                                    <span title="{{ $s->prerequisite->nama_subject }}">{{ $s->prerequisite->kode_subject }}</span>
+                                @if($s->prerequisites->count() > 0)
+                                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: 4px; max-width: max-content;">
+                                        @foreach($s->prerequisites as $prereq)
+                                            <span title="{{ $prereq->nama_subject }}" style="background: #e0e7ff; color: #4f46e5; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; display: inline-block; white-space: nowrap;">
+                                                {{ $prereq->kode_subject }}
+                                            </span>
+                                        @endforeach
+                                    </div>
                                 @else
                                     <span style="color: var(--text-muted); font-size: 0.75rem;">-</span>
                                 @endif
                             </td>
-                            <td>{{ $s->jenis_subject }}</td>
+                            <!-- <td>{{ $s->jenis_subject }}</td> -->
                             <td>
                                 @if($s->status == 'Aktif')
                                     <span style="font-size: 0.7rem; background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px;">{{ $s->status }}</span>

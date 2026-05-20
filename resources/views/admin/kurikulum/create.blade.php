@@ -27,17 +27,17 @@
             @csrf
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Curriculum Name</label>
+                    <label class="form-label">Curriculum Name <span style="color: red;">*</span></label>
                     <input type="text" name="nm_kurikulum" class="form-control" placeholder="e.g. Kurikulum 2024 Informatika" required value="{{ old('nm_kurikulum') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Academic Year</label>
+                    <label class="form-label">Academic Year <span style="color: red;">*</span></label>
                     <input type="number" name="tahun_akademik" class="form-control" placeholder="2024" required value="{{ old('tahun_akademik', date('Y')) }}">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Study Program (Prodi)</label>
+                <label class="form-label">Study Program (Prodi) <span style="color: red;">*</span></label>
                 <select name="id_prodi" class="form-control" required>
                     <option value="" disabled selected>Select Prodi</option>
                     @foreach($prodis as $p)

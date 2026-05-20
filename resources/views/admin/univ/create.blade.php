@@ -28,14 +28,14 @@
             @csrf
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">University Code</label>
+                    <label class="form-label">University Code <span style="color: red;">*</span></label>
                     <input type="text" name="kode_univ" class="form-control @error('kode_univ') is-invalid @enderror" placeholder="Example: UNP" required value="{{ old('kode_univ') }}">
                     @error('kode_univ')
                         <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">University Name</label>
+                    <label class="form-label">University Name <span style="color: red;">*</span></label>
                     <input type="text" name="nama_univ" class="form-control @error('nama_univ') is-invalid @enderror" placeholder="Full Name" required value="{{ old('nama_univ') }}">
                     @error('nama_univ')
                         <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
@@ -45,7 +45,7 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Leader Name (Rector)</label>
+                    <label class="form-label">Leader Name (Rector) <span style="color: red;">*</span></label>
                     <input type="text" name="nama_pimpinan" class="form-control @error('nama_pimpinan') is-invalid @enderror" required value="{{ old('nama_pimpinan') }}">
                     @error('nama_pimpinan')
                         <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
@@ -66,7 +66,7 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Full Address</label>
+                <label class="form-label">Full Address <span style="color: red;">*</span></label>
                 <textarea name="address" class="form-control @error('address') is-invalid @enderror" rows="3" required>{{ old('address') }}</textarea>
                 @error('address')
                     <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
@@ -108,14 +108,14 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Institutional Email</label>
+                    <label class="form-label">Institutional Email <span style="color: red;">*</span></label>
                     <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" required value="{{ old('email') }}">
                     @error('email')
                         <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Website (URL)</label>
+                    <label class="form-label">Website (URL) <span style="color: red;">*</span></label>
                     <input type="url" name="website" class="form-control @error('website') is-invalid @enderror" placeholder="https://..." required value="{{ old('website') }}">
                     @error('website')
                         <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>

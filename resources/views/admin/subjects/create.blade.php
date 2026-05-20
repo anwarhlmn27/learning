@@ -2,6 +2,21 @@
 
 @section('title', 'Add Subject')
 
+@section('styles')
+<style>
+    .multiselect-control:hover {
+        border-color: #9ca3af !important;
+    }
+    .multiselect-control:focus-within {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    .multiselect-option:hover {
+        background-color: #f3f4f6;
+    }
+</style>
+@endsection
+
 @section('header_left')
     <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Add Subject</h1>
 @endsection
@@ -27,7 +42,7 @@
             @csrf
             
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="form-label">Program Studi</label>
+                <label class="form-label">Program Studi <span style="color: red;">*</span></label>
                 <select name="id_prodi" class="form-control" required>
                     <option value="">-- Select Program Studi --</option>
                     @foreach($prodis as $prodi)
@@ -40,31 +55,31 @@
 
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Subject Code</label>
+                    <label class="form-label">Subject Code <span style="color: red;">*</span></label>
                     <input type="text" name="kode_subject" class="form-control" placeholder="INF101" required value="{{ old('kode_subject') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Subject Name</label>
+                    <label class="form-label">Subject Name <span style="color: red;">*</span></label>
                     <input type="text" name="nama_subject" class="form-control" placeholder="Introduction to Computer Science" required value="{{ old('nama_subject') }}">
                 </div>
             </div>
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="form-label">Deskripsi</label>
+                <label class="form-label">Deskripsi <span style="color: red;">*</span></label>
                 <textarea name="deskripsi" class="form-control" rows="3" required placeholder="Isi dan tujuan MK">{{ old('deskripsi') }}</textarea>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">SKS Theory (T)</label>
+                    <label class="form-label">SKS Theory (T) <span style="color: red;">*</span></label>
                     <input type="number" name="sks_t" id="sks_t" class="form-control" min="0" required value="{{ old('sks_t', 0) }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">SKS Practice (P)</label>
+                    <label class="form-label">SKS Practice (P) <span style="color: red;">*</span></label>
                     <input type="number" name="sks_p" id="sks_p" class="form-control" min="0" required value="{{ old('sks_p', 0) }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">SKS Praktik Lapangan (PL)</label>
+                    <label class="form-label">SKS Praktik Lapangan (PL) <span style="color: red;">*</span></label>
                     <input type="number" name="sks_pl" id="sks_pl" class="form-control" min="0" required value="{{ old('sks_pl', 0) }}">
                 </div>
                 <div class="form-group">
@@ -75,7 +90,7 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Semester</label>
+                    <label class="form-label">Semester <span style="color: red;">*</span></label>
                     <select name="semester" class="form-control" required>
                         @for($i = 1; $i <= 8; $i++)
                             <option value="{{ $i }}" {{ old('semester') == $i ? 'selected' : '' }}>Semester {{ $i }}</option>
@@ -83,7 +98,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Jenis Subject</label>
+                    <label class="form-label">Jenis Subject <span style="color: red;">*</span></label>
                     <select name="jenis_subject" class="form-control" required>
                         <option value="Wajib Prodi" {{ old('jenis_subject') == 'Wajib Prodi' ? 'selected' : '' }}>Wajib Prodi</option>
                         <option value="Wajib Universitas" {{ old('jenis_subject') == 'Wajib Universitas' ? 'selected' : '' }}>Wajib Universitas</option>
@@ -91,7 +106,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Status</label>
+                    <label class="form-label">Status <span style="color: red;">*</span></label>
                     <select name="status" class="form-control" required>
                         <option value="Aktif" {{ old('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
                         <option value="Revisi" {{ old('status') == 'Revisi' ? 'selected' : '' }}>Revisi</option>
@@ -101,15 +116,32 @@
             </div>
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="form-label">Prerequisite Subject</label>
-                <select name="prerequisite_id" class="form-control">
-                    <option value="">No Prerequisite</option>
-                    @foreach($subjects as $s)
-                        <option value="{{ $s->id }}" {{ old('prerequisite_id') == $s->id ? 'selected' : '' }}>
-                            [{{ $s->kode_subject }}] {{ $s->nama_subject }}
-                        </option>
-                    @endforeach
-                </select>
+                <label class="form-label">Prerequisite Subjects</label>
+                <div class="custom-multiselect-container" style="position: relative; width: 100%;">
+                    <!-- Control box (the input box that shows selected items) -->
+                    <div class="multiselect-control" id="prereq-control" style="min-height: 38px; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.375rem 0.75rem; background: #fff; cursor: pointer; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; justify-content: space-between; transition: border-color 0.15s, box-shadow 0.15s;">
+                        <div id="prereq-placeholder" style="color: #6b7280; font-size: 0.875rem;">Select Prerequisite Subjects...</div>
+                        <div id="prereq-tags" style="display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center;"></div>
+                        <span style="font-size: 0.75rem; color: #6b7280; margin-left: auto;">▼</span>
+                    </div>
+
+                    <!-- Dropdown list -->
+                    <div class="multiselect-dropdown" id="prereq-dropdown" style="display: none; position: absolute; top: 105%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); z-index: 50; max-height: 250px; overflow-y: auto; padding: 0.5rem;">
+                        <!-- Search bar inside dropdown -->
+                        <input type="text" id="prereq-search" placeholder="Search subject..." style="width: 100%; border: 1px solid #e5e7eb; border-radius: 0.25rem; padding: 0.375rem 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; outline: none; box-sizing: border-box;" onclick="event.stopPropagation()">
+                        
+                        <!-- Options -->
+                        <div id="prereq-options-list">
+                            @foreach($subjects as $s)
+                                <label class="multiselect-option" data-search-text="{{ strtolower($s->kode_subject . ' ' . $s->nama_subject) }}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; cursor: pointer; user-select: none; transition: background 0.15s; margin-bottom: 2px;">
+                                    <input type="checkbox" name="prerequisite_ids[]" value="{{ $s->id }}" class="prereq-checkbox" style="width: 16px; height: 16px; accent-color: var(--primary);" {{ is_array(old('prerequisite_ids')) && in_array($s->id, old('prerequisite_ids')) ? 'checked' : '' }}>
+                                    <span>[{{ $s->kode_subject }}] {{ $s->nama_subject }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">You can select multiple prerequisite subjects for this course.</small>
             </div>
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -196,6 +228,92 @@
                 }
             });
         });
+
+        // Custom Multi-select Combo Box logic
+        const control = document.getElementById('prereq-control');
+        const dropdown = document.getElementById('prereq-dropdown');
+        const searchInput = document.getElementById('prereq-search');
+        const checkboxes = document.querySelectorAll('.prereq-checkbox');
+        const placeholder = document.getElementById('prereq-placeholder');
+        const tagsContainer = document.getElementById('prereq-tags');
+        const optionsList = document.querySelectorAll('.multiselect-option');
+
+        // Toggle dropdown
+        control.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isOpen = dropdown.style.display === 'block';
+            dropdown.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) {
+                searchInput.focus();
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-multiselect-container')) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // Filter search
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            optionsList.forEach(opt => {
+                const text = opt.dataset.searchText;
+                if (text.includes(query)) {
+                    opt.style.display = 'flex';
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+        });
+
+        // Update tags and display
+        function updateTags() {
+            tagsContainer.innerHTML = '';
+            let checkedCount = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    checkedCount++;
+                    const text = cb.nextElementSibling.textContent;
+                    
+                    // Create badge
+                    const badge = document.createElement('span');
+                    badge.style.cssText = 'background: var(--primary); color: white; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem; font-weight: 500; margin: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
+                    badge.innerHTML = `${text} <span class="remove-badge" data-val="${cb.value}" style="cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-left: 4px; opacity: 0.8; transition: opacity 0.15s;">&times;</span>`;
+                    
+                    // Remove on click
+                    badge.querySelector('.remove-badge').addEventListener('mouseover', function() {
+                        this.style.opacity = '1';
+                    });
+                    badge.querySelector('.remove-badge').addEventListener('mouseout', function() {
+                        this.style.opacity = '0.8';
+                    });
+                    badge.querySelector('.remove-badge').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        cb.checked = false;
+                        updateTags();
+                    });
+
+                    tagsContainer.appendChild(badge);
+                }
+            });
+
+            if (checkedCount > 0) {
+                placeholder.style.display = 'none';
+            } else {
+                placeholder.style.display = 'block';
+            }
+        }
+
+        // Checkbox change event
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateTags);
+        });
+
+        // Initialize tags on load (for old input)
+        updateTags();
     });
 </script>
 @endsection

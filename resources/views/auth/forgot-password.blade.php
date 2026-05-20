@@ -7,96 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --surface: transparent;
-            --surface-glass: rgba(255, 255, 255, 0.1);
-            --text-main: #ffffff;
-            --text-muted: #e5e7eb;
-            --border: rgba(255, 255, 255, 0.2);
-            --error-bg: rgba(239, 68, 68, 0.15);
-            --error-text: #fca5a5;
-            --error-border: rgba(239, 68, 68, 0.3);
-            --success-bg: rgba(16, 185, 129, 0.15);
-            --success-text: #6ee7b7;
-            --success-border: rgba(16, 185, 129, 0.3);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            display: flex;
             background: linear-gradient(rgba(17, 24, 39, 0.75), rgba(17, 24, 39, 0.75)), url('{{ asset("img/gedung.jpeg") }}') center center/cover no-repeat fixed;
-            position: relative;
-            -webkit-font-smoothing: antialiased;
         }
-
-        .login-wrapper {
-            position: relative; z-index: 1; width: 100%; display: flex; justify-content: center; align-items: center; padding: 1.5rem;
-        }
-
-        .login-card {
-            background: var(--surface-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border); padding: 2.5rem 2rem; border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
-            width: 100%; max-width: 380px; transform: translateY(20px); opacity: 0;
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
-
-        .login-header { text-align: center; margin-bottom: 2rem; }
-        .login-header h2 { color: var(--text-main); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 0.35rem; }
-        .login-header p { color: var(--text-muted); font-size: 0.85rem; }
-
-        .form-group { margin-bottom: 1.25rem; position: relative; }
-        label { display: block; margin-bottom: 0.4rem; color: var(--text-main); font-size: 0.8rem; font-weight: 500; }
-        .input-wrapper { position: relative; }
-        .input-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.6); transition: color 0.3s ease; pointer-events: none; }
-        .input-icon svg { width: 18px; height: 18px; }
-
-        input[type="email"] {
-            width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 0.9rem;
-            color: var(--text-main); transition: all 0.3s ease; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-
-        input::placeholder { color: rgba(255, 255, 255, 0.5); font-weight: 400; }
-        input:focus { outline: none; border-color: var(--primary); background: rgba(255, 255, 255, 0.12); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25); }
-        input:focus + .input-icon { color: #ffffff; }
-
-        button[type="submit"] {
-            width: 100%; padding: 0.85rem; background: var(--primary); color: white; border: none; border-radius: 10px;
-            font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2); position: relative; overflow: hidden; margin-top: 0.5rem;
-        }
-
-        button[type="submit"]::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: all 0.5s ease;
-        }
-
-        button[type="submit"]:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2); }
-        button[type="submit"]:hover::after { left: 100%; }
-
-        .alert {
-            padding: 0.85rem; border-radius: 10px; margin-bottom: 1.25rem; font-size: 0.85rem;
-            display: flex; align-items: flex-start; gap: 0.5rem; animation: slideUp 0.3s ease forwards; backdrop-filter: blur(4px);
-        }
-
-        .alert-error { background-color: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border); }
-        .alert-success { background-color: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
-        
-        .alert svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 0.125rem; }
-
-        .back-link {
-            display: block; text-align: center; margin-top: 1.5rem; color: #a5b4fc; font-size: 0.85rem; text-decoration: none; font-weight: 500; transition: color 0.2s ease;
-        }
-        .back-link:hover { color: #ffffff; text-decoration: underline; }
     </style>
 </head>
 <body>

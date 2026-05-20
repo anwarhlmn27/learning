@@ -3,86 +3,7 @@
 @section('title', __('Settings'))
 
 @section('styles')
-<style>
-    .settings-container {
-        display: grid;
-        grid-template-columns: 250px 1fr;
-        gap: 2rem;
-    }
-    .settings-menu {
-        background: white;
-        border-radius: 0.75rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        border: 1px solid #e5e7eb;
-        overflow: hidden;
-    }
-    .settings-menu-item {
-        display: block;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e5e7eb;
-        color: var(--text-main);
-        text-decoration: none;
-        font-weight: 500;
-        transition: background 0.2s;
-        cursor: pointer;
-    }
-    .settings-menu-item:last-child {
-        border-bottom: none;
-    }
-    .settings-menu-item:hover {
-        background: #f9fafb;
-    }
-    .settings-menu-item.active {
-        background: #eff6ff;
-        color: var(--primary);
-        border-left: 4px solid var(--primary);
-    }
-    .settings-content-card {
-        background: white;
-        border-radius: 0.75rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        border: 1px solid #e5e7eb;
-        display: none;
-    }
-    .settings-content-card.active {
-        display: block;
-    }
-    .settings-header {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #e5e7eb;
-        font-weight: 600;
-        font-size: 1.1rem;
-    }
-    .settings-body {
-        padding: 1.5rem;
-    }
-    .preview-img {
-        max-width: 200px;
-        max-height: 100px;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.375rem;
-        margin-bottom: 1rem;
-        object-fit: contain;
-    }
-    .color-picker-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    .color-picker-wrapper input[type="color"] {
-        height: 40px;
-        width: 60px;
-        padding: 0;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        cursor: pointer;
-    }
-    @media (max-width: 768px) {
-        .settings-container {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/settings.css') }}">
 @endsection
 
 @section('content')
@@ -161,6 +82,27 @@
                                 <input type="color" name="content_color" value="{{ $user->content_color ?? '#f9fafb' }}">
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">{{ __('Content Font Color') }}</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" name="content_font_color" value="{{ $user->content_font_color ?? '#111827' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 2rem 0;">
+
+                    <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-muted);">{{ __('Typography') }}</h3>
+                    <div class="form-group" style="max-width: 400px;">
+                        <label class="form-label">{{ __('Font Family') }}</label>
+                        <select name="font_family" class="form-control">
+                            <option value="'Inter', sans-serif" {{ ($user->font_family == "'Inter', sans-serif") ? 'selected' : '' }}>Inter (Default)</option>
+                            <option value="'Roboto', sans-serif" {{ ($user->font_family == "'Roboto', sans-serif") ? 'selected' : '' }}>Roboto</option>
+                            <option value="'Outfit', sans-serif" {{ ($user->font_family == "'Outfit', sans-serif") ? 'selected' : '' }}>Outfit</option>
+                            <option value="system-ui, sans-serif" {{ ($user->font_family == "system-ui, sans-serif") ? 'selected' : '' }}>System UI</option>
+                            <option value="Georgia, serif" {{ ($user->font_family == "Georgia, serif") ? 'selected' : '' }}>Georgia (Serif)</option>
+                            <option value="'Courier New', monospace" {{ ($user->font_family == "'Courier New', monospace") ? 'selected' : '' }}>Courier New (Monospace)</option>
+                        </select>
                     </div>
 
                     <div style="margin-top: 2rem;">

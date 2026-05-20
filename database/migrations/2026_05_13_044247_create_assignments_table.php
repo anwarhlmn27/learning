@@ -18,9 +18,12 @@ return new class extends Migration
             $table->string('title');
             $table->text('instruction');
             $table->dateTime('deadline');
+            $table->string('status')->default('Draft'); // Draft, Published, Closed
+            $table->uuid('class_session_id')->nullable();
 
             $table->foreign('class_room_id')->references('id')->on('class_rooms')->onDelete('cascade');
             $table->foreign('rps_assessment_id')->references('id')->on('rps_assessments')->onDelete('cascade');
+            $table->foreign('class_session_id')->references('id')->on('class_sessions')->onDelete('cascade');
             $table->timestamps();
         });
     }

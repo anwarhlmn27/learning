@@ -115,7 +115,7 @@
         </tr>
         <tr>
             <th style="text-align: left;">Mata Kuliah Prasyarat (Prerequisite)</th>
-            <td>{{ $rp->subject->prerequisite ? $rp->subject->prerequisite->nama_subject : 'Tidak Ada' }}</td>
+            <td>{{ $rp->subject->prerequisites->count() > 0 ? $rp->subject->prerequisites->pluck('nama_subject')->implode(', ') : 'Tidak Ada' }}</td>
         </tr>
         <tr>
             <th style="text-align: left;">Deskripsi Mata Kuliah</th>

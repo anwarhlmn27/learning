@@ -7,38 +7,7 @@
 @endsection
 
 @section('styles')
-<style>
-    .sticky-counter {
-        position: sticky;
-        top: 70px;
-        z-index: 20;
-        background: #fff;
-        padding: 1rem;
-        border-radius: 0.75rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border: 1px solid #e5e7eb;
-    }
-    .weight-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 9999px;
-        font-weight: 700;
-        font-size: 1.1rem;
-    }
-    .weight-ok { background: #dcfce7; color: #166534; }
-    .weight-warning { background: #fee2e2; color: #991b1b; }
-    
-    .assessment-row {
-        background: #f9fafb;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid #e5e7eb;
-        margin-bottom: 0.75rem;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/rps-sessions.css') }}">
 @endsection
 
 @section('content')
@@ -68,11 +37,11 @@
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div>
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Topic Name</label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Topic Name <span style="color: red;">*</span></label>
                     <input type="text" name="topic_name" value="{{ $session->topic_name }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                 </div>
                 <div>
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Mapped CLOs (CPMK) for Topic</label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Mapped CLOs (CPMK) for Topic <span style="color: red;">*</span></label>
                     <div style="max-height: 100px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.375rem; background: #fff;">
                         @foreach($clos as $clo)
                             <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">
@@ -86,23 +55,23 @@
             </div>
 
             <div style="margin-bottom: 1rem;">
-                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Sub CLO / Topic Learning Objective</label>
+                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Sub CLO / Topic Learning Objective <span style="color: red;">*</span></label>
                 <textarea name="sub_clo" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->sub_clo }}</textarea>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div>
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Assessment Indicators (Indikator Penilaian)</label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Assessment Indicators (Indikator Penilaian) <span style="color: red;">*</span></label>
                     <textarea name="assessment_indicators" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->assessment_indicators }}</textarea>
                 </div>
                 <div>
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Evaluation Criteria (Kriteria Evaluasi)</label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Evaluation Criteria (Kriteria Evaluasi) <span style="color: red;">*</span></label>
                     <textarea name="evaluation_criteria" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->evaluation_criteria }}</textarea>
                 </div>
             </div>
 
             <div style="margin-bottom: 1rem;">
-                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Learning Materials (Bahan Kajian)</label>
+                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Learning Materials (Bahan Kajian) <span style="color: red;">*</span></label>
                 <textarea name="learning_materials" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->learning_materials }}</textarea>
             </div>
 
@@ -115,7 +84,7 @@
                     <div class="assessment-row">
                         <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
                             <div>
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Target CLO</label>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Target CLO <span style="color: red;">*</span></label>
                                 <select name="assessments[{{ $index }}][clo_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                                     @foreach($clos as $clo)
                                         <option value="{{ $clo->id }}" {{ $assessment->clo_id == $clo->id ? 'selected' : '' }}>{{ $clo->kode_clo }}</option>
@@ -123,7 +92,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Type</label>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Type <span style="color: red;">*</span></label>
                                 <select name="assessments[{{ $index }}][assessment_type_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                                     @foreach($assessmentTypes as $type)
                                         <option value="{{ $type->id }}" {{ $assessment->assessment_type_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
@@ -131,7 +100,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Weight %</label>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Weight % <span style="color: red;">*</span></label>
                                 <input type="number" name="assessments[{{ $index }}][weight]" value="{{ $assessment->weight }}" required class="weight-input" oninput="updateGlobalWeight()" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                             </div>
                             <div>
@@ -177,7 +146,7 @@
                 @foreach($session->activities as $index => $activity)
                     <div class="activity-row" style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 0.5rem;">
                         <div style="width: 150px;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Type</label>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Type <span style="color: red;">*</span></label>
                             <select name="activities[{{ $index }}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                                 <option value="Connect" {{ $activity->type == 'Connect' ? 'selected' : '' }}>Connect</option>
                                 <option value="Coach" {{ $activity->type == 'Coach' ? 'selected' : '' }}>Coach</option>
@@ -186,11 +155,11 @@
                             </select>
                         </div>
                         <div style="width: 100px;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Dur (Min)</label>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Dur (Min) <span style="color: red;">*</span></label>
                             <input type="number" name="activities[{{ $index }}][duration]" value="{{ $activity->duration }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                         </div>
                         <div style="flex: 1;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Activity Content</label>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Activity Content <span style="color: red;">*</span></label>
                             <input type="text" name="activities[{{ $index }}][content]" value="{{ $activity->content }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                         </div>
                         <div>

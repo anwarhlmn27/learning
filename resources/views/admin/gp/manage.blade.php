@@ -103,7 +103,7 @@
             <form action="{{ route('gp.attachment.store', $prodi->id) }}" method="POST" enctype="multipart/form-data" style="margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb;">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">Document Name</label>
+                    <label class="form-label">Document Name <span style="color: red;">*</span></label>
                     <select name="nm_dokumen" class="form-control @error('nm_dokumen') is-invalid @enderror" required>
                         <option value="">-- Select Type --</option>
                         <option value="FGD Report">FGD Report</option>
@@ -119,7 +119,7 @@
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">File (PDF, Max 2MB)</label>
+                    <label class="form-label">File (PDF, Max 2MB) <span style="color: red;">*</span></label>
                     <input type="file" name="file" class="form-control @error('file') is-invalid @enderror" accept=".pdf" required>
                     @error('file')
                         <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
@@ -162,15 +162,15 @@
                 
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Profile Code</label>
+                        <label class="form-label">Profile Code <span style="color: red;">*</span></label>
                         <input type="text" name="kode_profil" id="field_kode_profil" class="form-control" required placeholder="e.g. GP-01">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Profile Name</label>
+                        <label class="form-label">Profile Name <span style="color: red;">*</span></label>
                         <input type="text" name="nm_profil" id="field_nm_profil" class="form-control" required placeholder="e.g. Software Engineer">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Status</label>
+                        <label class="form-label">Status <span style="color: red;">*</span></label>
                         <select name="status" id="field_status" class="form-control" required>
                             <option value="Draft">Draft</option>
                             <option value="Aktif">Aktif</option>
@@ -184,15 +184,15 @@
                     <!-- Left Column -->
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Description</label>
+                            <label class="form-label">Description <span style="color: red;">*</span></label>
                             <textarea name="deskripsi" id="field_deskripsi" class="form-control" rows="3" required placeholder="General description of the profile"></textarea>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Competency (Skills)</label>
+                            <label class="form-label">Competency (Skills) <span style="color: red;">*</span></label>
                             <textarea name="kompetensi" id="field_kompetensi" class="form-control" rows="3" required placeholder="List of competencies required"></textarea>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Stakeholders</label>
+                            <label class="form-label">Stakeholders <span style="color: red;">*</span></label>
                             <textarea name="stakeholders" id="field_stakeholders" class="form-control" rows="3" required placeholder="Involved parties or target audience"></textarea>
                         </div>
                     </div>
@@ -200,11 +200,11 @@
                     <!-- Right Column -->
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Career Pathway</label>
+                            <label class="form-label">Career Pathway <span style="color: red;">*</span></label>
                             <textarea name="career_pathway" id="field_career_pathway" class="form-control" rows="3" required placeholder="Potential career opportunities"></textarea>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Reference Sources</label>
+                            <label class="form-label">Reference Sources <span style="color: red;">*</span></label>
                             <textarea name="sumber_acuan" id="field_sumber_acuan" class="form-control" rows="3" required placeholder="e.g. SKKNI, Vision Mission"></textarea>
                         </div>
                         <div style="display: flex; align-items: flex-end; justify-content: flex-end; flex: 1; margin-top: 1rem;">

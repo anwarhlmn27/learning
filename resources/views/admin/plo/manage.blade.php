@@ -102,7 +102,7 @@
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label class="form-label" style="font-weight: 600; color: var(--primary);">Graduate Profile (GP) References</label>
+                    <label class="form-label" style="font-weight: 600; color: var(--primary);">Graduate Profile (GP) References <span style="color: red;">*</span></label>
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #f9fafb;">
                         @forelse($prodi->gps as $gp)
                             <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; cursor: pointer;">
@@ -120,15 +120,15 @@
 
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">PLO Code</label>
+                        <label class="form-label">PLO Code <span style="color: red;">*</span></label>
                         <input type="text" name="kode_plo" id="field_kode_plo" class="form-control" required placeholder="e.g. PLO-01">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">PLO Title</label>
+                        <label class="form-label">PLO Title <span style="color: red;">*</span></label>
                         <input type="text" name="plo_title" id="field_plo_title" class="form-control" required placeholder="e.g. Computing Fundamentals">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Domain</label>
+                        <label class="form-label">Domain <span style="color: red;">*</span></label>
                         <select name="domain" id="field_domain" class="form-control" required>
                             <option value="Knowledge">Knowledge</option>
                             <option value="Skill">Skill</option>
@@ -137,7 +137,7 @@
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Status</label>
+                        <label class="form-label">Status <span style="color: red;">*</span></label>
                         <select name="status" id="field_status" class="form-control" required>
                             <option value="Draft">Draft</option>
                             <option value="Aktif">Aktif</option>
@@ -150,12 +150,12 @@
                     <!-- Left Column -->
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Outcome (Rumusan PLO)</label>
+                            <label class="form-label">Outcome (Rumusan PLO) <span style="color: red;">*</span></label>
                             <textarea name="rumusan_plo" id="field_rumusan_plo" class="form-control" rows="3" required placeholder="Outcome statement"></textarea>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Bloom Level</label>
+                                <label class="form-label">Bloom Level <span style="color: red;">*</span></label>
                                 <select name="bloom_level" id="field_bloom_level" class="form-control" required onchange="updateKKO()">
                                     <option value="">-- Pilih Level --</option>
                                     <option value="C1">C1 - Remember</option>
@@ -167,7 +167,7 @@
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">KKO</label>
+                                <label class="form-label">KKO <span style="color: red;">*</span></label>
                                 <select name="kko" id="field_kko" class="form-control" required>
                                     <option value="">-- Pilih KKO --</option>
                                 </select>
@@ -178,16 +178,16 @@
                     <!-- Right Column -->
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Indicators of Achievement</label>
+                            <label class="form-label">Indicators of Achievement <span style="color: red;">*</span></label>
                             <textarea name="indikator_ketercapaian" id="field_indikator_ketercapaian" class="form-control" rows="2" required placeholder="Achievement indicators"></textarea>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Target</label>
+                                <label class="form-label">Target <span style="color: red;">*</span></label>
                                 <input type="text" name="target_capaian" id="field_target_capaian" class="form-control" required placeholder="e.g. 75%">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Measurement</label>
+                                <label class="form-label">Measurement <span style="color: red;">*</span></label>
                                 <select name="metode_pengukuran" id="field_metode_pengukuran" class="form-control" required>
                                     <option value="Direct">Direct</option>
                                     <option value="Indirect">Indirect</option>
