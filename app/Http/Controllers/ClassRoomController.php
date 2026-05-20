@@ -13,6 +13,8 @@ use App\Models\ClassSession;
 use App\Models\Assignment;
 use App\Models\RpsSession;
 use App\Models\RpsAssessment;
+use App\Models\Quiz;
+use App\Models\AssignmentSubmission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
