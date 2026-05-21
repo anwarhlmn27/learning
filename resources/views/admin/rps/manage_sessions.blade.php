@@ -75,6 +75,40 @@
                 <textarea name="learning_materials" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->learning_materials }}</textarea>
             </div>
 
+            <!-- Activities Section -->
+            <hr style="margin: 1.5rem 0;">
+            <h4 style="font-weight: 600; margin-bottom: 1rem; color: var(--primary);">Activities (Connect, Coach, Check, Wrap-up)</h4>
+            
+            <div id="activities_container_{{ $session->id }}">
+                @foreach($session->activities as $index => $activity)
+                    <div class="activity-row" style="display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <div style="width: 150px;">
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Type <span style="color: red;">*</span></label>
+                            <select name="activities[{{ $index }}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                                <option value="Connect" {{ $activity->type == 'Connect' ? 'selected' : '' }}>Connect</option>
+                                <option value="Coach" {{ $activity->type == 'Coach' ? 'selected' : '' }}>Coach</option>
+                                <option value="Check" {{ $activity->type == 'Check' ? 'selected' : '' }}>Check</option>
+                                <option value="Wrap-up" {{ $activity->type == 'Wrap-up' ? 'selected' : '' }}>Wrap-up</option>
+                            </select>
+                        </div>
+                        <div style="width: 100px;">
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Dur (Min) <span style="color: red;">*</span></label>
+                            <input type="number" name="activities[{{ $index }}][duration]" value="{{ $activity->duration }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Activity Content <span style="color: red;">*</span></label>
+                            <textarea name="activities[{{ $index }}][content]" required rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $activity->content }}</textarea>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">&nbsp;</label>
+                            <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn btn-danger" style="padding: 0.5rem; border-radius: 0.375rem; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; height: 38px;">&times;</button>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            <button type="button" onclick="addActivityRow('{{ $session->id }}')" class="btn btn-secondary" style="margin-top: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem; background: #e5e7eb; color: #374151;">+ Add Activity</button>
+
+            
             <!-- Multi Assessment Section -->
             <hr style="margin: 1.5rem 0; border: none; border-top: 2px dashed #e5e7eb;">
             <h4 style="font-weight: 600; margin-bottom: 1rem; color: var(--primary);">Assessments for this Session</h4>
@@ -92,12 +126,8 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Type <span style="color: red;">*</span></label>
-                                <select name="assessments[{{ $index }}][assessment_type_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                                    @foreach($assessmentTypes as $type)
-                                        <option value="{{ $type->id }}" {{ $assessment->assessment_type_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
-                                    @endforeach
-                                </select>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Tugas <span style="color: red;">*</span></label>
+                                <input type="text" list="tugas_options" name="assessments[{{ $index }}][assessment_type_id]" value="{{ $assessment->type ? $assessment->type->name : '' }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Weight % <span style="color: red;">*</span></label>
@@ -129,7 +159,7 @@
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assessment Output (Luaran)</label>
-                                <input type="text" name="assessments[{{ $index }}][assessment_output]" value="{{ $assessment->assessment_output }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Makalah, Video">
+                                <textarea name="assessments[{{ $index }}][assessment_output]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Makalah, Video">{{ $assessment->assessment_output }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -137,39 +167,6 @@
             </div>
             
             <button type="button" onclick="addAssessmentRow('{{ $session->id }}')" class="btn btn-primary" style="margin-top: 0.5rem; margin-bottom: 1.5rem; font-size: 0.75rem; background: var(--primary); color: #fff;">+ Add Assessment</button>
-
-            <!-- Activities Section -->
-            <hr style="margin: 1.5rem 0;">
-            <h4 style="font-weight: 600; margin-bottom: 1rem;">Activities (Connect, Coach, Check, Wrap-up)</h4>
-            
-            <div id="activities_container_{{ $session->id }}">
-                @foreach($session->activities as $index => $activity)
-                    <div class="activity-row" style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 0.5rem;">
-                        <div style="width: 150px;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Type <span style="color: red;">*</span></label>
-                            <select name="activities[{{ $index }}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                                <option value="Connect" {{ $activity->type == 'Connect' ? 'selected' : '' }}>Connect</option>
-                                <option value="Coach" {{ $activity->type == 'Coach' ? 'selected' : '' }}>Coach</option>
-                                <option value="Check" {{ $activity->type == 'Check' ? 'selected' : '' }}>Check</option>
-                                <option value="Wrap-up" {{ $activity->type == 'Wrap-up' ? 'selected' : '' }}>Wrap-up</option>
-                            </select>
-                        </div>
-                        <div style="width: 100px;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Dur (Min) <span style="color: red;">*</span></label>
-                            <input type="number" name="activities[{{ $index }}][duration]" value="{{ $activity->duration }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                        </div>
-                        <div style="flex: 1;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Activity Content <span style="color: red;">*</span></label>
-                            <input type="text" name="activities[{{ $index }}][content]" value="{{ $activity->content }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                        </div>
-                        <div>
-                            <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn btn-danger" style="padding: 0.5rem; border-radius: 0.375rem; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; height: 38px;">&times;</button>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-            
-            <button type="button" onclick="addActivityRow('{{ $session->id }}')" class="btn btn-secondary" style="margin-top: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem; background: #e5e7eb; color: #374151;">+ Add Activity</button>
 
             <div style="margin-top: 1rem; text-align: right; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
                 <button type="submit" class="btn btn-primary btn-save" style="padding: 0.75rem 1.5rem; font-size: 1rem;">Save Session {{ $session->session_number }}</button>
@@ -185,11 +182,11 @@
     @endforeach
 </div>
 
-<div id="type_options" style="display:none;">
+<datalist id="tugas_options">
     @foreach($assessmentTypes as $type)
-        <option value="{{ $type->id }}">{{ $type->name }}</option>
+        <option value="{{ $type->name }}">{{ $type->name }}</option>
     @endforeach
-</div>
+</datalist>
 
 @section('scripts')
 <script>
@@ -221,7 +218,6 @@
         const container = document.getElementById('assessments_container_' + sessionId);
         const index = Date.now();
         const cloOptions = document.getElementById('clo_options').innerHTML;
-        const typeOptions = document.getElementById('type_options').innerHTML;
 
         const row = document.createElement('div');
         row.className = 'assessment-row';
@@ -235,9 +231,7 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Type</label>
-                    <select name="assessments[${index}][assessment_type_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                        ${typeOptions}
-                    </select>
+                    <input type="text" list="tugas_options" name="assessments[${index}][assessment_type_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="Select or type...">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Weight %</label>
@@ -283,7 +277,7 @@
         row.className = 'activity-row';
         row.style.display = 'flex';
         row.style.gap = '1rem';
-        row.style.alignItems = 'flex-end';
+        row.style.alignItems = 'flex-start';
         row.style.marginBottom = '0.5rem';
         row.innerHTML = `
             <div style="width: 150px;">
@@ -301,9 +295,10 @@
             </div>
             <div style="flex: 1;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Activity Content</label>
-                <input type="text" name="activities[${index}][content]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="Describe activity...">
+                <textarea name="activities[${index}][content]" required rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="Describe activity..."></textarea>
             </div>
             <div>
+                <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">&nbsp;</label>
                 <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn btn-danger" style="padding: 0.5rem; border-radius: 0.375rem; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; height: 38px;">&times;</button>
             </div>
         `;

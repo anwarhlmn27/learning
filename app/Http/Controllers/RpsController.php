@@ -207,7 +207,7 @@ class RpsController extends Controller
             'activities.*.content' => 'required_with:activities|string',
             'assessments' => 'nullable|array',
             'assessments.*.clo_id' => 'required_with:assessments|exists:clos,id',
-            'assessments.*.assessment_type_id' => 'required_with:assessments|exists:assessment_types,id',
+            'assessments.*.assessment_type_id' => 'required_with:assessments',
             'assessments.*.assignment_activities' => 'nullable|string',
             'assessments.*.assessment_scope' => 'nullable|string',
             'assessments.*.how_worked' => 'nullable|string',
@@ -239,9 +239,12 @@ class RpsController extends Controller
             $session->assessments()->delete();
             if ($request->has('assessments') && is_array($request->assessments)) {
                 foreach ($request->assessments as $assess) {
+                    $typeInput = $assess['assessment_type_id'];
+                    $typeModel = \App\Models\AssessmentType::firstOrCreate(['name' => $typeInput]);
+
                     $session->assessments()->create([
                         'clo_id' => $assess['clo_id'],
-                        'assessment_type_id' => $assess['assessment_type_id'],
+                        'assessment_type_id' => $typeModel->id,
                         'assignment_activities' => $assess['assignment_activities'] ?? null,
                         'assessment_scope' => $assess['assessment_scope'] ?? null,
                         'how_worked' => $assess['how_worked'] ?? null,
