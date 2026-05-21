@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LMS Dashboard - {{ config('app.name', 'Laravel') }}</title>
+    <title>Horizon - {{ config('app.name', 'Laravel') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/lms.css') }}">
     <style>
@@ -28,14 +28,17 @@
 
     <aside class="lms-sidebar">
         <div class="lms-sidebar-header">
-            <h2>LMS Learning</h2>
+            <h2>Horizon LMS</h2>
         </div>
         <nav class="lms-nav">
             <a href="{{ route('dashboard') }}" class="lms-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i>🏠</i> {{ __('Dashboard') }}
             </a>
-            <a href="{{ route('classes.index') }}" class="lms-nav-item {{ request()->routeIs('classes.*') ? 'active' : '' }}">
+            <a href="{{ route('classes.index') }}" class="lms-nav-item {{ request()->routeIs('classes.*') && !request()->routeIs('classes.archived') ? 'active' : '' }}">
                 <i>📚</i> {{ __('My Classes') }}
+            </a>
+            <a href="{{ route('classes.archived') }}" class="lms-nav-item {{ request()->routeIs('classes.archived') ? 'active' : '' }}">
+                <i>🗃️</i> {{ __('Kelas Arsip') }}
             </a>
             @if(Auth::user()->hasRole(['admin', 'kaprodi']))
             <a href="{{ route('dosen.index') }}" class="lms-nav-item {{ request()->routeIs('dosen.*') ? 'active' : '' }}">
@@ -109,6 +112,21 @@
                 const dropdown = document.getElementById('avatar-dropdown');
                 if (dropdown) dropdown.style.display = 'none';
             }
+        });
+
+        // Auto-dismiss flash notifications after 2 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.flash-alert').forEach(function(el) {
+                setTimeout(function() {
+                    el.style.transition = 'opacity 0.5s ease, max-height 0.5s ease, margin 0.5s ease, padding 0.5s ease';
+                    el.style.opacity = '0';
+                    el.style.maxHeight = '0';
+                    el.style.padding = '0';
+                    el.style.margin = '0';
+                    el.style.overflow = 'hidden';
+                    setTimeout(function() { el.remove(); }, 500);
+                }, 2000);
+            });
         });
     </script>
 </body>

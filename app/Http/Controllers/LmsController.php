@@ -30,7 +30,7 @@ class LmsController extends Controller
                 $classes = ClassRoom::whereHas('users', function($q) use ($user) {
                                 $q->where('user_id', $user->id);
                             })
-                            ->where('is_active', true)
+                            ->where('status', 'active')
                             ->with('subject')
                             ->get();
                             

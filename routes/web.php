@@ -149,6 +149,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/classes/{class}/quiz', [\App\Http\Controllers\ClassRoomController::class, 'storeQuiz'])->name('classes.store_quiz');
     Route::get('/classes/{class}/quiz/{quiz}', [\App\Http\Controllers\ClassRoomController::class, 'takeQuiz'])->name('classes.take_quiz');
     Route::post('/classes/{class}/quiz/{quiz}/submit', [\App\Http\Controllers\ClassRoomController::class, 'submitQuiz'])->name('classes.submit_quiz');
+    Route::post('/classes/{class}/add-staff', [\App\Http\Controllers\ClassRoomController::class, 'addStaff'])->name('classes.add_staff');
+    Route::delete('/classes/{class}/remove-staff/{user}', [\App\Http\Controllers\ClassRoomController::class, 'removeStaff'])->name('classes.remove_staff');
+    Route::post('/classes/{class}/archive', [\App\Http\Controllers\ClassRoomController::class, 'archive'])->name('classes.archive');
+    Route::get('/archived-classes', [\App\Http\Controllers\ClassRoomController::class, 'archivedIndex'])->name('classes.archived');
 
     // Assignments & Grading
     Route::get('/assignments', [\App\Http\Controllers\AssignmentController::class, 'index'])->name('assignments.index');

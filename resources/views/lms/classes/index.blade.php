@@ -13,11 +13,11 @@
 </div>
 
 @if(session('error'))
-    <div style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border: 1px solid #fecaca; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('error') }}</div>
+    <div class="flash-alert" style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border: 1px solid #fecaca; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('error') }}</div>
 @endif
 
 @if(session('success'))
-    <div style="background-color: #f0fdf4; color: #166534; padding: 1rem; border: 1px solid #bbf7d0; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('success') }}</div>
+    <div class="flash-alert" style="background-color: #f0fdf4; color: #166534; padding: 1rem; border: 1px solid #bbf7d0; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('success') }}</div>
 @endif
 
 <!-- Filter Form -->
@@ -41,8 +41,16 @@
     <div class="card" style="margin-bottom: 0;">
         <div class="card-header" style="background-color: #f8fafc; display: flex; justify-content: space-between;">
             <span style="font-weight: 700; color: var(--primary);">{{ $class->nama_kelas }}</span>
-            <span style="font-size: 0.75rem; background: {{ $class->is_active ? '#dcfce7' : '#f3f4f6' }}; color: {{ $class->is_active ? '#166534' : '#6b7280' }}; padding: 0.25rem 0.5rem; border-radius: 9999px;">
-                {{ $class->is_active ? 'Active' : 'Inactive' }}
+            @php
+                $statusColors = [
+                    'active'   => ['bg' => '#dcfce7', 'color' => '#166534', 'label' => 'Aktif'],
+                    'archived' => ['bg' => '#fef9c3', 'color' => '#854d0e', 'label' => 'Arsip'],
+                    'deleted'  => ['bg' => '#fee2e2', 'color' => '#991b1b', 'label' => 'Dihapus'],
+                ];
+                $sc = $statusColors[$class->status] ?? $statusColors['active'];
+            @endphp
+            <span style="font-size: 0.75rem; background: {{ $sc['bg'] }}; color: {{ $sc['color'] }}; padding: 0.25rem 0.5rem; border-radius: 9999px; font-weight: 600;">
+                {{ $sc['label'] }}
             </span>
         </div>
         <div class="card-body">
@@ -68,10 +76,10 @@
                 </a>
                 
                 @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-                <button class="btn btn-outline" style="padding: 0.5rem;" onclick="openEditModal('{{ $class->id }}', '{{ $class->subject_id }}', '{{ $class->dosen_id }}', '{{ $class->nama_kelas }}', '{{ $class->tahun_akademik }}', '{{ $class->semester }}', {{ $class->is_active }})" title="Edit Class">
+                <button class="btn btn-outline" style="padding: 0.5rem;" onclick="openEditModal('{{ $class->id }}', '{{ $class->subject_id }}', '{{ $classPrimaryDosenMap[$class->id] ?? '' }}', '{{ addslashes($class->nama_kelas) }}', '{{ $class->tahun_akademik }}', '{{ $class->semester }}', '{{ $class->status }}')" title="Edit Class">
                     ✏️
                 </button>
-                <form action="{{ route('classes.destroy', $class) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kelas ini beserta seluruh data enrollments di dalamnya?')">
+                <form action="{{ route('classes.destroy', $class) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Hapus kelas ini? Kelas aktif yang memiliki kegiatan tidak dapat dihapus. Arsipkan dulu jika perlu.')">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-outline" style="padding: 0.5rem; color: #dc2626; border-color: #fecaca;" title="Delete Class">
@@ -197,9 +205,12 @@
                     </div>
                 </div>
                 <div style="margin-bottom: 1rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 500; cursor: pointer;">
-                        <input type="checkbox" name="is_active" id="edit-active" value="1"> Kelas Aktif
-                    </label>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Status Kelas <span style="color: red;">*</span></label>
+                    <select name="status" id="edit-status" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
+                        <option value="active">Aktif</option>
+                        <option value="archived">Arsip (Read-only)</option>
+                    </select>
+                    <p style="font-size: 0.75rem; color: #92400e; margin-top: 0.4rem; padding: 0.4rem 0.6rem; background: #fef9c3; border-radius: 4px;">⚠️ Jika diubah ke <strong>Arsip</strong>, semua konten kelas menjadi read-only.</p>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-edit').style.display = 'none'">Cancel</button>
@@ -211,14 +222,14 @@
 </div>
 
 <script>
-    function openEditModal(id, subject_id, dosen_id, nama_kelas, tahun_akademik, semester, is_active) {
+    function openEditModal(id, subject_id, dosen_id, nama_kelas, tahun_akademik, semester, status) {
         document.getElementById('edit-form').action = '/classes/' + id;
         document.getElementById('edit-subject').value = subject_id;
         document.getElementById('edit-dosen').value = dosen_id;
         document.getElementById('edit-nama').value = nama_kelas;
         document.getElementById('edit-tahun').value = tahun_akademik;
         document.getElementById('edit-semester').value = semester;
-        document.getElementById('edit-active').checked = is_active;
+        document.getElementById('edit-status').value = status;
         document.getElementById('modal-edit').style.display = 'flex';
     }
 </script>

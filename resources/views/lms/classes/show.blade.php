@@ -246,29 +246,54 @@
                 Mata Kuliah: {{ optional($class->subject)->nama_subject }} ({{ optional($class->subject)->code ?? '-' }})
             </p>
         </div>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
             <a href="{{ route('classes.index') }}" class="btn" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px;">
                 ← Back to List
             </a>
-            @if($class->is_active)
+            @if($class->status === 'active')
                 <span style="background: #22c55e; color: white; padding: 0.4rem 1rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem;">
-                    <span style="width: 8px; height: 8px; background: white; border-radius: 50%; display: inline-block;"></span> Active
+                    <span style="width: 8px; height: 8px; background: white; border-radius: 50%; display: inline-block;"></span> Aktif
                 </span>
-            @else
-                <span style="background: #64748b; color: white; padding: 0.4rem 1rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 700;">
-                    Inactive
+            @elseif($class->status === 'archived')
+                <span style="background: #f59e0b; color: white; padding: 0.4rem 1rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem;">
+                    🗃️ Arsip (Read-only)
                 </span>
+            @endif
+            {{-- Archive / Restore button --}}
+            @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
+                <form action="{{ route('classes.archive', $class) }}" method="POST" style="margin: 0;" onsubmit="return confirm('{{ $class->status === 'active' ? 'Arsipkan kelas ini? Semua konten akan menjadi read-only.' : 'Aktifkan kembali kelas ini?' }}')">
+                    @csrf
+                    @if($class->status === 'active')
+                        <button type="submit" class="btn" style="background: rgba(245,158,11,0.8); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; font-size: 0.85rem;">
+                            🗃️ Arsipkan Kelas
+                        </button>
+                    @elseif($class->status === 'archived')
+                        <button type="submit" class="btn" style="background: rgba(34,197,94,0.8); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; font-size: 0.85rem;">
+                            ✅ Aktifkan Kembali
+                        </button>
+                    @endif
+                </form>
             @endif
         </div>
     </div>
 </div>
 
 @if(session('error'))
-    <div style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border: 1px solid #fecaca; border-radius: var(--radius-md); margin-bottom: 1.5rem;">{{ session('error') }}</div>
+    <div class="flash-alert" style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border: 1px solid #fecaca; border-radius: var(--radius-md); margin-bottom: 1.5rem;">{{ session('error') }}</div>
 @endif
 
 @if(session('success'))
-    <div style="background-color: #f0fdf4; color: #166534; padding: 1rem; border: 1px solid #bbf7d0; border-radius: var(--radius-md); margin-bottom: 1.5rem;">{{ session('success') }}</div>
+    <div class="flash-alert" style="background-color: #f0fdf4; color: #166534; padding: 1rem; border: 1px solid #bbf7d0; border-radius: var(--radius-md); margin-bottom: 1.5rem;">{{ session('success') }}</div>
+@endif
+
+@if($class->status === 'archived')
+<div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f59e0b; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+    <span style="font-size: 1.5rem;">🗃️</span>
+    <div>
+        <strong style="color: #92400e; font-size: 0.95rem;">Kelas Ini Sudah Diarsipkan</strong>
+        <p style="margin: 0.2rem 0 0; font-size: 0.8rem; color: #a16207;">Semua konten kelas ini bersifat <strong>read-only</strong>. Tidak dapat menambah atau mengubah data. Untuk mengaktifkan kembali, klik tombol &ldquo;Aktifkan Kembali&rdquo; di atas.</p>
+    </div>
+</div>
 @endif
 
 <!-- Tab Navigation Header -->
@@ -412,8 +437,13 @@
         
         <!-- Lecturers (Dosen) Section -->
         <div class="card">
-            <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem;">
+            <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Dosen Pengampu / Lecturer</h3>
+                @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+                    <button class="btn" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add-dosen').style.display = 'flex'">
+                        ➕ Tambah Dosen
+                    </button>
+                @endif
             </div>
             <div class="card-body" style="padding: 0;">
                 <ul style="list-style: none; margin: 0; padding: 0;">
@@ -422,10 +452,22 @@
                             <div style="width: 36px; height: 36px; border-radius: 50%; background: #e0e7ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
                                 {{ strtoupper(substr($dosenUser->name, 0, 1)) }}
                             </div>
-                            <div>
+                            <div style="flex: 1;">
                                 <strong style="display: block; color: var(--text-primary);">{{ $dosenUser->name }}</strong>
                                 <span style="font-size: 0.8rem; color: var(--text-muted);">{{ $dosenUser->email }}</span>
+                                @if($dosenUser->dosen)
+                                    <span style="font-size: 0.75rem; background: #e0e7ff; color: var(--primary); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.25rem;">
+                                        {{ $dosenUser->dosen->nidn ?? '' }}
+                                    </span>
+                                @endif
                             </div>
+                            @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+                                <form action="{{ route('classes.remove_staff', [$class, $dosenUser]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Hapus dosen ini dari kelas?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #dc2626; border-color: #fecaca;">Hapus</button>
+                                </form>
+                            @endif
                         </li>
                     @empty
                         <li style="padding: 2rem; text-align: center; color: var(--text-muted);">Tidak ada dosen yang terdaftar di kelas ini.</li>
@@ -436,8 +478,13 @@
 
         <!-- BAAK Staff Section -->
         <div class="card">
-            <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem;">
+            <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">BAAK Staff</h3>
+                @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+                    <button class="btn" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add-baak').style.display = 'flex'">
+                        ➕ Tambah BAAK
+                    </button>
+                @endif
             </div>
             <div class="card-body" style="padding: 0;">
                 <ul style="list-style: none; margin: 0; padding: 0;">
@@ -446,10 +493,17 @@
                             <div style="width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-weight: 700;">
                                 {{ strtoupper(substr($baakUser->name, 0, 1)) }}
                             </div>
-                            <div>
+                            <div style="flex: 1;">
                                 <strong style="display: block; color: var(--text-primary);">{{ $baakUser->name }}</strong>
                                 <span style="font-size: 0.8rem; color: var(--text-muted);">{{ $baakUser->email }}</span>
                             </div>
+                            @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+                                <form action="{{ route('classes.remove_staff', [$class, $baakUser]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Hapus BAAK staff ini dari kelas?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #dc2626; border-color: #fecaca;">Hapus</button>
+                                </form>
+                            @endif
                         </li>
                     @empty
                         <li style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Belum ada staff BAAK yang didelegasikan ke kelas ini.</li>
@@ -801,36 +855,60 @@
 <!-- FLOATING MODALS                              -->
 <!-- ============================================ -->
 
-<!-- Modal Add Student -->
+<!-- Modal Add Student (Redesigned) -->
 <div id="modal-add" class="modal-backdrop">
-    <div class="modal-box">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
-            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">Enroll Student to Class</h3>
-            <button onclick="document.getElementById('modal-add').style.display = 'none'" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+    <div class="modal-box" style="max-width: 520px;">
+        <div style="padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h3 style="margin: 0 0 0.25rem 0; font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">Enroll Mahasiswa</h3>
+                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Tambahkan mahasiswa dari prodi terkait ke kelas ini</p>
+            </div>
+            <button onclick="document.getElementById('modal-add').style.display = 'none'" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 1rem;">&times;</button>
         </div>
-        <div class="card-body" style="padding: 1.5rem;">
+        <div style="padding: 1.5rem;">
             @if(count($availableStudents) > 0)
             <form action="{{ route('classes.enroll', $class) }}" method="POST">
                 @csrf
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Pilih Mahasiswa <span style="color: red;">*</span></label>
-                    <select name="student_id" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                        <option value="">-- Pilih Mahasiswa --</option>
-                        @foreach($availableStudents as $student)
-                            <option value="{{ $student->id }}">{{ $student->nim }} - {{ $student->nama_student }}</option>
-                        @endforeach
-                    </select>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Menampilkan mahasiswa dari prodi terkait yang belum berada di kelas ini.</p>
+                {{-- Live Search Input --}}
+                <div style="position: relative; margin-bottom: 1rem;">
+                    <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;">🔍</span>
+                    <input
+                        type="text"
+                        id="search-student"
+                        placeholder="Cari NIM atau nama mahasiswa..."
+                        oninput="filterStudentOptions(this.value)"
+                        style="width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; box-sizing: border-box;"
+                        autocomplete="off"
+                    >
                 </div>
-                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                    <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add').style.display = 'none'">Cancel</button>
-                    <button type="submit" class="btn">Enroll Student</button>
+                {{-- Student List --}}
+                <div id="student-list" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                    @foreach($availableStudents as $student)
+                    <label class="student-option" data-search="{{ strtolower($student->nim . ' ' . $student->nama_student) }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                        <input type="radio" name="student_id" value="{{ $student->id }}" required style="accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;">
+                        <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">
+                            {{ strtoupper(substr($student->nama_student, 0, 1)) }}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <strong style="display: block; font-size: 0.9rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $student->nama_student }}</strong>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">NIM: {{ $student->nim }} &bull; Angkatan {{ $student->angkatan ?? '-' }}</span>
+                        </div>
+                    </label>
+                    @endforeach
+                    <div id="no-student-result" style="display: none; padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">Tidak ada mahasiswa yang cocok.</div>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0 0 1.25rem;">Menampilkan <strong>{{ count($availableStudents) }}</strong> mahasiswa dari prodi terkait yang belum terdaftar di kelas ini.</p>
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add').style.display = 'none'">Batal</button>
+                    <button type="submit" class="btn">✅ Enroll Mahasiswa</button>
                 </div>
             </form>
             @else
-            <div style="text-align: center; padding: 1rem 0;">
-                <p style="margin: 0; color: var(--text-muted);">Semua mahasiswa dari prodi terkait sudah terdaftar di kelas ini.</p>
-                <button type="button" class="btn btn-outline" style="margin-top: 1rem;" onclick="document.getElementById('modal-add').style.display = 'none'">Tutup</button>
+            <div style="text-align: center; padding: 2rem 1rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🎓</div>
+                <p style="margin: 0 0 0.5rem; font-weight: 600; color: var(--text-primary);">Semua Mahasiswa Sudah Terdaftar</p>
+                <p style="margin: 0 0 1.5rem; font-size: 0.85rem; color: var(--text-muted);">Semua mahasiswa dari prodi terkait sudah terdaftar di kelas ini.</p>
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add').style.display = 'none'">Tutup</button>
             </div>
             @endif
         </div>
@@ -861,6 +939,107 @@
                     <button type="submit" class="btn" style="background-color: #10b981; color: white;">Import Data</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Add Dosen (Redesigned) -->
+<div id="modal-add-dosen" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 520px;">
+        <div style="padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h3 style="margin: 0 0 0.25rem 0; font-size: 1.2rem; font-weight: 700; color: var(--text-primary);">Tambah Dosen Pengampu</h3>
+                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Tambah dosen kedua, ketiga, atau Kaprodi untuk monitoring kelas</p>
+            </div>
+            <button onclick="document.getElementById('modal-add-dosen').style.display = 'none'" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 1rem;">&times;</button>
+        </div>
+        <div style="padding: 1.5rem;">
+            @if($availableDosens->count() > 0)
+            <form action="{{ route('classes.add_staff', $class) }}" method="POST">
+                @csrf
+                <input type="hidden" name="staff_type" value="dosen">
+                {{-- Live Search --}}
+                <div style="position: relative; margin-bottom: 1rem;">
+                    <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;">🔍</span>
+                    <input
+                        type="text"
+                        id="search-dosen"
+                        placeholder="Cari nama atau NIDN dosen..."
+                        oninput="filterDosenOptions(this.value)"
+                        style="width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; box-sizing: border-box;"
+                        autocomplete="off"
+                    >
+                </div>
+                {{-- Dosen List --}}
+                <div id="dosen-list" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+                    @foreach($availableDosens as $avDosen)
+                    <label class="dosen-option" data-search="{{ strtolower($avDosen->nama_dosen . ' ' . $avDosen->nidn) }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                        <input type="radio" name="dosen_id" value="{{ $avDosen->id }}" required style="accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;">
+                        <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0;">
+                            {{ strtoupper(substr($avDosen->nama_dosen, 0, 1)) }}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <strong style="display: block; font-size: 0.9rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $avDosen->nama_dosen }}</strong>
+                            <div style="display: flex; align-items: center; gap: 0.4rem; margin-top: 0.2rem; flex-wrap: wrap;">
+                                <span style="font-size: 0.72rem; color: var(--text-muted);">NIDN: {{ $avDosen->nidn ?? '-' }}</span>
+                                <span style="font-size: 0.7rem; background: #e0f2fe; color: #0369a1; padding: 0.1rem 0.4rem; border-radius: 9999px; font-weight: 600;">Dosen</span>
+                            </div>
+                        </div>
+                    </label>
+                    @endforeach
+                    <div id="no-dosen-result" style="display: none; padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">Tidak ada dosen yang cocok.</div>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0 0 1.25rem;">Dosen yang sudah terdaftar di kelas ini tidak ditampilkan.</p>
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add-dosen').style.display = 'none'">Batal</button>
+                    <button type="submit" class="btn">👨‍🏫 Tambahkan Dosen</button>
+                </div>
+            </form>
+            @else
+            <div style="text-align: center; padding: 2rem 1rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">👨‍🏫</div>
+                <p style="margin: 0 0 0.5rem; font-weight: 600; color: var(--text-primary);">Semua Dosen Sudah Terdaftar</p>
+                <p style="margin: 0 0 1.5rem; font-size: 0.85rem; color: var(--text-muted);">Tidak ada dosen lain yang tersedia untuk ditambahkan.</p>
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add-dosen').style.display = 'none'">Tutup</button>
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+<!-- Modal Add BAAK -->
+<div id="modal-add-baak" class="modal-backdrop">
+    <div class="modal-box">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">Tambah Staff BAAK</h3>
+            <button onclick="document.getElementById('modal-add-baak').style.display = 'none'" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        <div class="card-body" style="padding: 1.5rem;">
+            @if($availableBaaks->count() > 0)
+            <form action="{{ route('classes.add_staff', $class) }}" method="POST">
+                @csrf
+                <input type="hidden" name="staff_type" value="baak">
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Pilih Staff BAAK <span style="color: red;">*</span></label>
+                    <select name="user_id" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        <option value="">-- Pilih Staff BAAK --</option>
+                        @foreach($availableBaaks as $baak)
+                            <option value="{{ $baak->id }}">{{ $baak->name }} ({{ $baak->email }})</option>
+                        @endforeach
+                    </select>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Staff BAAK yang sudah terdaftar di kelas ini tidak ditampilkan.</p>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add-baak').style.display = 'none'">Batal</button>
+                    <button type="submit" class="btn">Tambahkan Staff BAAK</button>
+                </div>
+            </form>
+            @else
+            <div style="text-align: center; padding: 1rem 0;">
+                <p style="margin: 0; color: var(--text-muted);">Semua staff BAAK sudah terdaftar di kelas ini atau tidak ada staff BAAK yang tersedia.</p>
+                <button type="button" class="btn btn-outline" style="margin-top: 1rem;" onclick="document.getElementById('modal-add-baak').style.display = 'none'">Tutup</button>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -1081,5 +1260,52 @@
             document.getElementById('form-quiz').style.display = 'block';
         }
     }
+
+    // 4. Live search: Mahasiswa
+    function filterStudentOptions(query) {
+        const q = query.toLowerCase().trim();
+        const items = document.querySelectorAll('.student-option');
+        let visibleCount = 0;
+        items.forEach(item => {
+            const text = item.getAttribute('data-search') || '';
+            const match = !q || text.includes(q);
+            item.style.display = match ? 'flex' : 'none';
+            if (match) visibleCount++;
+        });
+        const noResult = document.getElementById('no-student-result');
+        if (noResult) noResult.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    // 5. Live search: Dosen
+    function filterDosenOptions(query) {
+        const q = query.toLowerCase().trim();
+        const items = document.querySelectorAll('.dosen-option');
+        let visibleCount = 0;
+        items.forEach(item => {
+            const text = item.getAttribute('data-search') || '';
+            const match = !q || text.includes(q);
+            item.style.display = match ? 'flex' : 'none';
+            if (match) visibleCount++;
+        });
+        const noResult = document.getElementById('no-dosen-result');
+        if (noResult) noResult.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    // 6. Click-outside to close redesigned modals
+    ['modal-add', 'modal-add-dosen', 'modal-add-baak'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('click', function(e) {
+                if (e.target === el) {
+                    el.style.display = 'none';
+                    // Clear search inputs when closing
+                    const searchStudent = document.getElementById('search-student');
+                    const searchDosen = document.getElementById('search-dosen');
+                    if (searchStudent) { searchStudent.value = ''; filterStudentOptions(''); }
+                    if (searchDosen) { searchDosen.value = ''; filterDosenOptions(''); }
+                }
+            });
+        }
+    });
 </script>
 @endsection

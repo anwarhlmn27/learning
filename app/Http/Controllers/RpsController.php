@@ -307,6 +307,7 @@ class RpsController extends Controller
             'subject.prerequisites', 
             'subject.plos', 
             'subject.clos', 
+            'subject.bks', 
             'sessions.activities', 
             'sessions.clos',
             'sessions.assessments.type',

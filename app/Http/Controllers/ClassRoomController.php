@@ -7,6 +7,7 @@ use App\Models\Subject;
 use App\Models\Dosen;
 use App\Models\Student;
 use App\Models\Enrollment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Rps;
 use App\Models\ClassSession;
@@ -23,7 +24,7 @@ class ClassRoomController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = ClassRoom::with(['subject']);
+        $query = ClassRoom::with(['subject'])->visible(); // exclude deleted
 
         // Non-admin / non-kaprodi only see classes they are enrolled in
         if (!$user->hasRole(['admin', 'kaprodi'])) {
@@ -31,6 +32,9 @@ class ClassRoomController extends Controller
                 $q->where('user_id', $user->id);
             });
         }
+
+        // Default: only active classes on this page
+        $query->where('status', 'active');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -48,7 +52,18 @@ class ClassRoomController extends Controller
         $subjects = Subject::orderBy('nama_subject')->get();
         $dosens = Dosen::orderBy('nama_dosen')->get();
 
-        return view('lms.classes.index', compact('classRooms', 'subjects', 'dosens'));
+        // Build a map of class_id => primary_dosen_id for the edit modal pre-selection
+        $classPrimaryDosenMap = [];
+        foreach ($classRooms as $cr) {
+            $firstDosenUser = $cr->dosens()->first();
+            if ($firstDosenUser && $firstDosenUser->dosen) {
+                $classPrimaryDosenMap[$cr->id] = $firstDosenUser->dosen->id;
+            } else {
+                $classPrimaryDosenMap[$cr->id] = '';
+            }
+        }
+
+        return view('lms.classes.index', compact('classRooms', 'subjects', 'dosens', 'classPrimaryDosenMap'));
     }
 
     public function store(Request $request)
@@ -68,10 +83,11 @@ class ClassRoomController extends Controller
 
         DB::transaction(function() use ($request) {
             $class = ClassRoom::create([
-                'subject_id' => $request->subject_id,
-                'nama_kelas' => $request->nama_kelas,
-                'tahun_akademik' => $request->tahun_akademik,
-                'semester' => $request->semester,
+                'subject_id'    => $request->subject_id,
+                'nama_kelas'    => $request->nama_kelas,
+                'tahun_akademik'=> $request->tahun_akademik,
+                'semester'      => $request->semester,
+                'status'        => 'active',
             ]);
 
             // Add the lecturer to class_users pivot
@@ -92,26 +108,26 @@ class ClassRoomController extends Controller
         }
 
         $request->validate([
-            'subject_id' => 'required|exists:subjects,id',
-            'dosen_id' => 'required|exists:dosens,id',
-            'nama_kelas' => 'required|string|max:255',
+            'subject_id'     => 'required|exists:subjects,id',
+            'dosen_id'       => 'required|exists:dosens,id',
+            'nama_kelas'     => 'required|string|max:255',
             'tahun_akademik' => 'required|string|max:50',
-            'semester' => 'required|in:Ganjil,Genap,Antara',
-            'is_active' => 'boolean',
+            'semester'       => 'required|in:Ganjil,Genap,Antara',
+            'status'         => 'required|in:active,archived',
         ]);
 
         DB::transaction(function() use ($request, $class) {
             $class->update([
-                'subject_id' => $request->subject_id,
-                'nama_kelas' => $request->nama_kelas,
+                'subject_id'     => $request->subject_id,
+                'nama_kelas'     => $request->nama_kelas,
                 'tahun_akademik' => $request->tahun_akademik,
-                'semester' => $request->semester,
-                'is_active' => $request->has('is_active') ? 1 : 0,
+                'semester'       => $request->semester,
+                'status'         => $request->status,
             ]);
 
-            // Sync Lecturer (Dosen) in class_users
-            $dosen = Dosen::find($request->dosen_id);
-            if ($dosen && $dosen->user_id) {
+            // Replace primary dosen: detach ALL existing dosens, then attach the chosen one.
+            $newDosen = Dosen::find($request->dosen_id);
+            if ($newDosen && $newDosen->user_id) {
                 $dosenRole = \App\Models\Role::where('name', 'dosen')->first();
                 if ($dosenRole) {
                     $dosenUserIds = $class->users()
@@ -120,16 +136,21 @@ class ClassRoomController extends Controller
                         })
                         ->pluck('users.id')
                         ->toArray();
-                    
                     $class->users()->detach($dosenUserIds);
                 }
-                $class->users()->attach($dosen->user_id, ['id' => (string) \Illuminate\Support\Str::uuid()]);
+                if (!$class->users()->where('user_id', $newDosen->user_id)->exists()) {
+                    $class->users()->attach($newDosen->user_id, ['id' => (string) \Illuminate\Support\Str::uuid()]);
+                }
             }
         });
 
         return redirect()->route('classes.index')->with('success', 'Data Kelas berhasil diperbarui.');
     }
 
+    /**
+     * Soft-delete: only allowed if class is archived OR has no content.
+     * Active class with any topics/assignments cannot be deleted.
+     */
     public function destroy(ClassRoom $class)
     {
         $user = Auth::user();
@@ -137,8 +158,76 @@ class ClassRoomController extends Controller
             return back()->with('error', 'Anda tidak memiliki akses untuk menghapus kelas.');
         }
 
-        $class->delete();
-        return redirect()->route('classes.index')->with('success', 'Kelas berhasil dihapus.');
+        // Guard: active class with content cannot be deleted
+        if ($class->status === 'active' && $class->hasActiveContent()) {
+            return back()->with('error',
+                'Kelas "' . $class->nama_kelas . '" tidak dapat dihapus karena masih berstatus Aktif dan memiliki kegiatan di dalamnya. '
+                . 'Arsipkan kelas terlebih dahulu sebelum menghapusnya.');
+        }
+
+        // Soft delete: just mark as deleted
+        $class->update(['status' => 'deleted']);
+
+        return redirect()->route('classes.index')->with('success', 'Kelas berhasil dihapus (soft-delete). Data tetap tersimpan di sistem.');
+    }
+
+    /**
+     * Toggle status: active <-> archived (by dosen, baak, kaprodi, admin).
+     */
+    public function archive(Request $request, ClassRoom $class)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole(['admin', 'kaprodi', 'dosen', 'baak'])) {
+            return back()->with('error', 'Anda tidak memiliki akses.');
+        }
+
+        // Only enrolled users or admins can archive
+        if (!$user->hasRole(['admin', 'kaprodi'])) {
+            $isEnrolled = $class->users()->where('user_id', $user->id)->exists();
+            if (!$isEnrolled) {
+                return back()->with('error', 'Anda tidak terdaftar di kelas ini.');
+            }
+        }
+
+        if ($class->status === 'active') {
+            $class->update(['status' => 'archived']);
+            return back()->with('success', 'Kelas "' . $class->nama_kelas . '" berhasil diarsipkan. Semua konten menjadi read-only.');
+        } elseif ($class->status === 'archived') {
+            $class->update(['status' => 'active']);
+            return back()->with('success', 'Kelas "' . $class->nama_kelas . '" berhasil diaktifkan kembali.');
+        }
+
+        return back()->with('error', 'Status kelas tidak valid untuk diubah.');
+    }
+
+    /**
+     * Archived classes page.
+     */
+    public function archivedIndex(Request $request)
+    {
+        $user = Auth::user();
+
+        $query = ClassRoom::with(['subject'])->where('status', 'archived');
+
+        if (!$user->hasRole(['admin', 'kaprodi'])) {
+            $query->whereHas('users', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_kelas', 'like', "%{$search}%")
+                  ->orWhereHas('subject', function($q2) use ($search) {
+                      $q2->where('nama_subject', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $classRooms = $query->latest()->paginate(10)->withQueryString();
+
+        return view('lms.classes.archived', compact('classRooms'));
     }
 
     public function show(ClassRoom $class)
@@ -204,6 +293,20 @@ class ClassRoomController extends Controller
         $subjects = Subject::orderBy('nama_subject')->get();
         $dosens = Dosen::orderBy('nama_dosen')->get();
 
+        // People tab: get all dosen/baak user IDs already in this class so we can exclude them from dropdowns
+        $enrolledDosenUserIds = $lecturers->pluck('id')->toArray();
+        $enrolledBaakUserIds = $baakStaff->pluck('id')->toArray();
+
+        // Available dosens to add (not already in this class)
+        $availableDosens = Dosen::whereHas('user', function($q) use ($enrolledDosenUserIds) {
+            $q->whereNotIn('id', $enrolledDosenUserIds);
+        })->orderBy('nama_dosen')->get();
+
+        // Available BAAK staff to add (not already in this class)
+        $availableBaaks = User::whereHas('roles', function($q) {
+            $q->where('name', 'baak');
+        })->whereNotIn('id', $enrolledBaakUserIds)->orderBy('name')->get();
+
         return view('lms.classes.show', compact(
             'class', 
             'enrollments', 
@@ -216,8 +319,57 @@ class ClassRoomController extends Controller
             'submissions', 
             'quizAttempts',
             'subjects',
-            'dosens'
+            'dosens',
+            'availableDosens',
+            'availableBaaks'
         ));
+    }
+
+    public function addStaff(Request $request, ClassRoom $class)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole(['admin', 'kaprodi'])) {
+            return back()->with('error', 'Anda tidak memiliki akses untuk mengelola staff kelas.');
+        }
+
+        $request->validate([
+            'staff_type' => 'required|in:dosen,baak',
+            'user_id'   => 'required_if:staff_type,baak|nullable|exists:users,id',
+            'dosen_id'  => 'required_if:staff_type,dosen|nullable|exists:dosens,id',
+        ]);
+
+        if ($request->staff_type === 'dosen') {
+            $dosen = Dosen::find($request->dosen_id);
+            if (!$dosen || !$dosen->user_id) {
+                return back()->with('error', 'Data dosen tidak ditemukan.');
+            }
+            $targetUserId = $dosen->user_id;
+            $label = $dosen->nama_dosen;
+        } else {
+            $targetUserId = $request->user_id;
+            $baakUser = User::find($targetUserId);
+            $label = $baakUser ? $baakUser->name : 'Staff BAAK';
+        }
+
+        if ($class->users()->where('user_id', $targetUserId)->exists()) {
+            return back()->with('error', $label . ' sudah terdaftar di kelas ini.');
+        }
+
+        $class->users()->attach($targetUserId, ['id' => (string) \Illuminate\Support\Str::uuid()]);
+
+        return back()->with('success', $label . ' berhasil ditambahkan ke kelas.');
+    }
+
+    public function removeStaff(ClassRoom $class, User $user)
+    {
+        $authUser = Auth::user();
+        if (!$authUser->hasRole(['admin', 'kaprodi'])) {
+            return back()->with('error', 'Anda tidak memiliki akses.');
+        }
+
+        $class->users()->detach($user->id);
+
+        return back()->with('success', 'Staff berhasil dihapus dari kelas.');
     }
 
     public function generateLmsFromRps(ClassRoom $class)
@@ -230,6 +382,7 @@ class ClassRoomController extends Controller
             }
         }
 
+        // Try to find an active RPS first
         $rps = Rps::where('subject_id', $class->subject_id)
                   ->where('status', 'active')
                   ->latest()
@@ -241,6 +394,11 @@ class ClassRoomController extends Controller
 
         if (!$rps) {
             return back()->with('error', 'Tidak ada data RPS yang ditemukan untuk mata kuliah ini.');
+        }
+
+        // Block import if RPS is still in Draft status
+        if (strtolower($rps->status) === 'draft') {
+            return back()->with('error', 'RPS "' . optional($rps->subject)->nama_subject . '" masih berstatus Draf dan belum dapat diimport. Silakan ubah status RPS menjadi Aktif terlebih dahulu.');
         }
 
         DB::beginTransaction();

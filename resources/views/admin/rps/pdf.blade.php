@@ -38,13 +38,6 @@
                 <li>{{ $misi->konten }}</li>
             @endforeach
         </ul>
-
-        <h4>Tujuan:</h4>
-        <ul>
-            @foreach($visiUniv->details->where('type', 'tujuan') as $tujuan)
-                <li>{{ $tujuan->konten }}</li>
-            @endforeach
-        </ul>
     </div>
     @endif
 
@@ -126,16 +119,22 @@
             <td>{{ $rp->tanggal_penyusunan ? \Carbon\Carbon::parse($rp->tanggal_penyusunan)->format('d M Y') : '-' }}</td>
         </tr>
         <tr>
-            <th style="text-align: left;">Pengembang RPS</th>
-            <td>{{ $rp->pengembang_rps ?? '-' }}</td>
+            <th style="text-align: left; vertical-align: middle;">Pengembang RPS</th>
+            <td style="height: 70px; vertical-align: bottom; padding-bottom: 5px;">
+                <div style="font-size: 10px; color: #777; margin-bottom: 30px;">Tanda Tangan:</div>
+                <strong>{{ $rp->pengembang_rps ?? '-' }}</strong>
+            </td>
         </tr>
         <tr>
-            <th style="text-align: left;">Dosen Pengampu</th>
-            <td>{{ $rp->dosen_pengampu ?? '-' }}</td>
+            <th style="text-align: left; vertical-align: middle;">Dosen Pengampu</th>
+            <td style="vertical-align: middle;">{{ $rp->dosen_pengampu ?? '-' }}</td>
         </tr>
         <tr>
-            <th style="text-align: left;">Kepala Program Studi</th>
-            <td>{{ $rp->subject->prodi->nama_pimpinan ?? '-' }}</td>
+            <th style="text-align: left; vertical-align: middle;">Kepala Program Studi</th>
+            <td style="height: 70px; vertical-align: bottom; padding-bottom: 5px;">
+                <div style="font-size: 10px; color: #777; margin-bottom: 30px;">Tanda Tangan:</div>
+                <strong>{{ $rp->subject->prodi->nama_pimpinan ?? '-' }}</strong>
+            </td>
         </tr>
     </table>
 
@@ -146,8 +145,8 @@
         <h4 style="text-align: left; background: none; border: none; padding: 0; font-size: 13px;">Program Learning Outcomes (PLO) yang dibebankan pada Mata Kuliah:</h4>
         <ul style="padding-left: 20px; margin-top: 5px;">
             @if($rp->subject->plos && $rp->subject->plos->count() > 0)
-                @foreach($rp->subject->plos as $plo)
-                    <li><strong>{{ $plo->kode_plo }}:</strong> {{ $plo->deskripsi }}</li>
+                @foreach($rp->subject->plos->sortBy('kode_plo') as $plo)
+                    <li><strong>{{ $plo->kode_plo }} - {{ $plo->plo_title }}:</strong> {{ $plo->rumusan_plo }}</li>
                 @endforeach
             @else
                 <li>-</li>
@@ -172,7 +171,19 @@
     <div class="section-title">Referensi & Media Pembelajaran</div>
     <div style="margin-bottom: 10px;">
         <h4 style="text-align: left; background: none; border: none; padding: 0; font-size: 13px; margin-top: 10px;">Referensi:</h4>
-        <p style="margin-top: 5px; white-space: pre-wrap;">{{ $rp->referensi ?? '-' }}</p>
+        @if($rp->subject->bks && $rp->subject->bks->count() > 0)
+            <ol style="padding-left: 20px; margin-top: 5px;">
+                @foreach($rp->subject->bks as $bk)
+                    @if($bk->sumber_acuan)
+                        <li>{{ $bk->sumber_acuan }}</li>
+                    @else
+                        <li>{{ $bk->nm_bahan_kajian }}</li>
+                    @endif
+                @endforeach
+            </ol>
+        @else
+            <p style="margin-top: 5px; white-space: pre-wrap;">{{ $rp->referensi ?? '-' }}</p>
+        @endif
     </div>
 
     <div style="margin-bottom: 10px;">

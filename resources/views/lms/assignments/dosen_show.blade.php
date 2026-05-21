@@ -4,10 +4,13 @@
 
 @section('content')
 <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
-    <a href="{{ route('assignments.index') }}" class="btn btn-outline" style="padding: 0.5rem 1rem; border-radius: 9999px;">
-        ← Back
+    <a href="{{ route('classes.show', $assignment->classRoom) }}" class="btn btn-outline" style="padding: 0.5rem 1rem; border-radius: 9999px;">
+        ← Kembali ke Kelas
     </a>
-    <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">{{ $assignment->title }}</h2>
+    <div>
+        <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">{{ $assignment->title }}</h2>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ optional($assignment->classRoom)->nama_kelas }} &mdash; {{ optional($assignment->classRoom->subject)->nama_subject }}</span>
+    </div>
 </div>
 
 @if(session('error'))

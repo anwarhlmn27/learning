@@ -11,6 +11,43 @@ class ClassRoom extends Model
 
     protected $guarded = [];
 
+    /**
+     * Status helpers
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->status === 'archived';
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->status === 'deleted';
+    }
+
+    /**
+     * Scopes
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeArchived($query)
+    {
+        return $query->where('status', 'archived');
+    }
+
+    public function scopeVisible($query)
+    {
+        // Exclude soft-deleted classrooms
+        return $query->whereIn('status', ['active', 'archived']);
+    }
+
     public function subject() {
         return $this->belongsTo(Subject::class, 'subject_id');
     }
@@ -56,5 +93,17 @@ class ClassRoom extends Model
 
     public function topics() {
         return $this->hasMany(ClassTopic::class, 'class_room_id')->orderBy('session_number');
+    }
+
+    public function assignments() {
+        return $this->hasMany(Assignment::class, 'class_room_id');
+    }
+
+    /**
+     * Check if classroom has any active content (topics / assignments)
+     */
+    public function hasActiveContent(): bool
+    {
+        return $this->topics()->exists() || $this->assignments()->exists();
     }
 }

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('nama_kelas');
             $table->string('tahun_akademik');
             $table->enum('semester', ['Ganjil', 'Genap', 'Antara']);
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['active', 'archived', 'deleted'])->default('active');
             $table->timestamps();
             
             $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');

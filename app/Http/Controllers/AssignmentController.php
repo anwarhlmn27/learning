@@ -39,7 +39,7 @@ class AssignmentController extends Controller
         
         if ($user->hasRole(['admin', 'kaprodi', 'dosen'])) {
             // Dosen Grading Center
-            $query = Assignment::with(['classRoom.subject', 'classRoom.dosen']);
+            $query = Assignment::with(['classRoom.subject', 'classRoom.dosens']);
             
             if ($user->hasRole('dosen') && !$user->hasRole(['admin', 'kaprodi'])) {
                 if (!$user->dosen) {
@@ -65,6 +65,8 @@ class AssignmentController extends Controller
             if (!$user->student) {
                 return back()->with('error', 'Data mahasiswa tidak valid.');
             }
+            
+            $assignment->load('classRoom.subject');
             
             $submission = AssignmentSubmission::where('assignment_id', $assignment->id)
                                               ->where('student_id', $user->student->id)
