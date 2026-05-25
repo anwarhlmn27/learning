@@ -13,13 +13,7 @@
     </a>
 </div>
 
-@if(session('error'))
-    <div class="flash-alert" style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border: 1px solid #fecaca; border-radius: 8px; margin-bottom: 1.5rem;">{{ session('error') }}</div>
-@endif
 
-@if(session('success'))
-    <div class="flash-alert" style="background-color: #f0fdf4; color: #166534; padding: 1rem; border: 1px solid #bbf7d0; border-radius: 8px; margin-bottom: 1.5rem;">{{ session('success') }}</div>
-@endif
 
 {{-- Info banner --}}
 <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f59e0b; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">

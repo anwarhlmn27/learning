@@ -17,6 +17,14 @@ class DosenController extends Controller
     {
         $query = Dosen::with(['user', 'prodi']);
 
+        // ── Filter by prodi ──────────────────────────────────────────────────
+        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+        $selectedProdi = null;
+        if ($prodiId) {
+            $selectedProdi = \App\Models\Prodi::find($prodiId);
+            $query->where('prodi_id', $prodiId);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('user', function($q) use ($search) {
@@ -32,7 +40,7 @@ class DosenController extends Controller
 
         $dosens = $query->latest()->paginate(10)->withQueryString();
         $prodis = Prodi::orderBy('nama_prodi')->get();
-        return view('admin.dosens.index', compact('dosens', 'prodis'));
+        return view('admin.dosens.index', compact('dosens', 'prodis', 'selectedProdi'));
     }
 
     public function store(Request $request)

@@ -7,72 +7,63 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\ClassRoom;
 use App\Models\Assignment;
 use App\Models\Enrollment;
+use App\Models\Prodi;
 
 class LmsController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $user = Auth::user();
-        
+
+        // ── Kaprodi: auto-scope to their prodi ──────────────────────────────
+        if ($user->hasRole('kaprodi')) {
+            $prodi = Prodi::where('kaprodi_id', $user->id)->first();
+            if ($prodi) {
+                session(['selected_prodi_id' => $prodi->id]);
+                return redirect()->route('classes.index', ['prodi_id' => $prodi->id]);
+            }
+        }
+
+        // ── Admin / Rektor / Dekan: show prodi picker ────────────────────────
+        if ($user->hasRole(['admin', 'rektor', 'dekan'])) {
+            $prodis = Prodi::with(['fakultas', 'kaprodi'])->orderBy('nama_prodi')->get();
+            return view('lms.dashboard', compact('user', 'prodis'));
+        }
+
+        // ── Dosen / Mahasiswa: show personal dashboard ──────────────────────
         $data = [
-            'total_classes' => 0,
+            'total_classes'     => 0,
             'total_assignments' => 0,
-            'classes' => [],
-            'assignments' => []
+            'classes'           => [],
+            'assignments'       => [],
         ];
 
-        // Jika Dosen (berdasarkan role atau mengecek jika ada di tabel dosens)
         if ($user->hasRole('dosen')) {
-            // Ambil data dosen terkait
             $dosen = \App\Models\Dosen::where('user_id', $user->id)->first();
-            
             if ($dosen) {
-                $classes = ClassRoom::whereHas('users', function($q) use ($user) {
-                                $q->where('user_id', $user->id);
-                            })
-                            ->where('status', 'active')
-                            ->with('subject')
-                            ->get();
-                            
-                $data['total_classes'] = $classes->count();
-                $data['classes'] = $classes;
-                
-                // Tugas di kelas dosen tersebut
-                $classIds = $classes->pluck('id');
-                $assignments = Assignment::whereIn('class_room_id', $classIds)
-                                ->orderBy('deadline', 'asc')
-                                ->take(5)
-                                ->get();
-                                
+                $classes = ClassRoom::whereHas('users', fn($q) => $q->where('user_id', $user->id))
+                    ->where('status', 'active')->with('subject')->get();
+                $data['total_classes']     = $classes->count();
+                $data['classes']           = $classes;
+                $classIds                  = $classes->pluck('id');
+                $data['assignments']       = Assignment::whereIn('class_room_id', $classIds)->orderBy('deadline')->take(5)->get();
                 $data['total_assignments'] = Assignment::whereIn('class_room_id', $classIds)->count();
-                $data['assignments'] = $assignments;
             }
-            
             $data['view_type'] = 'dosen';
-            
         } else {
-            // Asumsi Mahasiswa (Student)
             $student = \App\Models\Student::where('user_id', $user->id)->first();
-            
             if ($student) {
-                $enrollments = Enrollment::where('student_id', $student->id)->with(['classRoom.subject'])->get();
-                $classIds = $enrollments->pluck('class_room_id');
-                
+                $enrollments           = Enrollment::where('student_id', $student->id)->with(['classRoom.subject'])->get();
+                $classIds              = $enrollments->pluck('class_room_id');
                 $data['total_classes'] = $enrollments->count();
-                $data['classes'] = $enrollments->map(function($e) { return $e->classRoom; });
-                
-                $assignments = Assignment::whereIn('class_room_id', $classIds)
-                                ->orderBy('deadline', 'asc')
-                                ->take(5)
-                                ->get();
-                                
+                $data['classes']       = $enrollments->map(fn($e) => $e->classRoom);
+                $data['assignments']       = Assignment::whereIn('class_room_id', $classIds)->orderBy('deadline')->take(5)->get();
                 $data['total_assignments'] = Assignment::whereIn('class_room_id', $classIds)->count();
-                $data['assignments'] = $assignments;
             }
-            
             $data['view_type'] = 'student';
         }
 
-        return view('lms.dashboard', compact('data', 'user'));
+        $prodis = collect();
+        return view('lms.dashboard', compact('data', 'user', 'prodis'));
     }
 }

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('file_path')->nullable(); // Untuk PDF/PPT
+            $table->string('original_filename')->nullable();
             $table->string('link_url')->nullable();  // Untuk link eksternal
             $table->timestamps();
         });
@@ -47,6 +48,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('forum_posts');
+        Schema::dropIfExists('forums');
         Schema::dropIfExists('materials');
     }
 };

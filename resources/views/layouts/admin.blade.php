@@ -27,6 +27,68 @@
         body {
             font-family: {{ Auth::check() && Auth::user()->font_family ? Auth::user()->font_family : "'Inter', sans-serif" }} !important;
         }
+
+        /* ====== TOAST NOTIFICATION ====== */
+        #lms-toast-container {
+            position: fixed;
+            top: 1.25rem;
+            right: 1.25rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            pointer-events: none;
+        }
+        .lms-toast {
+            pointer-events: all;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            border-radius: 10px;
+            padding: 0.85rem 1.1rem;
+            min-width: 280px;
+            max-width: 370px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+            transform: translateX(120%);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(.22,1,.36,1), opacity 0.28s ease;
+        }
+        .lms-toast.show { transform: translateX(0); opacity: 1; }
+        .lms-toast.hide { transform: translateX(120%); opacity: 0; }
+        .lms-toast-icon {
+            flex-shrink: 0;
+            width: 2rem; height: 2rem;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; font-weight: 900; color: #fff;
+        }
+        .lms-toast-body   { flex: 1; min-width: 0; }
+        .lms-toast-title  { font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 0.1rem; line-height: 1.3; }
+        .lms-toast-message{ font-size: 0.82rem; font-weight: 400; color: rgba(255,255,255,0.88); line-height: 1.4; word-break: break-word; }
+        .lms-toast-close  {
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.2); border: none; cursor: pointer;
+            color: #fff; font-size: 1rem;
+            width: 1.5rem; height: 1.5rem; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            line-height: 1; transition: background 0.2s; padding: 0;
+        }
+        .lms-toast-close:hover { background: rgba(255,255,255,0.35); }
+        .lms-toast-progress {
+            position: absolute; bottom: 0; left: 0; height: 3px;
+            width: 100%; transform-origin: left;
+            background: rgba(255,255,255,0.4);
+            animation: toast-progress 2s linear forwards;
+        }
+        @keyframes toast-progress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        /* type colours — solid backgrounds */
+        .lms-toast.toast-success { background: #5aab6e; }
+        .lms-toast.toast-error   { background: #e05252; }
+        .lms-toast.toast-warning { background: #d97706; }
+        .lms-toast.toast-info    { background: #3b82f6; }
     </style>
     @yield('styles')
 </head>
@@ -161,30 +223,74 @@
         <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
         <div class="content-padding">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
-            @if($errors->any())
-                <div class="alert alert-danger" style="background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-                    <ul style="margin: 0; padding-left: 1.5rem;">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             @yield('content')
         </div>
     </div>
+
+    <!-- ====== GLOBAL TOAST CONTAINER ====== -->
+    <div id="lms-toast-container"></div>
+
+    @if(session('success'))
+    <script>document.addEventListener('DOMContentLoaded',function(){lmsToast('success',@json(session('success')));});</script>
+    @endif
+    @if(session('error'))
+    <script>document.addEventListener('DOMContentLoaded',function(){lmsToast('error',@json(session('error')));});</script>
+    @endif
+    @if(session('warning'))
+    <script>document.addEventListener('DOMContentLoaded',function(){lmsToast('warning',@json(session('warning')));});</script>
+    @endif
+    @if(session('info'))
+    <script>document.addEventListener('DOMContentLoaded',function(){lmsToast('info',@json(session('info')));});</script>
+    @endif
+    @if($errors->any())
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @foreach($errors->all() as $msg)
+            lmsToast('error', @json($msg), 4000);
+        @endforeach
+    });
+    </script>
+    @endif
     
     <script>
+        /* ====== TOAST SYSTEM ====== */
+        const TOAST_META = {
+            success: { icon: '&#10003;', label: 'Berhasil' },
+            error:   { icon: '&#10005;', label: 'Gagal' },
+            warning: { icon: '!',        label: 'Peringatan' },
+            info:    { icon: 'i',        label: 'Informasi' },
+        };
+        function lmsToast(type, message, duration) {
+            duration = duration || 2000;
+            const meta      = TOAST_META[type] || TOAST_META.info;
+            const container = document.getElementById('lms-toast-container');
+            const toast     = document.createElement('div');
+            toast.className = 'lms-toast toast-' + type;
+            toast.innerHTML = `
+                <span class="lms-toast-icon">${meta.icon}</span>
+                <div class="lms-toast-body">
+                    <div class="lms-toast-title">${meta.label}</div>
+                    <div class="lms-toast-message">${message}</div>
+                </div>
+                <button class="lms-toast-close" onclick="lmsDismissToast(this.closest('.lms-toast'))" aria-label="Tutup">&times;</button>
+                <div class="lms-toast-progress" style="animation-duration:${duration}ms"></div>
+            `;
+            container.appendChild(toast);
+            requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+            setTimeout(() => lmsDismissToast(toast), duration);
+        }
+        function lmsDismissToast(toast) {
+            if (!toast || toast.classList.contains('hide')) return;
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            setTimeout(() => toast && toast.remove(), 400);
+        }
+
         function toggleAvatarDropdown() {
             const dropdown = document.getElementById('avatar-dropdown');
             dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
         }
-        
+
         window.addEventListener('click', function(e) {
             if (!e.target.closest('.avatar-dropdown-wrapper')) {
                 const dropdown = document.getElementById('avatar-dropdown');
@@ -195,20 +301,17 @@
         function toggleDropdown(id) {
             const dropdown = document.getElementById(id);
             const btn = dropdown.previousElementSibling;
-            
             if (document.getElementById('sidebar').classList.contains('collapsed')) {
                 toggleSidebar();
             }
-
             dropdown.classList.toggle('show');
             btn.classList.toggle('open');
         }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            const logo = document.getElementById('sidebar-logo');
+            const logo    = document.getElementById('sidebar-logo');
             const overlay = document.getElementById('sidebar-overlay');
-            
             if (window.innerWidth <= 768) {
                 sidebar.classList.toggle('active');
                 overlay.classList.toggle('active');
@@ -219,65 +322,43 @@
                 } else {
                     logo.src = "{{ asset(get_setting('dashboard_logo') ? 'img/logo_dashboard/' . get_setting('dashboard_logo') : 'img/logo_hui.png') }}";
                 }
-                // Save state to localStorage
-                const isCollapsed = sidebar.classList.contains('collapsed');
-                localStorage.setItem('sidebarCollapsed', isCollapsed);
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             }
         }
 
-        // Restore sidebar state and Auto-hide alerts after 3 seconds
+        // Restore sidebar state
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
-            const logo = document.getElementById('sidebar-logo');
-            
-            // Restore sidebar state
+            const logo    = document.getElementById('sidebar-logo');
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             if (isCollapsed) {
                 sidebar.classList.add('collapsed');
                 logo.src = "{{ asset(get_setting('favicon') ? 'img/favicon/' . get_setting('favicon') : 'img/icon_hui.png') }}";
             }
 
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    alert.style.transition = 'opacity 0.5s ease';
-                    alert.style.opacity = '0';
-                    setTimeout(() => {
-                        alert.remove();
-                    }, 500);
-                }, 3000);
-            });
-
-            // Auto Logout after 10 seconds of inactivity
+            // Auto Logout after 1 hour of inactivity
             let idleTimer;
-            const idleLimit = 3600000; // 1 hour
-
+            const idleLimit = 3600000;
             function resetIdleTimer() {
                 clearTimeout(idleTimer);
                 idleTimer = setTimeout(logoutUser, idleLimit);
             }
-
             function logoutUser() {
                 const logoutForm = document.createElement('form');
                 logoutForm.method = 'POST';
                 logoutForm.action = "{{ route('logout') }}";
-                
                 const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
+                csrfInput.type  = 'hidden';
+                csrfInput.name  = '_token';
                 csrfInput.value = "{{ csrf_token() }}";
-                
                 logoutForm.appendChild(csrfInput);
                 document.body.appendChild(logoutForm);
-                
-                alert('Sesi Anda berakhir karena tidak ada aktivitas selama 10 detik.');
+                alert('Sesi Anda berakhir karena tidak ada aktivitas.');
                 logoutForm.submit();
             }
-
-            ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(event => {
-                window.addEventListener(event, resetIdleTimer);
+            ['mousemove','mousedown','keydown','scroll','touchstart','click'].forEach(ev => {
+                window.addEventListener(ev, resetIdleTimer);
             });
-
             resetIdleTimer();
         });
     </script>

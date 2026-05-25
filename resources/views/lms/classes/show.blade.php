@@ -361,18 +361,34 @@
                                     <h4 style="margin: 0 0 0.25rem 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">
                                         {{ $topic->title }}
                                     </h4>
-                                    <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: var(--text-muted);">
-                                        {{ $topic->type }}
-                                    </span>
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: var(--text-muted);">
+                                            {{ $topic->type }}
+                                        </span>
+                                        @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+                                            <form action="{{ route('classes.destroy_topic', [$class, $topic]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Yakin ingin menghapus aktivitas ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" style="background: none; border: none; padding: 0; color: #dc2626; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;" title="Hapus Aktivitas">🗑️</button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </div>
                                 
                                 @if($topic->type == 'materi' && $topic->material)
                                     <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-muted);">{{ $topic->material->description }}</p>
-                                    @if($topic->material->link)
-                                        <a href="{{ $topic->material->link }}" target="_blank" class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
-                                            <i>🔗</i> Buka Tautan Materi
-                                        </a>
-                                    @endif
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                        @if($topic->material->file_path)
+                                            <a href="{{ route('classes.download_material', [$class, $topic->material]) }}" target="_blank" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                <i>👁️</i> Buka / Download File
+                                            </a>
+                                        @endif
+                                        @if($topic->material->link_url)
+                                            <a href="{{ $topic->material->link_url }}" target="_blank" class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                <i>🔗</i> Buka Tautan
+                                            </a>
+                                        @endif
+                                    </div>
                                 @elseif($topic->type == 'assignment' && $topic->assignment)
                                     <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-muted);">{{ Str::limit($topic->assignment->instruction, 150) }}</p>
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
@@ -498,7 +514,7 @@
                                 <span style="font-size: 0.8rem; color: var(--text-muted);">{{ $baakUser->email }}</span>
                             </div>
                             @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-                                <form action="{{ route('classes.remove_staff', [$class, $baakUser]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Hapus BAAK staff ini dari kelas?')">
+                                <form action="{{ route('classes.remove_staff', [$class, $baakUser]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Hapus BAAK ini dari kelas?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #dc2626; border-color: #fecaca;">Hapus</button>
@@ -506,7 +522,7 @@
                             @endif
                         </li>
                     @empty
-                        <li style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Belum ada staff BAAK yang didelegasikan ke kelas ini.</li>
+                        <li style="padding: 2rem; text-align: center; color: var(--text-muted);">Tidak ada staff BAAK yang terdaftar di kelas ini.</li>
                     @endforelse
                 </ul>
             </div>
@@ -1064,7 +1080,7 @@
             </div>
 
             <!-- Form Material -->
-            <form id="form-materi" action="{{ route('classes.store_material', $class) }}" method="POST" class="classwork-form">
+            <form id="form-materi" action="{{ route('classes.store_material', $class) }}" method="POST" enctype="multipart/form-data" class="classwork-form">
                 @csrf
                 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
@@ -1080,9 +1096,16 @@
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Deskripsi / Ringkasan</label>
                     <textarea name="description" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"></textarea>
                 </div>
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Link Tautan Eksternal</label>
-                    <input type="url" name="link" placeholder="https://youtube.com/ atau drive link" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Upload File (Bisa lebih dari 1)</label>
+                        <input type="file" name="files[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem;">
+                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Max 2MB per file (PDF, Word, PPT)</span>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Link Eksternal (Opsional)</label>
+                        <input type="url" name="link" placeholder="https://youtube.com/ atau drive link" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                    </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
                     <button type="button" class="btn btn-outline" onclick="closeAddClassworkModal()">Cancel</button>

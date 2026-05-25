@@ -1,24 +1,28 @@
 @extends('layouts.lms')
 
-@section('header_title', 'My Classes')
+@section('header_title', isset($selectedProdi) && $selectedProdi ? 'Kelas — ' . $selectedProdi->nama_prodi : 'Kelas Aktif')
 
 @section('content')
+
+@if(isset($selectedProdi) && $selectedProdi)
+<div style="background:#eff6ff; border-left:4px solid #3b82f6; border-radius:6px; padding:0.6rem 1rem; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; font-size:0.85rem;">
+    <span>📚 <strong>{{ $selectedProdi->nama_prodi }}</strong> — Kelas Aktif</span>
+    @if(Auth::user()->hasRole(['admin','rektor','dekan']))
+    <a href="{{ route('dashboard') }}" style="color:#3b82f6; font-weight:600; text-decoration:none;">← Ganti Prodi</a>
+    @endif
+</div>
+@endif
+
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-    <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">Class Enrollment</h2>
+    <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">Kelas Aktif</h2>
     @if(Auth::user()->hasRole(['admin', 'kaprodi']))
     <button class="btn" onclick="document.getElementById('modal-add').style.display = 'flex'">
-        <i>➕</i> Add New Class
+        <i>➕</i> Tambah Kelas
     </button>
     @endif
 </div>
 
-@if(session('error'))
-    <div class="flash-alert" style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border: 1px solid #fecaca; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('error') }}</div>
-@endif
 
-@if(session('success'))
-    <div class="flash-alert" style="background-color: #f0fdf4; color: #166534; padding: 1rem; border: 1px solid #bbf7d0; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('success') }}</div>
-@endif
 
 <!-- Filter Form -->
 <div class="card" style="margin-bottom: 1.5rem;">

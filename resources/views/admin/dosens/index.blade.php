@@ -18,13 +18,7 @@
     </div>
 </div>
 
-@if(session('error'))
-    <div class="alert" style="background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; margin-bottom: 1rem;">{{ session('error') }}</div>
-@endif
 
-@if(session('success'))
-    <div class="alert" style="background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; margin-bottom: 1rem;">{{ session('success') }}</div>
-@endif
 
 <!-- Filter Form -->
 <div class="card" style="margin-bottom: 1.5rem;">
@@ -106,23 +100,23 @@
             <form action="{{ route('dosen.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">NIDN</label>
+                    <label class="form-label">NIDN <span style="color:#ef4444;">*</span></label>
                     <input type="text" name="nidn" class="form-control" required value="{{ old('nidn') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Nama Lengkap Dosen</label>
+                    <label class="form-label">Nama Lengkap Dosen <span style="color:#ef4444;">*</span></label>
                     <input type="text" name="nama_dosen" class="form-control" required value="{{ old('nama_dosen') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Gelar (Opsional)</label>
+                    <label class="form-label">Gelar <span style="font-size:0.75rem;color:#6b7280;font-weight:normal;">(Opsional)</span></label>
                     <input type="text" name="gelar" class="form-control" value="{{ old('gelar') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label">Email <span style="color:#ef4444;">*</span></label>
                     <input type="email" name="email" class="form-control" required value="{{ old('email') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Program Studi</label>
+                    <label class="form-label">Program Studi <span style="color:#ef4444;">*</span></label>
                     <select name="prodi_id" class="form-control" required>
                         <option value="">Pilih Prodi</option>
                         @foreach($prodis as $prodi)
@@ -131,8 +125,21 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Kosongkan untuk default: LmsHorizon$01)</span></label>
-                    <input type="password" name="password" class="form-control">
+                    <label class="form-label">Password <span style="font-size:0.75rem;color:#6b7280;font-weight:normal;">(Kosongkan untuk default: LmsHorizon$01)</span></label>
+                    <div style="position:relative;">
+                        <input type="password" name="password" id="add-dosen-password" class="form-control" autocomplete="new-password" style="padding-right:2.8rem;" oninput="checkDosenPassword(this.value)">
+                        <button type="button" onclick="toggleDosenPassword()" title="Tampilkan/Sembunyikan" style="position:absolute;right:0.6rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6b7280;font-size:1.1rem;line-height:1;padding:0;" id="add-dosen-eye">👁️</button>
+                    </div>
+                    <div id="add-dosen-rules" style="margin-top:0.5rem;display:none;">
+                        <div style="font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">Persyaratan password:</div>
+                        <ul style="margin:0;padding-left:1.2rem;list-style:none;">
+                            <li id="dosen-rule-min"    style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Minimal 8 karakter</li>
+                            <li id="dosen-rule-upper"  style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Mengandung huruf BESAR</li>
+                            <li id="dosen-rule-lower"  style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Mengandung huruf kecil</li>
+                            <li id="dosen-rule-number" style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Mengandung angka</li>
+                            <li id="dosen-rule-symbol" style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Mengandung simbol (!@#$...)</li>
+                        </ul>
+                    </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
                     <button type="button" class="btn" style="background: #f3f4f6; color: #374151;" onclick="document.getElementById('modal-add').style.display = 'none'">Cancel</button>
@@ -229,6 +236,48 @@
         document.getElementById('edit-email').value = email;
         document.getElementById('edit-prodi').value = prodi_id;
         document.getElementById('modal-edit').style.display = 'flex';
+    }
+
+    {{-- Reopen the Add modal automatically if validation failed --}}
+    @if($errors->any() && !old('_method'))
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('modal-add').style.display = 'flex';
+    });
+    @endif
+
+    /* --- Password toggle & validation for Add Dosen modal --- */
+    function toggleDosenPassword() {
+        const inp = document.getElementById('add-dosen-password');
+        const btn = document.getElementById('add-dosen-eye');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            inp.type = 'password';
+            btn.textContent = '👁️';
+        }
+    }
+
+    function setRule(id, ok) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (ok) {
+            el.style.color = '#16a34a';
+            el.textContent = '✓ ' + el.textContent.slice(2);
+        } else {
+            el.style.color = '#9ca3af';
+            el.textContent = '✗ ' + el.textContent.slice(2);
+        }
+    }
+
+    function checkDosenPassword(val) {
+        const rules = document.getElementById('add-dosen-rules');
+        rules.style.display = val.length > 0 ? 'block' : 'none';
+        setRule('dosen-rule-min',    val.length >= 8);
+        setRule('dosen-rule-upper',  /[A-Z]/.test(val));
+        setRule('dosen-rule-lower',  /[a-z]/.test(val));
+        setRule('dosen-rule-number', /[0-9]/.test(val));
+        setRule('dosen-rule-symbol', /[^A-Za-z0-9]/.test(val));
     }
 </script>
 @endsection

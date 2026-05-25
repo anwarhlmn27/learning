@@ -18,13 +18,7 @@
     </div>
 </div>
 
-@if(session('error'))
-    <div class="alert" style="background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; margin-bottom: 1rem;">{{ session('error') }}</div>
-@endif
 
-@if(session('success'))
-    <div class="alert" style="background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; margin-bottom: 1rem;">{{ session('success') }}</div>
-@endif
 
 <!-- Filter Form -->
 <div class="card" style="margin-bottom: 1.5rem;">
@@ -106,23 +100,23 @@
             <form action="{{ route('mahasiswa.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">NIM</label>
+                    <label class="form-label">NIM <span style="color:#ef4444;">*</span></label>
                     <input type="text" name="nim" class="form-control" required value="{{ old('nim') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Nama Lengkap Mahasiswa</label>
+                    <label class="form-label">Nama Lengkap Mahasiswa <span style="color:#ef4444;">*</span></label>
                     <input type="text" name="nama_student" class="form-control" required value="{{ old('nama_student') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Angkatan (Tahun)</label>
+                    <label class="form-label">Angkatan (Tahun) <span style="color:#ef4444;">*</span></label>
                     <input type="number" name="angkatan" class="form-control" required value="{{ old('angkatan') ?? date('Y') }}" min="2000" max="{{ date('Y') + 1 }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Email</label>
+                    <label class="form-label">Email <span style="color:#ef4444;">*</span></label>
                     <input type="email" name="email" class="form-control" required value="{{ old('email') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Program Studi</label>
+                    <label class="form-label">Program Studi <span style="color:#ef4444;">*</span></label>
                     <select name="prodi_id" class="form-control" required>
                         <option value="">Pilih Prodi</option>
                         @foreach($prodis as $prodi)
@@ -131,8 +125,21 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Kosongkan untuk default: LmsHorizon$01)</span></label>
-                    <input type="password" name="password" class="form-control">
+                    <label class="form-label">Password <span style="font-size:0.75rem;color:#6b7280;font-weight:normal;">(Kosongkan untuk default: LmsHorizon$01)</span></label>
+                    <div style="position:relative;">
+                        <input type="password" name="password" id="add-mhs-password" class="form-control" autocomplete="new-password" style="padding-right:2.8rem;" oninput="checkMhsPassword(this.value)">
+                        <button type="button" onclick="toggleMhsPassword()" title="Tampilkan/Sembunyikan" style="position:absolute;right:0.6rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6b7280;font-size:1.1rem;line-height:1;padding:0;" id="add-mhs-eye">👁️</button>
+                    </div>
+                    <div id="add-mhs-rules" style="margin-top:0.5rem;display:none;">
+                        <div style="font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">Persyaratan password:</div>
+                        <ul style="margin:0;padding-left:1.2rem;list-style:none;">
+                            <li id="mhs-rule-min"    style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Minimal 8 karakter</li>
+                            <li id="mhs-rule-upper"  style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Mengandung huruf BESAR</li>
+                            <li id="mhs-rule-lower"  style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Mengandung huruf kecil</li>
+                            <li id="mhs-rule-number" style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Mengandung angka</li>
+                            <li id="mhs-rule-symbol" style="font-size:0.78rem;color:#9ca3af;transition:color .2s;">✗ Mengandung simbol (!@#$...)</li>
+                        </ul>
+                    </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
                     <button type="button" class="btn" style="background: #f3f4f6; color: #374151;" onclick="document.getElementById('modal-add').style.display = 'none'">Cancel</button>
@@ -229,6 +236,48 @@
         document.getElementById('edit-email').value = email;
         document.getElementById('edit-prodi').value = prodi_id;
         document.getElementById('modal-edit').style.display = 'flex';
+    }
+
+    {{-- Reopen the Add modal automatically if validation failed --}}
+    @if($errors->any() && !old('_method'))
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('modal-add').style.display = 'flex';
+    });
+    @endif
+
+    /* --- Password toggle & validation for Add Mahasiswa modal --- */
+    function toggleMhsPassword() {
+        const inp = document.getElementById('add-mhs-password');
+        const btn = document.getElementById('add-mhs-eye');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            inp.type = 'password';
+            btn.textContent = '👁️';
+        }
+    }
+
+    function setMhsRule(id, ok) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (ok) {
+            el.style.color = '#16a34a';
+            el.textContent = '✓ ' + el.textContent.slice(2);
+        } else {
+            el.style.color = '#9ca3af';
+            el.textContent = '✗ ' + el.textContent.slice(2);
+        }
+    }
+
+    function checkMhsPassword(val) {
+        const rules = document.getElementById('add-mhs-rules');
+        rules.style.display = val.length > 0 ? 'block' : 'none';
+        setMhsRule('mhs-rule-min',    val.length >= 8);
+        setMhsRule('mhs-rule-upper',  /[A-Z]/.test(val));
+        setMhsRule('mhs-rule-lower',  /[a-z]/.test(val));
+        setMhsRule('mhs-rule-number', /[0-9]/.test(val));
+        setMhsRule('mhs-rule-symbol', /[^A-Za-z0-9]/.test(val));
     }
 </script>
 @endsection

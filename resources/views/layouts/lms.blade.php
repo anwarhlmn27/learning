@@ -22,6 +22,97 @@
             background-color: var(--bg-color);
             color: var(--text-main);
         }
+
+        /* ====== TOAST NOTIFICATION ====== */
+        #lms-toast-container {
+            position: fixed;
+            top: 1.25rem;
+            right: 1.25rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            pointer-events: none;
+        }
+        .lms-toast {
+            pointer-events: all;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            border-radius: 10px;
+            padding: 0.85rem 1.1rem;
+            min-width: 280px;
+            max-width: 370px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+            transform: translateX(120%);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(.22,1,.36,1), opacity 0.28s ease;
+        }
+        .lms-toast.show { transform: translateX(0); opacity: 1; }
+        .lms-toast.hide { transform: translateX(120%); opacity: 0; }
+        .lms-toast-icon {
+            flex-shrink: 0;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 900;
+            color: #fff;
+        }
+        .lms-toast-body   { flex: 1; min-width: 0; }
+        .lms-toast-title  {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.1rem;
+            line-height: 1.3;
+        }
+        .lms-toast-message {
+            font-size: 0.82rem;
+            font-weight: 400;
+            color: rgba(255,255,255,0.88);
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .lms-toast-close {
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            font-size: 1rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: background 0.2s;
+            padding: 0;
+        }
+        .lms-toast-close:hover { background: rgba(255,255,255,0.35); }
+        .lms-toast-progress {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 3px;
+            width: 100%;
+            transform-origin: left;
+            background: rgba(255,255,255,0.4);
+            animation: toast-progress 2s linear forwards;
+        }
+        @keyframes toast-progress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        /* type colours — solid backgrounds */
+        .lms-toast.toast-success { background: #5aab6e; }
+        .lms-toast.toast-error   { background: #e05252; }
+        .lms-toast.toast-warning { background: #d97706; }
+        .lms-toast.toast-info    { background: #3b82f6; }
     </style>
 </head>
 <body>
@@ -31,24 +122,54 @@
             <h2>Horizon LMS</h2>
         </div>
         <nav class="lms-nav">
+            @php
+                // Resolve active prodi context for sidebar links
+                $sidebarUser = Auth::user();
+                $sidebarProdiId = request()->prodi_id ?? session('selected_prodi_id');
+                $sidebarProdi   = null;
+
+                if ($sidebarUser->hasRole('kaprodi')) {
+                    $sidebarProdi   = \App\Models\Prodi::where('kaprodi_id', $sidebarUser->id)->first();
+                    $sidebarProdiId = $sidebarProdi?->id;
+                } elseif ($sidebarProdiId) {
+                    $sidebarProdi = \App\Models\Prodi::find($sidebarProdiId);
+                }
+
+                $prodiParam = $sidebarProdiId ? ['prodi_id' => $sidebarProdiId] : [];
+            @endphp
+
             <a href="{{ route('dashboard') }}" class="lms-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i>🏠</i> {{ __('Dashboard') }}
             </a>
-            <a href="{{ route('classes.index') }}" class="lms-nav-item {{ request()->routeIs('classes.*') && !request()->routeIs('classes.archived') ? 'active' : '' }}">
-                <i>📚</i> {{ __('My Classes') }}
+
+            {{-- Show selected prodi context badge --}}
+            @if($sidebarProdi)
+            <div style="padding: 0.4rem 1rem 0.6rem; margin-bottom: 0.25rem;">
+                <div style="background: rgba(79,70,229,0.08); border-radius: 8px; padding: 0.5rem 0.75rem;">
+                    <p style="margin:0; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6b7280;">Prodi Aktif</p>
+                    <p style="margin:0.1rem 0 0; font-size:0.8rem; font-weight:600; color:var(--primary); line-height:1.3;">{{ $sidebarProdi->nama_prodi }}</p>
+                    @if(!$sidebarUser->hasRole('kaprodi'))
+                    <a href="{{ route('dashboard') }}" onclick="sessionStorage.setItem('clear_prodi','1')" style="font-size:0.7rem; color:#6b7280; text-decoration:underline;">← Ganti Prodi</a>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            <a href="{{ route('classes.index', $prodiParam) }}" class="lms-nav-item {{ request()->routeIs('classes.*') && !request()->routeIs('classes.archived') ? 'active' : '' }}">
+                <i>📚</i> {{ __('Kelas Aktif') }}
             </a>
-            <a href="{{ route('classes.archived') }}" class="lms-nav-item {{ request()->routeIs('classes.archived') ? 'active' : '' }}">
+            <a href="{{ route('classes.archived', $prodiParam) }}" class="lms-nav-item {{ request()->routeIs('classes.archived') ? 'active' : '' }}">
                 <i>🗃️</i> {{ __('Kelas Arsip') }}
             </a>
-            @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-            <a href="{{ route('dosen.index') }}" class="lms-nav-item {{ request()->routeIs('dosen.*') ? 'active' : '' }}">
+            @if($sidebarUser->hasRole(['admin', 'kaprodi']))
+            <a href="{{ route('dosen.index', $prodiParam) }}" class="lms-nav-item {{ request()->routeIs('dosen.*') ? 'active' : '' }}">
                 <i>👨‍🏫</i> {{ __('Data Dosen') }}
             </a>
-            <a href="{{ route('mahasiswa.index') }}" class="lms-nav-item {{ request()->routeIs('mahasiswa.*') ? 'active' : '' }}">
+            <a href="{{ route('mahasiswa.index', $prodiParam) }}" class="lms-nav-item {{ request()->routeIs('mahasiswa.*') ? 'active' : '' }}">
                 <i>🎓</i> {{ __('Data Mahasiswa') }}
             </a>
             @endif
-            @if(Auth::user()->hasRole(['admin', 'kaprodi', 'rektor', 'dekan']))
+            @if($sidebarUser->hasRole(['admin', 'kaprodi', 'rektor', 'dekan']))
             <a href="{{ route('admin.dashboard') }}" class="lms-nav-item" style="margin-top: auto; border-top: 1px solid #e5e7eb; background-color: #f8fafc;">
                 <i>⚙️</i> {{ __('OBE Administration') }}
             </a>
@@ -101,12 +222,39 @@
         </div>
     </main>
 
+    <!-- ====== GLOBAL TOAST CONTAINER ====== -->
+    <div id="lms-toast-container"></div>
+
+    @if(session('success'))
+    <script>document.addEventListener('DOMContentLoaded',function(){lmsToast('success',@json(session('success')));});</script>
+    @endif
+    @if(session('error'))
+    <script>document.addEventListener('DOMContentLoaded',function(){lmsToast('error',@json(session('error')));});</script>
+    @endif
+    @if(session('warning'))
+    <script>document.addEventListener('DOMContentLoaded',function(){lmsToast('warning',@json(session('warning')));});</script>
+    @endif
+    @if(session('info'))
+    <script>document.addEventListener('DOMContentLoaded',function(){lmsToast('info',@json(session('info')));});</script>
+    @endif
+
+    {{-- Laravel $errors bag (from $request->validate()) → fire as error toasts --}}
+    @if($errors->any())
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        @foreach($errors->all() as $msg)
+            lmsToast('error', @json($msg), 4000);
+        @endforeach
+    });
+    </script>
+    @endif
+
     <script>
         function toggleAvatarDropdown() {
             const dropdown = document.getElementById('avatar-dropdown');
             dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
         }
-        
+
         window.addEventListener('click', function(e) {
             if (!e.target.closest('.avatar-dropdown-wrapper')) {
                 const dropdown = document.getElementById('avatar-dropdown');
@@ -114,9 +262,46 @@
             }
         });
 
-        // Auto-dismiss flash notifications after 2 seconds
+        /* ====== TOAST SYSTEM ====== */
+        const TOAST_META = {
+            success: { icon: '&#10003;', label: 'Berhasil' },
+            error:   { icon: '&#10005;', label: 'Gagal' },
+            warning: { icon: '!',        label: 'Peringatan' },
+            info:    { icon: 'i',        label: 'Informasi' },
+        };
+
+        function lmsToast(type, message, duration) {
+            duration = duration || 2000;
+            const meta    = TOAST_META[type] || TOAST_META.info;
+            const container = document.getElementById('lms-toast-container');
+            const toast   = document.createElement('div');
+            toast.className = 'lms-toast toast-' + type;
+            toast.innerHTML = `
+                <span class="lms-toast-icon">${meta.icon}</span>
+                <div class="lms-toast-body">
+                    <div class="lms-toast-title">${meta.label}</div>
+                    <div class="lms-toast-message">${message}</div>
+                </div>
+                <button class="lms-toast-close" onclick="lmsDismissToast(this.closest('.lms-toast'))" aria-label="Tutup">&times;</button>
+                <div class="lms-toast-progress" style="animation-duration:${duration}ms"></div>
+            `;
+            container.appendChild(toast);
+            // trigger slide-in
+            requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+            // auto dismiss
+            setTimeout(() => lmsDismissToast(toast), duration);
+        }
+
+        function lmsDismissToast(toast) {
+            if (!toast || toast.classList.contains('hide')) return;
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            setTimeout(() => toast && toast.remove(), 400);
+        }
+
+        /* Legacy: auto-dismiss old inline .flash-alert / .alert elements after 2s */
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.flash-alert').forEach(function(el) {
+            document.querySelectorAll('.flash-alert, .alert:not(.alert-success):not(.alert-danger), .alert').forEach(function(el) {
                 setTimeout(function() {
                     el.style.transition = 'opacity 0.5s ease, max-height 0.5s ease, margin 0.5s ease, padding 0.5s ease';
                     el.style.opacity = '0';
@@ -124,7 +309,7 @@
                     el.style.padding = '0';
                     el.style.margin = '0';
                     el.style.overflow = 'hidden';
-                    setTimeout(function() { el.remove(); }, 500);
+                    setTimeout(function() { el && el.remove(); }, 500);
                 }, 2000);
             });
         });

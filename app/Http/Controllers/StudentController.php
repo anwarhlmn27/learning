@@ -17,6 +17,14 @@ class StudentController extends Controller
     {
         $query = Student::with(['user', 'prodi']);
 
+        // ── Filter by prodi ──────────────────────────────────────────────────
+        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+        $selectedProdi = null;
+        if ($prodiId) {
+            $selectedProdi = \App\Models\Prodi::find($prodiId);
+            $query->where('prodi_id', $prodiId);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('user', function($q) use ($search) {
@@ -32,7 +40,7 @@ class StudentController extends Controller
 
         $students = $query->latest()->paginate(10)->withQueryString();
         $prodis = Prodi::orderBy('nama_prodi')->get();
-        return view('admin.students.index', compact('students', 'prodis'));
+        return view('admin.students.index', compact('students', 'prodis', 'selectedProdi'));
     }
 
     public function store(Request $request)

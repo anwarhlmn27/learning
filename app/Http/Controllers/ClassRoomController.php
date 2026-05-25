@@ -23,36 +23,44 @@ class ClassRoomController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Auth::user();
-        $query = ClassRoom::with(['subject'])->visible(); // exclude deleted
+        $user  = Auth::user();
+        $query = ClassRoom::with(['subject'])->visible();
 
-        // Non-admin / non-kaprodi only see classes they are enrolled in
+        // Non-admin / non-kaprodi only see their own classes
         if (!$user->hasRole(['admin', 'kaprodi'])) {
-            $query->whereHas('users', function($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
+            $query->whereHas('users', fn($q) => $q->where('user_id', $user->id));
         }
 
-        // Default: only active classes on this page
         $query->where('status', 'active');
+
+        // ── Filter by prodi (passed from dashboard picker or kaprodi auto-scope) ──
+        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+        $selectedProdi = null;
+        if ($prodiId) {
+            $selectedProdi = \App\Models\Prodi::find($prodiId);
+            $query->whereHas('subject', fn($q) => $q->where('id_prodi', $prodiId));
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_kelas', 'like', "%{$search}%")
                   ->orWhere('tahun_akademik', 'like', "%{$search}%")
-                  ->orWhereHas('subject', function($q2) use ($search) {
-                      $q2->where('nama_subject', 'like', "%{$search}%");
-                  });
+                  ->orWhereHas('subject', fn($q2) => $q2->where('nama_subject', 'like', "%{$search}%"));
             });
         }
 
         $classRooms = $query->latest()->paginate(10)->withQueryString();
-        
-        $subjects = Subject::orderBy('nama_subject')->get();
-        $dosens = Dosen::orderBy('nama_dosen')->get();
 
-        // Build a map of class_id => primary_dosen_id for the edit modal pre-selection
+        // Filter subjects/dosens by prodi if selected
+        $subjects = $selectedProdi
+            ? Subject::where('id_prodi', $prodiId)->orderBy('nama_subject')->get()
+            : Subject::orderBy('nama_subject')->get();
+
+        $dosens = $selectedProdi
+            ? Dosen::where('prodi_id', $prodiId)->orderBy('nama_dosen')->get()
+            : Dosen::orderBy('nama_dosen')->get();
+
         $classPrimaryDosenMap = [];
         foreach ($classRooms as $cr) {
             $firstDosenUser = $cr->dosens()->first();
@@ -63,7 +71,7 @@ class ClassRoomController extends Controller
             }
         }
 
-        return view('lms.classes.index', compact('classRooms', 'subjects', 'dosens', 'classPrimaryDosenMap'));
+        return view('lms.classes.index', compact('classRooms', 'subjects', 'dosens', 'classPrimaryDosenMap', 'selectedProdi'));
     }
 
     public function store(Request $request)
@@ -206,28 +214,30 @@ class ClassRoomController extends Controller
     public function archivedIndex(Request $request)
     {
         $user = Auth::user();
-
         $query = ClassRoom::with(['subject'])->where('status', 'archived');
 
         if (!$user->hasRole(['admin', 'kaprodi'])) {
-            $query->whereHas('users', function($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
+            $query->whereHas('users', fn($q) => $q->where('user_id', $user->id));
+        }
+
+        // ── Filter by prodi ──
+        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+        $selectedProdi = null;
+        if ($prodiId) {
+            $selectedProdi = \App\Models\Prodi::find($prodiId);
+            $query->whereHas('subject', fn($q) => $q->where('id_prodi', $prodiId));
         }
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_kelas', 'like', "%{$search}%")
-                  ->orWhereHas('subject', function($q2) use ($search) {
-                      $q2->where('nama_subject', 'like', "%{$search}%");
-                  });
+                  ->orWhereHas('subject', fn($q2) => $q2->where('nama_subject', 'like', "%{$search}%"));
             });
         }
 
         $classRooms = $query->latest()->paginate(10)->withQueryString();
-
-        return view('lms.classes.archived', compact('classRooms'));
+        return view('lms.classes.archived', compact('classRooms', 'selectedProdi'));
     }
 
     public function show(ClassRoom $class)
@@ -599,24 +609,83 @@ class ClassRoomController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'link' => 'nullable|url',
+            'files.*' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx|max:2048',
         ]);
 
-        $material = \App\Models\Material::create([
-            'class_room_id' => $class->id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'link' => $request->link,
-        ]);
+        $hasFiles = $request->hasFile('files');
 
-        \App\Models\ClassTopic::create([
-            'class_room_id' => $class->id,
-            'session_number' => $request->session_number,
-            'type' => 'materi',
-            'content_id' => $material->id,
-            'title' => $material->title,
-        ]);
+        if ($hasFiles) {
+            $files = $request->file('files');
+            foreach ($files as $index => $file) {
+                $originalName = $file->getClientOriginalName();
+                $filename = \Illuminate\Support\Str::uuid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('materials', $filename);
+
+                $material = \App\Models\Material::create([
+                    'title' => $request->title . (count($files) > 1 ? ' - Part ' . ($index + 1) : ''),
+                    'description' => $request->description,
+                    'link_url' => $index === 0 ? $request->link : null,
+                    'file_path' => $filePath,
+                    'original_filename' => $originalName,
+                ]);
+
+                \App\Models\ClassTopic::create([
+                    'class_room_id' => $class->id,
+                    'session_number' => $request->session_number,
+                    'type' => 'materi',
+                    'content_id' => $material->id,
+                    'title' => $material->title,
+                ]);
+            }
+        } else {
+            $material = \App\Models\Material::create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'link_url' => $request->link,
+                'file_path' => null,
+                'original_filename' => null,
+            ]);
+
+            \App\Models\ClassTopic::create([
+                'class_room_id' => $class->id,
+                'session_number' => $request->session_number,
+                'type' => 'materi',
+                'content_id' => $material->id,
+                'title' => $material->title,
+            ]);
+        }
 
         return back()->with('success', 'Materi berhasil ditambahkan pada Sesi ' . $request->session_number);
+    }
+
+    public function downloadMaterial(ClassRoom $class, \App\Models\Material $material)
+    {
+        $user = Auth::user();
+
+        // 1. Authorization Check: Ensure user has right to download this file
+        if (!$user->hasRole(['admin', 'kaprodi', 'dosen'])) {
+            // For students, verify they are actually enrolled in this class
+            $isEnrolled = $class->enrollments()->where('student_id', $user->student->id ?? null)->exists();
+            if (!$isEnrolled) {
+                abort(403, 'Akses Ditolak: Anda tidak terdaftar di kelas ini.');
+            }
+        }
+
+        // 2. Validate File Existence in secure storage
+        if (!$material->file_path || !\Illuminate\Support\Facades\Storage::exists($material->file_path)) {
+            abort(404, 'File materi tidak ditemukan di server.');
+        }
+
+        // 3. Return Secure Download/File Response
+        $path = \Illuminate\Support\Facades\Storage::path($material->file_path);
+        $originalName = $material->original_filename ?? 'Materi_LMS.pdf';
+
+        // Using response()->file() directly allows viewing in browser for PDFs
+        // If we strictly want to download, use response()->download()
+        // Adding headers to response()->file() to preserve original name if user clicks save
+        return response()->file($path, [
+            'Content-Disposition' => 'inline; filename="' . $originalName . '"'
+        ]);
     }
 
     public function storeAssignment(Request $request, ClassRoom $class)
@@ -729,6 +798,32 @@ class ClassRoomController extends Controller
         }
 
         return back()->with('success', 'Kuis Pilihan Ganda beserta 3 Soal Mock berhasil ditambahkan pada Sesi ' . $request->session_number);
+    }
+
+    public function destroyTopic(ClassRoom $class, \App\Models\ClassTopic $topic)
+    {
+        if ($topic->class_room_id !== $class->id) {
+            abort(404);
+        }
+
+        // Delete associated content
+        $content = $topic->content;
+        
+        if ($content) {
+            if ($topic->type === 'materi') {
+                if ($content->file_path && \Illuminate\Support\Facades\Storage::exists($content->file_path)) {
+                    \Illuminate\Support\Facades\Storage::delete($content->file_path);
+                }
+            }
+            // Some contents like assignments and quizzes might have submissions, 
+            // but for simplicity we rely on database cascade deletes if they exist, 
+            // or just delete the main record.
+            $content->delete();
+        }
+
+        $topic->delete();
+
+        return back()->with('success', 'Aktivitas berhasil dihapus.');
     }
 
     public function takeQuiz(ClassRoom $class, Quiz $quiz)
