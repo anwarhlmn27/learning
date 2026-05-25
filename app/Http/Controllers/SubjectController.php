@@ -80,10 +80,23 @@ class SubjectController extends Controller
             }
             if ($request->has('plos')) {
                 $syncData = [];
+                $hasM = false;
+                $hasR = false;
                 foreach ($request->plos as $ploId) {
-                    $syncData[$ploId] = ['mapping_level' => $request->plo_levels[$ploId] ?? 'I'];
+                    $level = $request->plo_levels[$ploId] ?? 'I';
+                    $syncData[$ploId] = ['mapping_level' => $level];
+                    if ($level == 'M') $hasM = true;
+                    if ($level == 'R') $hasR = true;
                 }
                 $subject->plos()->sync($syncData);
+
+                if ($request->has('bks')) {
+                    $highestDepth = 'Introductory';
+                    if ($hasM) $highestDepth = 'Advanced';
+                    elseif ($hasR) $highestDepth = 'Intermediate';
+
+                    \App\Models\BahanKajian::whereIn('id', $request->bks)->update(['tingkat_kedalaman' => $highestDepth]);
+                }
             }
 
             DB::commit();
@@ -150,10 +163,23 @@ class SubjectController extends Controller
 
             if ($request->has('plos')) {
                 $syncData = [];
+                $hasM = false;
+                $hasR = false;
                 foreach ($request->plos as $ploId) {
-                    $syncData[$ploId] = ['mapping_level' => $request->plo_levels[$ploId] ?? 'I'];
+                    $level = $request->plo_levels[$ploId] ?? 'I';
+                    $syncData[$ploId] = ['mapping_level' => $level];
+                    if ($level == 'M') $hasM = true;
+                    if ($level == 'R') $hasR = true;
                 }
                 $subject->plos()->sync($syncData);
+
+                if ($request->has('bks')) {
+                    $highestDepth = 'Introductory';
+                    if ($hasM) $highestDepth = 'Advanced';
+                    elseif ($hasR) $highestDepth = 'Intermediate';
+
+                    \App\Models\BahanKajian::whereIn('id', $request->bks)->update(['tingkat_kedalaman' => $highestDepth]);
+                }
             } else {
                 $subject->plos()->detach();
             }

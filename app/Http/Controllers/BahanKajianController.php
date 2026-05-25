@@ -42,7 +42,7 @@ class BahanKajianController extends Controller
             'deskripsi' => 'required|string',
             'sub_bk' => 'required|string',
             'id_kategori_bk' => 'required|exists:kategori_bk,id',
-            'tingkat_kedalaman' => 'required|in:Introductory,Intermediate,Advanced',
+            'tingkat_kedalaman' => 'nullable|in:Introductory,Intermediate,Advanced',
             'sumber_acuan' => 'required|string',
             'status' => 'required|in:Aktif,Revisi,Tidak Aktif',
         ]);
@@ -78,7 +78,7 @@ class BahanKajianController extends Controller
             'deskripsi' => 'required|string',
             'sub_bk' => 'required|string',
             'id_kategori_bk' => 'required|exists:kategori_bk,id',
-            'tingkat_kedalaman' => 'required|in:Introductory,Intermediate,Advanced',
+            'tingkat_kedalaman' => 'nullable|in:Introductory,Intermediate,Advanced',
             'sumber_acuan' => 'required|string',
             'status' => 'required|in:Aktif,Revisi,Tidak Aktif',
         ]);

@@ -366,6 +366,15 @@
                                             {{ $topic->type }}
                                         </span>
                                         @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+                                            @if($topic->type == 'materi' && $topic->material)
+                                                <button type="button" style="background: none; border: none; padding: 0; color: var(--primary); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;" title="Edit Materi" 
+                                                    data-id="{{ $topic->material->id }}"
+                                                    data-title="{{ $topic->material->title }}"
+                                                    data-desc="{{ $topic->material->description }}"
+                                                    data-link="{{ $topic->material->link_url }}"
+                                                    data-file="{{ $topic->material->original_filename }}"
+                                                    onclick="openEditMaterialModal(this)">✏️</button>
+                                            @endif
                                             <form action="{{ route('classes.destroy_topic', [$class, $topic]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Yakin ingin menghapus aktivitas ini?')">
                                                 @csrf
                                                 @method('DELETE')
@@ -1099,7 +1108,8 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Upload File (Bisa lebih dari 1)</label>
-                        <input type="file" name="files[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem;">
+                        <input type="file" name="files[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx" onchange="displaySelectedFiles(this, 'selected-files-list')" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem;">
+                        <div id="selected-files-list" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-primary);"></div>
                         <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Max 2MB per file (PDF, Word, PPT)</span>
                     </div>
                     <div>
@@ -1231,6 +1241,49 @@
     </div>
 </div>
 
+<!-- Modal Edit Material -->
+<div id="modal-edit-material" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 600px;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">Edit Materi</h3>
+            <button onclick="closeEditMaterialModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        <div class="card-body" style="padding: 1.5rem;">
+            <form id="form-edit-materi" method="POST" enctype="multipart/form-data" class="classwork-form">
+                @csrf
+                @method('PUT')
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Judul Materi <span style="color: red;">*</span></label>
+                    <input type="text" id="edit-material-title" name="title" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Deskripsi / Ringkasan</label>
+                    <textarea id="edit-material-desc" name="description" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Ganti File (Opsional)</label>
+                        <div style="margin-bottom: 0.5rem; font-size: 0.8rem; background: #f8fafc; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                            File saat ini: <strong id="edit-current-file-name">-</strong>
+                        </div>
+                        <input type="file" name="files[]" accept=".pdf,.doc,.docx,.ppt,.pptx" onchange="displaySelectedFiles(this, 'edit-selected-files-list')" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem;">
+                        <div id="edit-selected-files-list" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-primary);"></div>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Max 2MB per file (PDF, Word, PPT). Mengunggah file baru akan menimpa file lama.</span>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Link Eksternal (Opsional)</label>
+                        <input type="url" id="edit-material-link" name="link" placeholder="https://youtube.com/ atau drive link" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeEditMaterialModal()">Cancel</button>
+                    <button type="submit" class="btn">Update Material</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     // 1. Tab Switching JavaScript
     document.querySelectorAll('.tab-trigger').forEach(btn => {
@@ -1315,7 +1368,7 @@
     }
 
     // 6. Click-outside to close redesigned modals
-    ['modal-add', 'modal-add-dosen', 'modal-add-baak'].forEach(id => {
+    ['modal-add', 'modal-add-dosen', 'modal-add-baak', 'modal-edit-material'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('click', function(e) {
@@ -1330,5 +1383,50 @@
             });
         }
     });
+
+    // 7. Display Selected Files
+    function displaySelectedFiles(input, listId) {
+        const list = document.getElementById(listId);
+        list.innerHTML = '';
+        if (input.files.length > 0) {
+            let html = '<ul style="margin: 0; padding-left: 1.25rem;">';
+            for (let i = 0; i < input.files.length; i++) {
+                html += '<li>' + input.files[i].name + '</li>';
+            }
+            html += '</ul>';
+            list.innerHTML = html;
+        }
+    }
+
+    // 8. Edit Material Modal
+    function openEditMaterialModal(button) {
+        const materialId = button.getAttribute('data-id');
+        const title = button.getAttribute('data-title') || '';
+        const desc = button.getAttribute('data-desc') || '';
+        const link = button.getAttribute('data-link') || '';
+        const fileName = button.getAttribute('data-file');
+
+        document.getElementById('edit-material-title').value = title;
+        document.getElementById('edit-material-desc').value = desc;
+        document.getElementById('edit-material-link').value = link;
+        
+        const fileNameDisplay = document.getElementById('edit-current-file-name');
+        if (fileName && fileName.trim() !== '') {
+            fileNameDisplay.innerHTML = `<span style="color: var(--primary);">📄 ${fileName}</span>`;
+        } else {
+            fileNameDisplay.innerHTML = `<span style="color: var(--text-muted); font-style: italic;">Tidak ada file terlampir</span>`;
+        }
+        
+        document.getElementById('edit-selected-files-list').innerHTML = ''; // Reset new file selection text
+        
+        const form = document.getElementById('form-edit-materi');
+        form.action = `/classes/{{ $class->id }}/material/${materialId}`;
+        
+        document.getElementById('modal-edit-material').style.display = 'flex';
+    }
+    
+    function closeEditMaterialModal() {
+        document.getElementById('modal-edit-material').style.display = 'none';
+    }
 </script>
 @endsection

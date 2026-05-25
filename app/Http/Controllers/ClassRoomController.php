@@ -658,6 +658,53 @@ class ClassRoomController extends Controller
         return back()->with('success', 'Materi berhasil ditambahkan pada Sesi ' . $request->session_number);
     }
 
+    public function updateMaterial(Request $request, ClassRoom $class, \App\Models\Material $material)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'link' => 'nullable|url',
+            'files.*' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx|max:2048',
+        ]);
+
+        $hasFiles = $request->hasFile('files');
+
+        if ($hasFiles) {
+            $files = $request->file('files');
+            // Assuming we just update the first file if uploaded, or replace it entirely.
+            // For simplicity, if they upload a new file, replace the old file.
+            $file = $files[0];
+            if ($material->file_path && \Illuminate\Support\Facades\Storage::exists($material->file_path)) {
+                \Illuminate\Support\Facades\Storage::delete($material->file_path);
+            }
+            $originalName = $file->getClientOriginalName();
+            $filename = \Illuminate\Support\Str::uuid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('materials', $filename);
+
+            $material->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'link_url' => $request->link,
+                'file_path' => $filePath,
+                'original_filename' => $originalName,
+            ]);
+        } else {
+            $material->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'link_url' => $request->link,
+            ]);
+        }
+
+        // Also update topic title if it exists
+        $topic = \App\Models\ClassTopic::where('type', 'materi')->where('content_id', $material->id)->first();
+        if ($topic) {
+            $topic->update(['title' => $material->title]);
+        }
+
+        return back()->with('success', 'Materi berhasil diperbarui.');
+    }
+
     public function downloadMaterial(ClassRoom $class, \App\Models\Material $material)
     {
         $user = Auth::user();

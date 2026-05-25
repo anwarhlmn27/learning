@@ -144,6 +144,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/classes-template', [\App\Http\Controllers\ClassRoomController::class, 'downloadTemplate'])->name('classes.template');
     Route::delete('/classes/{class}/unenroll/{enrollment}', [\App\Http\Controllers\ClassRoomController::class, 'unenroll'])->name('classes.unenroll');
     Route::post('/classes/{class}/material', [\App\Http\Controllers\ClassRoomController::class, 'storeMaterial'])->name('classes.store_material');
+    Route::put('/classes/{class}/material/{material}', [\App\Http\Controllers\ClassRoomController::class, 'updateMaterial'])->name('classes.update_material');
     Route::get('/classes/{class}/material/{material}/download', [\App\Http\Controllers\ClassRoomController::class, 'downloadMaterial'])->name('classes.download_material');
     Route::post('/classes/{class}/assignment', [\App\Http\Controllers\ClassRoomController::class, 'storeAssignment'])->name('classes.store_assignment');
     Route::post('/classes/{class}/forum', [\App\Http\Controllers\ClassRoomController::class, 'storeForum'])->name('classes.store_forum');

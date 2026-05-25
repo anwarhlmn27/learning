@@ -153,9 +153,10 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Tingkat Kedalaman <span style="color: red;">*</span></label>
-                        <select name="tingkat_kedalaman" id="field_tingkat_kedalaman" class="form-control" required>
+                    <div class="form-group" style="margin-bottom: 0; display: none;">
+                        <label class="form-label">Tingkat Kedalaman</label>
+                        <select name="tingkat_kedalaman" id="field_tingkat_kedalaman" class="form-control">
+                            <option value="">-- Auto Generated --</option>
                             <option value="Introductory">Introductory</option>
                             <option value="Intermediate">Intermediate</option>
                             <option value="Advanced">Advanced</option>

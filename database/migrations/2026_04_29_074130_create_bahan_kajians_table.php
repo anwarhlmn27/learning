@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('bahan_kajians', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('id_prodi');
-            $table->uuid('id_kategori_bk'); // Foreign key ke tabel kategori_bk // Core Computing, Software Engineering, dll.
+            $table->uuid('id_kategori_bk')->nullable(); // Foreign key ke tabel kategori_bk // Core Computing, Software Engineering, dll.
             
             // Kode & Nama
             $table->string('kode_bk')->unique(); // BK-01
@@ -22,10 +22,10 @@ return new class extends Migration
             
             // Penjelasan
             $table->text('deskripsi'); 
-            $table->text('sub_bk'); // List sub-materi (bisa dipisah koma atau format text)
+            $table->text('sub_bk')->nullable(); // List sub-materi (bisa dipisah koma atau format text)
             
             // Klasifikasi
-            $table->enum('tingkat_kedalaman', ['Introductory', 'Intermediate', 'Advanced']);
+            $table->enum('tingkat_kedalaman', ['Introductory', 'Intermediate', 'Advanced'])->nullable();
             
             // Referensi & Status
             $table->text('sumber_acuan');
