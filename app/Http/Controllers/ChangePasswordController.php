@@ -33,7 +33,7 @@ class ChangePasswordController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        return back()->with('success', 'Password berhasil diubah.');
+        return redirect()->route('admin.dashboard')->with('success', 'Password berhasil diubah.');
     }
 
     public function showLmsChangePasswordForm()
@@ -61,6 +61,6 @@ class ChangePasswordController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        return back()->with('success', 'Password berhasil diubah.');
+        return redirect()->route('dashboard')->with('success', 'Password berhasil diubah.');
     }
 }

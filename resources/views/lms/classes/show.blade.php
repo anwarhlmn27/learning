@@ -278,13 +278,7 @@
     </div>
 </div>
 
-@if(session('error'))
-    <div class="flash-alert" style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border: 1px solid #fecaca; border-radius: var(--radius-md); margin-bottom: 1.5rem;">{{ session('error') }}</div>
-@endif
 
-@if(session('success'))
-    <div class="flash-alert" style="background-color: #f0fdf4; color: #166534; padding: 1rem; border: 1px solid #bbf7d0; border-radius: var(--radius-md); margin-bottom: 1.5rem;">{{ session('success') }}</div>
-@endif
 
 @if($class->status === 'archived')
 <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f59e0b; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
@@ -371,8 +365,9 @@
                                                     data-id="{{ $topic->material->id }}"
                                                     data-title="{{ $topic->material->title }}"
                                                     data-desc="{{ $topic->material->description }}"
-                                                    data-link="{{ $topic->material->link_url }}"
-                                                    data-file="{{ $topic->material->original_filename }}"
+                                                    data-files="{{ json_encode($topic->material->original_filenames) }}"
+                                                    data-paths="{{ json_encode($topic->material->file_paths) }}"
+                                                    data-links="{{ json_encode($topic->material->link_urls) }}"
                                                     onclick="openEditMaterialModal(this)">✏️</button>
                                             @endif
                                             <form action="{{ route('classes.destroy_topic', [$class, $topic]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Yakin ingin menghapus aktivitas ini?')">
@@ -388,14 +383,27 @@
                                     <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-muted);">{{ $topic->material->description }}</p>
                                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                         @if($topic->material->file_path)
-                                            <a href="{{ route('classes.download_material', [$class, $topic->material]) }}" target="_blank" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
-                                                <i>👁️</i> Buka / Download File
-                                            </a>
+                                            @php
+                                                $paths = $topic->material->file_paths;
+                                                $names = $topic->material->original_filenames;
+                                            @endphp
+                                            @foreach($paths as $index => $path)
+                                                @if(\Illuminate\Support\Facades\Storage::exists($path))
+                                                    <a href="{{ route('classes.download_material', [$class, $topic->material]) }}?file_index={{ $index }}" target="_blank" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                        <i>👁️</i> Buka / Download ({{ $names[$index] ?? 'File ' . ($index + 1) }})
+                                                    </a>
+                                                @endif
+                                            @endforeach
                                         @endif
                                         @if($topic->material->link_url)
-                                            <a href="{{ $topic->material->link_url }}" target="_blank" class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
-                                                <i>🔗</i> Buka Tautan
-                                            </a>
+                                            @php
+                                                $links = $topic->material->link_urls;
+                                            @endphp
+                                            @foreach($links as $index => $link)
+                                                <a href="{{ $link }}" target="_blank" class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                                    <i>🔗</i> Buka Tautan {{ count($links) > 1 ? '#' . ($index + 1) : '' }}
+                                                </a>
+                                            @endforeach
                                         @endif
                                     </div>
                                 @elseif($topic->type == 'assignment' && $topic->assignment)
@@ -439,7 +447,9 @@
                                                 </a>
                                             @endif
                                         @else
-                                            <span style="font-size: 0.8rem; background: #fef3c7; color: #d97706; padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 600;">Auto-Grade Enabled</span>
+                                            <a href="{{ route('quizzes.show', $topic->quiz) }}" class="btn btn-outline" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
+                                                Kelola Kuis
+                                            </a>
                                         @endif
                                     </div>
                                 @endif
@@ -910,7 +920,7 @@
                 <div id="student-list" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
                     @foreach($availableStudents as $student)
                     <label class="student-option" data-search="{{ strtolower($student->nim . ' ' . $student->nama_student) }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                        <input type="radio" name="student_id" value="{{ $student->id }}" required style="accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;">
+                        <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" style="accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;">
                         <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">
                             {{ strtoupper(substr($student->nama_student, 0, 1)) }}
                         </div>
@@ -1112,9 +1122,14 @@
                         <div id="selected-files-list" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-primary);"></div>
                         <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Max 2MB per file (PDF, Word, PPT)</span>
                     </div>
-                    <div>
-                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Link Eksternal (Opsional)</label>
-                        <input type="url" name="link" placeholder="https://youtube.com/ atau drive link" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                    <div id="add-links-wrapper">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600;">Link Eksternal (Opsional)</span>
+                            <button type="button" onclick="addNewLinkField('add-links-container')" style="background: rgba(79, 70, 229, 0.1); border: none; color: #4f46e5; cursor: pointer; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.25rem;">+ Tambah Link</button>
+                        </div>
+                        <div id="add-links-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <input type="url" name="links[]" placeholder="https://youtube.com/ atau drive link" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        </div>
                     </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
@@ -1163,7 +1178,11 @@
                                 }
                             @endphp
                             @foreach($rpsAssessments as $assessment)
-                                <option value="{{ $assessment->id }}">{{ $assessment->assessment_name }} (Bobot: {{ $assessment->weight }}%)</option>
+                                @php
+                                    $assessmentName = $assessment->assessment_name ?: ($assessment->type->name ?? 'Tugas');
+                                    $sessionNum = $assessment->session->session_number ?? '?';
+                                @endphp
+                                <option value="{{ $assessment->id }}">Sesi {{ $sessionNum }} - {{ $assessmentName }} (Bobot: {{ $assessment->weight }}%)</option>
                             @endforeach
                         </select>
                     </div>
@@ -1226,7 +1245,11 @@
                         <select name="rps_assessment_id" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
                             <option value="">-- Pilih Indikator Capaian OBE --</option>
                             @foreach($rpsAssessments as $assessment)
-                                <option value="{{ $assessment->id }}">{{ $assessment->assessment_name }} (Bobot: {{ $assessment->weight }}%)</option>
+                                @php
+                                    $assessmentName = $assessment->assessment_name ?: ($assessment->type->name ?? 'Tugas');
+                                    $sessionNum = $assessment->session->session_number ?? '?';
+                                @endphp
+                                <option value="{{ $assessment->id }}">Sesi {{ $sessionNum }} - {{ $assessmentName }} (Bobot: {{ $assessment->weight }}%)</option>
                             @endforeach
                         </select>
                     </div>
@@ -1262,17 +1285,31 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
-                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Ganti File (Opsional)</label>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">File Terlampir Saat Ini</label>
                         <div style="margin-bottom: 0.5rem; font-size: 0.8rem; background: #f8fafc; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
-                            File saat ini: <strong id="edit-current-file-name">-</strong>
+                            <div id="edit-current-files-container" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                <!-- Populate via JavaScript -->
+                            </div>
                         </div>
-                        <input type="file" name="files[]" accept=".pdf,.doc,.docx,.ppt,.pptx" onchange="displaySelectedFiles(this, 'edit-selected-files-list')" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; margin-top: 1rem;">Tambah File (Bisa lebih dari 1)</label>
+                        <input type="file" name="files[]" multiple accept=".pdf,.doc,.docx,.ppt,.pptx" onchange="displaySelectedFiles(this, 'edit-selected-files-list')" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem;">
                         <div id="edit-selected-files-list" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-primary);"></div>
-                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Max 2MB per file (PDF, Word, PPT). Mengunggah file baru akan menimpa file lama.</span>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Max 2MB per file (PDF, Word, PPT). Mengunggah file baru akan menambahkan file ke daftar materi.</span>
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Link Eksternal (Opsional)</label>
-                        <input type="url" id="edit-material-link" name="link" placeholder="https://youtube.com/ atau drive link" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Link Eksternal Terlampir</label>
+                        <div style="margin-bottom: 0.5rem; font-size: 0.8rem; background: #f8fafc; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                            <div id="edit-current-links-container" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                <!-- Populate via JavaScript -->
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; margin-top: 1rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600;">Tambah Link Baru</span>
+                            <button type="button" onclick="addNewLinkField('edit-new-links-container')" style="background: rgba(79, 70, 229, 0.1); border: none; color: #4f46e5; cursor: pointer; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.25rem;">+ Tambah Link</button>
+                        </div>
+                        <div id="edit-new-links-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <!-- Dynamically added link inputs go here -->
+                        </div>
                     </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
@@ -1403,26 +1440,119 @@
         const materialId = button.getAttribute('data-id');
         const title = button.getAttribute('data-title') || '';
         const desc = button.getAttribute('data-desc') || '';
-        const link = button.getAttribute('data-link') || '';
-        const fileName = button.getAttribute('data-file');
+        const filesJson = button.getAttribute('data-files') || '[]';
+        const pathsJson = button.getAttribute('data-paths') || '[]';
+        const linksJson = button.getAttribute('data-links') || '[]';
 
         document.getElementById('edit-material-title').value = title;
         document.getElementById('edit-material-desc').value = desc;
-        document.getElementById('edit-material-link').value = link;
         
-        const fileNameDisplay = document.getElementById('edit-current-file-name');
-        if (fileName && fileName.trim() !== '') {
-            fileNameDisplay.innerHTML = `<span style="color: var(--primary);">📄 ${fileName}</span>`;
+        const files = JSON.parse(filesJson);
+        const paths = JSON.parse(pathsJson);
+        const container = document.getElementById('edit-current-files-container');
+        container.innerHTML = '';
+        
+        // Remove any previously added hidden inputs for deleted files
+        const form = document.getElementById('form-edit-materi');
+        form.querySelectorAll('.deleted-file-input').forEach(el => el.remove());
+
+        if (files.length > 0) {
+            files.forEach((name, index) => {
+                const path = paths[index];
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'edit-file-item';
+                fileDiv.style = 'display: flex; justify-content: space-between; align-items: center; background: white; padding: 0.35rem 0.5rem; border-radius: 4px; border: 1px solid #e2e8f0; margin-bottom: 0.25rem;';
+                fileDiv.innerHTML = `
+                    <span style="font-size: 0.8rem; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80%;">📄 ${name}</span>
+                    <button type="button" onclick="deleteExistingFile(this, '${path}', '${name}')" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 0.9rem; padding: 0;">🗑️</button>
+                `;
+                container.appendChild(fileDiv);
+            });
         } else {
-            fileNameDisplay.innerHTML = `<span style="color: var(--text-muted); font-style: italic;">Tidak ada file terlampir</span>`;
+            container.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Tidak ada file terlampir</span>';
         }
         
         document.getElementById('edit-selected-files-list').innerHTML = ''; // Reset new file selection text
         
-        const form = document.getElementById('form-edit-materi');
+        // Populate current links
+        const links = JSON.parse(linksJson);
+        const linksContainer = document.getElementById('edit-current-links-container');
+        linksContainer.innerHTML = '';
+        
+        // Remove any previously added hidden inputs for deleted links
+        form.querySelectorAll('.deleted-link-input').forEach(el => el.remove());
+        // Reset new link fields
+        document.getElementById('edit-new-links-container').innerHTML = '';
+
+        if (links.length > 0) {
+            links.forEach((linkUrl, index) => {
+                const linkDiv = document.createElement('div');
+                linkDiv.className = 'edit-link-item';
+                linkDiv.style = 'display: flex; justify-content: space-between; align-items: center; background: white; padding: 0.35rem 0.5rem; border-radius: 4px; border: 1px solid #e2e8f0; margin-bottom: 0.25rem;';
+                linkDiv.innerHTML = `
+                    <span style="font-size: 0.8rem; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80%;"><a href="${linkUrl}" target="_blank" style="color: var(--primary); text-decoration: none;">🔗 ${linkUrl}</a></span>
+                    <button type="button" onclick="deleteExistingLink(this, '${linkUrl}')" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 0.9rem; padding: 0;">🗑️</button>
+                `;
+                linksContainer.appendChild(linkDiv);
+            });
+        } else {
+            linksContainer.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Tidak ada link terlampir</span>';
+        }
+
         form.action = `/classes/{{ $class->id }}/material/${materialId}`;
         
         document.getElementById('modal-edit-material').style.display = 'flex';
+    }
+    
+    function deleteExistingFile(button, path, name) {
+        if (!confirm(`Apakah Anda yakin ingin menghapus file "${name}"?`)) return;
+        
+        const form = document.getElementById('form-edit-materi');
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.className = 'deleted-file-input';
+        hiddenInput.name = 'deleted_files[]';
+        hiddenInput.value = path;
+        form.appendChild(hiddenInput);
+
+        const item = button.closest('.edit-file-item');
+        if (item) item.remove();
+
+        const container = document.getElementById('edit-current-files-container');
+        if (container.children.length === 0) {
+            container.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Tidak ada file terlampir</span>';
+        }
+    }
+
+    function addNewLinkField(containerId) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.style = 'display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;';
+        div.innerHTML = `
+            <input type="url" name="links[]" placeholder="https://youtube.com/ atau drive link" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+            <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 1.1rem; padding: 0;">🗑️</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function deleteExistingLink(button, url) {
+        if (!confirm(`Apakah Anda yakin ingin menghapus link "${url}"?`)) return;
+        
+        const form = document.getElementById('form-edit-materi');
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.className = 'deleted-link-input';
+        hiddenInput.name = 'deleted_links[]';
+        hiddenInput.value = url;
+        form.appendChild(hiddenInput);
+
+        const item = button.closest('.edit-link-item');
+        if (item) item.remove();
+
+        const container = document.getElementById('edit-current-links-container');
+        if (container.children.length === 0) {
+            container.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Tidak ada link terlampir</span>';
+        }
     }
     
     function closeEditMaterialModal() {

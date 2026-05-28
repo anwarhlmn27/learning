@@ -9,12 +9,6 @@
             {{ __('Personal Preferences') }}
         </div>
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             <form action="{{ route('lms.settings.personal') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 

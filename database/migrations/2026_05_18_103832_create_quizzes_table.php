@@ -14,21 +14,27 @@ return new class extends Migration
         // 1. Master Kuis
         Schema::create('quizzes', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->uuid('class_room_id')->nullable();
             $table->uuid('rps_assessment_id')->nullable(); // Hubungan ke bobot OBE jika kuis ini dinilai
             $table->string('title');
+            $table->text('description')->nullable();
             $table->integer('duration'); // Durasi dalam menit
             $table->timestamps();
 
+            $table->foreign('class_room_id')->references('id')->on('class_rooms')->onDelete('cascade');
             $table->foreign('rps_assessment_id')->references('id')->on('rps_assessments')->onDelete('cascade');
         });
 
-        // 2. Bank Soal Pilihan Ganda
+        // 2. Bank Soal Pilihan Ganda & Essay
         Schema::create('quiz_questions', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('quiz_id');
+            $table->enum('type', ['multiple_choice', 'essay'])->default('multiple_choice');
             $table->text('question_text');
-            $table->json('options'); // Menyimpan pilihan A, B, C, D, E dalam format JSON
-            $table->string('correct_option'); // Kunci jawaban (misal: "A")
+            $table->string('question_image')->nullable();
+            $table->json('options')->nullable(); // Menyimpan pilihan dalam format JSON
+            $table->string('correct_option')->nullable(); // Kunci jawaban index/huruf
+            $table->integer('points')->default(10);
             $table->timestamps();
 
             $table->foreign('quiz_id')->references('id')->on('quizzes')->onDelete('cascade');
@@ -52,8 +58,9 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('student_quiz_attempt_id');
             $table->uuid('quiz_question_id');
-            $table->string('selected_option'); // Pilihan yang dipilih (misal: "A")
-            $table->boolean('is_correct'); // Apakah jawaban benar
+            $table->text('answer_text')->nullable(); // Jawaban yang dipilih/diketik
+            $table->boolean('is_correct')->nullable(); // Apakah jawaban benar
+            $table->integer('score')->nullable();
             $table->timestamps();
 
             $table->foreign('student_quiz_attempt_id')->references('id')->on('student_quiz_attempts')->onDelete('cascade');

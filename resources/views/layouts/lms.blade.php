@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horizon - {{ config('app.name', 'Laravel') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/lms.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/lms.css') }}?v={{ filemtime(public_path('css/lms.css')) }}">
     <style>
         :root {
             --primary: #4f46e5;
@@ -111,13 +111,45 @@
         /* type colours — solid backgrounds */
         .lms-toast.toast-success { background: #5aab6e; }
         .lms-toast.toast-error   { background: #e05252; }
-        .lms-toast.toast-warning { background: #d97706; }
-        .lms-toast.toast-info    { background: #3b82f6; }
+        /* Menu button always visible now */
+        .mobile-menu-btn { display: block; }
+        .sidebar-overlay { display: none; }
+        
+        @media (max-width: 768px) {
+            .lms-sidebar {
+                position: absolute;
+                height: 100%;
+                z-index: 1000;
+                margin-left: -250px;
+                transition: margin-left 0.3s;
+            }
+            .lms-sidebar.mobile-open {
+                margin-left: 0;
+            }
+            .sidebar-overlay {
+                display: none;
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+            header { padding: 0 1rem; }
+            .content-area { padding: 1rem; }
+        }
+
+        /* Quiz Mode */
+        .quiz-mode-active .lms-sidebar, 
+        .quiz-mode-active header { display: none !important; }
+        .quiz-mode-active .content-area { padding: 0 !important; }
     </style>
 </head>
 <body>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-    <aside class="lms-sidebar">
+    <aside class="lms-sidebar" id="lms-sidebar">
         <div class="lms-sidebar-header">
             <h2>Horizon LMS</h2>
         </div>
@@ -180,6 +212,7 @@
     <main class="lms-main">
         <header>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main); padding: 0; margin-right: 0.5rem;">☰</button>
                 <h1 style="font-size: 1.25rem; font-weight: 600; margin: 0;">@yield('header_title', 'Dashboard')</h1>
                 @if(Auth::check())
                     @foreach(Auth::user()->roles as $role)
@@ -262,6 +295,17 @@
             }
         });
 
+        function toggleSidebar() {
+            const sidebar = document.getElementById('lms-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (window.innerWidth <= 768) {
+                if (sidebar) sidebar.classList.toggle('mobile-open');
+                if (overlay) overlay.classList.toggle('active');
+            } else {
+                if (sidebar) sidebar.classList.toggle('collapsed');
+            }
+        }
+
         /* ====== TOAST SYSTEM ====== */
         const TOAST_META = {
             success: { icon: '&#10003;', label: 'Berhasil' },
@@ -312,6 +356,31 @@
                     setTimeout(function() { el && el.remove(); }, 500);
                 }, 2000);
             });
+
+            // Auto Logout after 10 seconds of inactivity
+            let idleTimer;
+            const idleLimit = 100000;
+            function resetIdleTimer() {
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(logoutUser, idleLimit);
+            }
+            function logoutUser() {
+                const logoutForm = document.createElement('form');
+                logoutForm.method = 'POST';
+                logoutForm.action = "{{ route('logout') }}";
+                const csrfInput = document.createElement('input');
+                csrfInput.type  = 'hidden';
+                csrfInput.name  = '_token';
+                csrfInput.value = "{{ csrf_token() }}";
+                logoutForm.appendChild(csrfInput);
+                document.body.appendChild(logoutForm);
+                alert('Sesi Anda berakhir karena tidak ada aktivitas selama 10 detik.');
+                logoutForm.submit();
+            }
+            ['mousemove','mousedown','keydown','scroll','touchstart','click'].forEach(ev => {
+                window.addEventListener(ev, resetIdleTimer);
+            });
+            resetIdleTimer();
         });
     </script>
 </body>

@@ -13,13 +13,7 @@
     </div>
 </div>
 
-@if(session('error'))
-    <div style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border: 1px solid #fecaca; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('error') }}</div>
-@endif
 
-@if(session('success'))
-    <div style="background-color: #f0fdf4; color: #166534; padding: 1rem; border: 1px solid #bbf7d0; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('success') }}</div>
-@endif
 
 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
     <!-- Assignment Details -->

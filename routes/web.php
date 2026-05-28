@@ -150,8 +150,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/classes/{class}/forum', [\App\Http\Controllers\ClassRoomController::class, 'storeForum'])->name('classes.store_forum');
     Route::post('/classes/{class}/quiz', [\App\Http\Controllers\ClassRoomController::class, 'storeQuiz'])->name('classes.store_quiz');
     Route::delete('/classes/{class}/topics/{topic}', [\App\Http\Controllers\ClassRoomController::class, 'destroyTopic'])->name('classes.destroy_topic');
-    Route::get('/classes/{class}/quiz/{quiz}', [\App\Http\Controllers\ClassRoomController::class, 'takeQuiz'])->name('classes.take_quiz');
-    Route::post('/classes/{class}/quiz/{quiz}/submit', [\App\Http\Controllers\ClassRoomController::class, 'submitQuiz'])->name('classes.submit_quiz');
+    Route::get('/classes/{class}/quiz/{quiz}', [\App\Http\Controllers\QuizController::class, 'take'])->name('classes.take_quiz');
+    Route::post('/classes/{class}/quiz/{quiz}/submit', [\App\Http\Controllers\QuizController::class, 'submit'])->name('classes.submit_quiz');
     Route::post('/classes/{class}/add-staff', [\App\Http\Controllers\ClassRoomController::class, 'addStaff'])->name('classes.add_staff');
     Route::delete('/classes/{class}/remove-staff/{user}', [\App\Http\Controllers\ClassRoomController::class, 'removeStaff'])->name('classes.remove_staff');
     Route::post('/classes/{class}/archive', [\App\Http\Controllers\ClassRoomController::class, 'archive'])->name('classes.archive');
@@ -163,6 +163,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/assignments/{assignment}/publish', [\App\Http\Controllers\AssignmentController::class, 'publish'])->name('assignments.publish');
     Route::post('/assignments/{assignment}/submit', [\App\Http\Controllers\AssignmentController::class, 'submit'])->name('assignments.submit');
     Route::post('/assignments/{assignment}/grade/{enrollment}', [\App\Http\Controllers\AssignmentController::class, 'grade'])->name('assignments.grade');
+
+    // Quizzes Management (Teacher)
+    Route::get('/quizzes/{quiz}', [\App\Http\Controllers\QuizController::class, 'show'])->name('quizzes.show');
+    Route::post('/quizzes/{quiz}/questions', [\App\Http\Controllers\QuizController::class, 'storeQuestion'])->name('quizzes.store_question');
+    Route::delete('/questions/{question}', [\App\Http\Controllers\QuizController::class, 'destroyQuestion'])->name('quizzes.destroy_question');
+    Route::get('/quizzes/{quiz}/grade/{attempt}', [\App\Http\Controllers\QuizController::class, 'gradeForm'])->name('quizzes.grade_form');
+    Route::post('/quizzes/{quiz}/grade/{attempt}', [\App\Http\Controllers\QuizController::class, 'saveGrade'])->name('quizzes.save_grade');
 });
 
 

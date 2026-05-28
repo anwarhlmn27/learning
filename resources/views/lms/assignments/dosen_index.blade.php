@@ -7,13 +7,7 @@
     <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">Grading Center</h2>
 </div>
 
-@if(session('error'))
-    <div style="background-color: #fef2f2; color: #991b1b; padding: 1rem; border: 1px solid #fecaca; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('error') }}</div>
-@endif
 
-@if(session('success'))
-    <div style="background-color: #f0fdf4; color: #166534; padding: 1rem; border: 1px solid #bbf7d0; border-radius: var(--radius); margin-bottom: 1.5rem;">{{ session('success') }}</div>
-@endif
 
 <div class="card">
     <div class="card-body" style="padding: 0;">

@@ -28,7 +28,12 @@ class ClassRoomController extends Controller
 
         // Non-admin / non-kaprodi only see their own classes
         if (!$user->hasRole(['admin', 'kaprodi'])) {
-            $query->whereHas('users', fn($q) => $q->where('user_id', $user->id));
+            $query->where(function($q) use ($user) {
+                $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
+                if ($user->student) {
+                    $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
+                }
+            });
         }
 
         $query->where('status', 'active');
@@ -217,7 +222,12 @@ class ClassRoomController extends Controller
         $query = ClassRoom::with(['subject'])->where('status', 'archived');
 
         if (!$user->hasRole(['admin', 'kaprodi'])) {
-            $query->whereHas('users', fn($q) => $q->where('user_id', $user->id));
+            $query->where(function($q) use ($user) {
+                $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
+                if ($user->student) {
+                    $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
+                }
+            });
         }
 
         // ── Filter by prodi ──
@@ -244,10 +254,12 @@ class ClassRoomController extends Controller
     {
         $user = Auth::user();
         
-        // Authorization check: non-admin / non-kaprodi must be enrolled in class_users
+        // Authorization check: non-admin / non-kaprodi must be enrolled in class_users or enrollments
         if (!$user->hasRole(['admin', 'kaprodi'])) {
-            $isEnrolled = $class->users()->where('user_id', $user->id)->exists();
-            if (!$isEnrolled) {
+            $isStaff = $class->users()->where('user_id', $user->id)->exists();
+            $isStudent = $user->student && $class->enrollments()->where('student_id', $user->student->id)->exists();
+            
+            if (!$isStaff && !$isStudent) {
                 return back()->with('error', 'Anda tidak memiliki akses ke kelas ini.');
             }
         }
@@ -386,8 +398,8 @@ class ClassRoomController extends Controller
     {
         $user = Auth::user();
         if (!$user->hasRole(['admin', 'kaprodi'])) {
-            $isEnrolled = $class->users()->where('user_id', $user->id)->exists();
-            if (!$isEnrolled) {
+            $isStaff = $class->users()->where('user_id', $user->id)->exists();
+            if (!$isStaff) {
                 return back()->with('error', 'Anda tidak memiliki akses ke kelas ini.');
             }
         }
@@ -470,23 +482,30 @@ class ClassRoomController extends Controller
     public function enroll(Request $request, ClassRoom $class)
     {
         $request->validate([
-            'student_id' => 'required|exists:students,id',
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'exists:students,id',
         ]);
 
-        $exists = Enrollment::where('class_room_id', $class->id)
-                            ->where('student_id', $request->student_id)
-                            ->exists();
+        $enrolledCount = 0;
+        foreach ($request->student_ids as $studentId) {
+            $exists = Enrollment::where('class_room_id', $class->id)
+                                ->where('student_id', $studentId)
+                                ->exists();
 
-        if ($exists) {
-            return back()->with('error', 'Mahasiswa tersebut sudah terdaftar di kelas ini.');
+            if (!$exists) {
+                Enrollment::create([
+                    'class_room_id' => $class->id,
+                    'student_id' => $studentId,
+                ]);
+                $enrolledCount++;
+            }
         }
 
-        Enrollment::create([
-            'class_room_id' => $class->id,
-            'student_id' => $request->student_id,
-        ]);
+        if ($enrolledCount > 0) {
+            return back()->with('success', $enrolledCount . ' mahasiswa berhasil ditambahkan ke kelas.');
+        }
 
-        return back()->with('success', 'Mahasiswa berhasil ditambahkan ke kelas.');
+        return back()->with('info', 'Mahasiswa yang dipilih sudah terdaftar di kelas ini.');
     }
 
     public function unenroll(ClassRoom $class, Enrollment $enrollment)
@@ -602,58 +621,100 @@ class ClassRoomController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    private function convertToPdf(string $filePath)
+    {
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        if (!in_array($extension, ['doc', 'docx', 'ppt', 'pptx'])) {
+            return $filePath;
+        }
+
+        $sourcePath = \Illuminate\Support\Facades\Storage::path($filePath);
+        $newFileName = preg_replace('/\.(doc|docx|ppt|pptx)$/i', '.pdf', basename($filePath));
+        $newFilePath = 'materials/' . $newFileName;
+        $targetPath = \Illuminate\Support\Facades\Storage::path($newFilePath);
+
+        try {
+            $scriptPath = base_path('convert_to_pdf.ps1');
+
+            // Run the PowerShell conversion script with a strict 15-second timeout
+            $result = \Illuminate\Support\Facades\Process::timeout(15)->run([
+                'powershell',
+                '-ExecutionPolicy', 'Bypass',
+                '-File', $scriptPath,
+                '-SourcePath', $sourcePath,
+                '-TargetPath', $targetPath
+            ]);
+
+            $output = $result->output() . ' ' . $result->errorOutput();
+
+            if ($result->successful() && strpos($output, 'SUCCESS') !== false && \Illuminate\Support\Facades\Storage::exists($newFilePath)) {
+                // Delete original file
+                if (\Illuminate\Support\Facades\Storage::exists($filePath)) {
+                    \Illuminate\Support\Facades\Storage::delete($filePath);
+                }
+                return $newFilePath;
+            } else {
+                \Illuminate\Support\Facades\Log::warning("PDF Conversion failed or timed out. Output: " . $output);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("PDF Conversion Exception: " . $e->getMessage());
+        }
+
+        return $filePath; // Fallback to original file
+    }
+
     public function storeMaterial(Request $request, ClassRoom $class)
     {
         $request->validate([
             'session_number' => 'required|integer|min:1|max:14',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'link' => 'nullable|url',
+            'links.*' => 'nullable|url',
             'files.*' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx|max:2048',
         ]);
 
-        $hasFiles = $request->hasFile('files');
+        $filePaths = [];
+        $originalFilenames = [];
 
-        if ($hasFiles) {
-            $files = $request->file('files');
-            foreach ($files as $index => $file) {
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
                 $originalName = $file->getClientOriginalName();
                 $filename = \Illuminate\Support\Str::uuid() . '_' . time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs('materials', $filename);
 
-                $material = \App\Models\Material::create([
-                    'title' => $request->title . (count($files) > 1 ? ' - Part ' . ($index + 1) : ''),
-                    'description' => $request->description,
-                    'link_url' => $index === 0 ? $request->link : null,
-                    'file_path' => $filePath,
-                    'original_filename' => $originalName,
-                ]);
+                // Convert doc/docx/ppt/pptx to pdf
+                $convertedFilePath = $this->convertToPdf($filePath);
+                if ($convertedFilePath !== $filePath) {
+                    $filePath = $convertedFilePath;
+                    // Change original filename's extension to .pdf
+                    $originalName = preg_replace('/\.(doc|docx|ppt|pptx)$/i', '.pdf', $originalName);
+                }
 
-                \App\Models\ClassTopic::create([
-                    'class_room_id' => $class->id,
-                    'session_number' => $request->session_number,
-                    'type' => 'materi',
-                    'content_id' => $material->id,
-                    'title' => $material->title,
-                ]);
+                $filePaths[] = $filePath;
+                $originalFilenames[] = $originalName;
             }
-        } else {
-            $material = \App\Models\Material::create([
-                'title' => $request->title,
-                'description' => $request->description,
-                'link_url' => $request->link,
-                'file_path' => null,
-                'original_filename' => null,
-            ]);
-
-            \App\Models\ClassTopic::create([
-                'class_room_id' => $class->id,
-                'session_number' => $request->session_number,
-                'type' => 'materi',
-                'content_id' => $material->id,
-                'title' => $material->title,
-            ]);
         }
+
+        $links = [];
+        if ($request->has('links')) {
+            $links = array_values(array_filter($request->links));
+        }
+
+        $material = \App\Models\Material::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'link_url' => count($links) > 0 ? json_encode($links) : null,
+            'file_path' => count($filePaths) > 0 ? json_encode($filePaths) : null,
+            'original_filename' => count($originalFilenames) > 0 ? json_encode($originalFilenames) : null,
+        ]);
+
+        \App\Models\ClassTopic::create([
+            'class_room_id' => $class->id,
+            'session_number' => $request->session_number,
+            'type' => 'materi',
+            'content_id' => $material->id,
+            'title' => $material->title,
+        ]);
 
         return back()->with('success', 'Materi berhasil ditambahkan pada Sesi ' . $request->session_number);
     }
@@ -663,38 +724,78 @@ class ClassRoomController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'link' => 'nullable|url',
+            'links.*' => 'nullable|url',
             'files.*' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx|max:2048',
         ]);
 
-        $hasFiles = $request->hasFile('files');
+        $filePaths = $material->file_paths;
+        $originalFilenames = $material->original_filenames;
 
-        if ($hasFiles) {
-            $files = $request->file('files');
-            // Assuming we just update the first file if uploaded, or replace it entirely.
-            // For simplicity, if they upload a new file, replace the old file.
-            $file = $files[0];
-            if ($material->file_path && \Illuminate\Support\Facades\Storage::exists($material->file_path)) {
-                \Illuminate\Support\Facades\Storage::delete($material->file_path);
+        // Handle deleted files
+        if ($request->has('deleted_files')) {
+            foreach ($request->deleted_files as $deletedPath) {
+                $idx = array_search($deletedPath, $filePaths);
+                if ($idx !== false) {
+                    if (\Illuminate\Support\Facades\Storage::exists($deletedPath)) {
+                        \Illuminate\Support\Facades\Storage::delete($deletedPath);
+                    }
+                    unset($filePaths[$idx]);
+                    unset($originalFilenames[$idx]);
+                }
             }
-            $originalName = $file->getClientOriginalName();
-            $filename = \Illuminate\Support\Str::uuid() . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('materials', $filename);
-
-            $material->update([
-                'title' => $request->title,
-                'description' => $request->description,
-                'link_url' => $request->link,
-                'file_path' => $filePath,
-                'original_filename' => $originalName,
-            ]);
-        } else {
-            $material->update([
-                'title' => $request->title,
-                'description' => $request->description,
-                'link_url' => $request->link,
-            ]);
+            $filePaths = array_values($filePaths);
+            $originalFilenames = array_values($originalFilenames);
         }
+
+        // Handle newly uploaded files
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $filename = \Illuminate\Support\Str::uuid() . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('materials', $filename);
+
+                // Convert doc/docx/ppt/pptx to pdf
+                $convertedFilePath = $this->convertToPdf($filePath);
+                if ($convertedFilePath !== $filePath) {
+                    $filePath = $convertedFilePath;
+                    // Change original filename's extension to .pdf
+                    $originalName = preg_replace('/\.(doc|docx|ppt|pptx)$/i', '.pdf', $originalName);
+                }
+
+                $filePaths[] = $filePath;
+                $originalFilenames[] = $originalName;
+            }
+        }
+
+        // Handle link URLs
+        $linkUrls = $material->link_urls;
+
+        // Handle deleted links
+        if ($request->has('deleted_links')) {
+            foreach ($request->deleted_links as $deletedLink) {
+                $idx = array_search($deletedLink, $linkUrls);
+                if ($idx !== false) {
+                    unset($linkUrls[$idx]);
+                }
+            }
+            $linkUrls = array_values($linkUrls);
+        }
+
+        // Handle newly added links
+        if ($request->has('links')) {
+            $newLinks = array_values(array_filter($request->links));
+            foreach ($newLinks as $newLink) {
+                $linkUrls[] = $newLink;
+            }
+        }
+
+        $material->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'link_url' => count($linkUrls) > 0 ? json_encode($linkUrls) : null,
+            'file_path' => count($filePaths) > 0 ? json_encode($filePaths) : null,
+            'original_filename' => count($originalFilenames) > 0 ? json_encode($originalFilenames) : null,
+        ]);
 
         // Also update topic title if it exists
         $topic = \App\Models\ClassTopic::where('type', 'materi')->where('content_id', $material->id)->first();
@@ -705,7 +806,7 @@ class ClassRoomController extends Controller
         return back()->with('success', 'Materi berhasil diperbarui.');
     }
 
-    public function downloadMaterial(ClassRoom $class, \App\Models\Material $material)
+    public function downloadMaterial(ClassRoom $class, \App\Models\Material $material, Request $request)
     {
         $user = Auth::user();
 
@@ -718,18 +819,31 @@ class ClassRoomController extends Controller
             }
         }
 
+        $filePaths = $material->file_paths;
+        $originalFilenames = $material->original_filenames;
+
+        if (empty($filePaths)) {
+            abort(404, 'File materi tidak ditemukan di server.');
+        }
+
+        $fileIndex = $request->query('file_index', 0);
+
+        if (!isset($filePaths[$fileIndex])) {
+            abort(404, 'File dengan indeks tersebut tidak ditemukan.');
+        }
+
+        $targetPath = $filePaths[$fileIndex];
+        $originalName = $originalFilenames[$fileIndex] ?? 'Materi_LMS.pdf';
+
         // 2. Validate File Existence in secure storage
-        if (!$material->file_path || !\Illuminate\Support\Facades\Storage::exists($material->file_path)) {
+        if (!$targetPath || !\Illuminate\Support\Facades\Storage::exists($targetPath)) {
             abort(404, 'File materi tidak ditemukan di server.');
         }
 
         // 3. Return Secure Download/File Response
-        $path = \Illuminate\Support\Facades\Storage::path($material->file_path);
-        $originalName = $material->original_filename ?? 'Materi_LMS.pdf';
+        $path = \Illuminate\Support\Facades\Storage::path($targetPath);
 
         // Using response()->file() directly allows viewing in browser for PDFs
-        // If we strictly want to download, use response()->download()
-        // Adding headers to response()->file() to preserve original name if user clicks save
         return response()->file($path, [
             'Content-Disposition' => 'inline; filename="' . $originalName . '"'
         ]);
@@ -804,7 +918,7 @@ class ClassRoomController extends Controller
             'class_room_id' => $class->id,
             'title' => $request->title,
             'description' => $request->description,
-            'duration_minutes' => $request->duration_minutes,
+            'duration' => $request->duration_minutes,
             'rps_assessment_id' => $request->rps_assessment_id,
         ]);
 
@@ -858,8 +972,11 @@ class ClassRoomController extends Controller
         
         if ($content) {
             if ($topic->type === 'materi') {
-                if ($content->file_path && \Illuminate\Support\Facades\Storage::exists($content->file_path)) {
-                    \Illuminate\Support\Facades\Storage::delete($content->file_path);
+                $filePaths = $content->file_paths;
+                foreach ($filePaths as $path) {
+                    if ($path && \Illuminate\Support\Facades\Storage::exists($path)) {
+                        \Illuminate\Support\Facades\Storage::delete($path);
+                    }
                 }
             }
             // Some contents like assignments and quizzes might have submissions, 

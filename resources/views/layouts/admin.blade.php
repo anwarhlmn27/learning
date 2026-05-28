@@ -336,9 +336,9 @@
                 logo.src = "{{ asset(get_setting('favicon') ? 'img/favicon/' . get_setting('favicon') : 'img/icon_hui.png') }}";
             }
 
-            // Auto Logout after 1 hour of inactivity
+            // Auto Logout after 10 seconds of inactivity
             let idleTimer;
-            const idleLimit = 3600000;
+            const idleLimit = 100000;
             function resetIdleTimer() {
                 clearTimeout(idleTimer);
                 idleTimer = setTimeout(logoutUser, idleLimit);
@@ -353,7 +353,7 @@
                 csrfInput.value = "{{ csrf_token() }}";
                 logoutForm.appendChild(csrfInput);
                 document.body.appendChild(logoutForm);
-                alert('Sesi Anda berakhir karena tidak ada aktivitas.');
+                alert('Sesi Anda berakhir karena tidak ada aktivitas selama 10 detik.');
                 logoutForm.submit();
             }
             ['mousemove','mousedown','keydown','scroll','touchstart','click'].forEach(ev => {
