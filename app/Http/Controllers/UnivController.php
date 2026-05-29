@@ -26,8 +26,8 @@ class UnivController extends Controller
         $validated = $request->validate([
             'kode_univ' => 'required|string|max:50',
             'nama_univ' => 'required|string|max:255',
-            'nama_pimpinan' => 'required|string|max:255',
-            'rektor_id' => 'nullable|exists:user,id',
+
+            'rektor_id' => 'nullable|exists:users,id',
             'sign_file' => 'required|image|mimes:png,jpg,jpeg|max:2048',
             'address' => 'required|string',
             'email' => 'required|email|max:255',
@@ -70,8 +70,8 @@ class UnivController extends Controller
         $validated = $request->validate([
             'kode_univ' => 'required|string|max:50',
             'nama_univ' => 'required|string|max:255',
-            'nama_pimpinan' => 'required|string|max:255',
-            'rektor_id' => 'nullable|exists:user,id',
+
+            'rektor_id' => 'nullable|exists:users,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
             'address' => 'required|string',

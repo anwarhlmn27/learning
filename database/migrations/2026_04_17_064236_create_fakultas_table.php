@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('kode_fakultas');
             $table->string('nama_fakultas');
             $table->string('short_name');
-            $table->string('nama_pimpinan');
-            $table->string('dekan_sign');
+            $table->string('sign')->nullable();
             $table->timestamps();
 
             $table->foreign('id_univs')->references('id')->on('univs')->onDelete('cascade');

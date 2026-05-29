@@ -15,7 +15,6 @@ class Univ extends Model
     protected $fillable = [
         'kode_univ',
         'nama_univ',
-        'nama_pimpinan',
         'sign',
         'address',
         'email',

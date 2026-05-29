@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('kode_prodi');
             $table->string('nama_prodi');
             $table->string('short_name');
-            $table->string('kaprodi_sign');
+            $table->string('sign')->nullable();
             $table->timestamps();
 
             $table->foreign('id_fakultas')->references('id')->on('fakultas')->onDelete('cascade');

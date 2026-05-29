@@ -18,7 +18,6 @@ class Prodi extends Model
         'kode_prodi',
         'nama_prodi',
         'short_name',
-        'nama_pimpinan',
         'sign',
         'kaprodi_id',
     ];

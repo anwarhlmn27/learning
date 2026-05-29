@@ -32,7 +32,7 @@
                         <td style="font-weight: 600;">{{ $f->kode_fakultas }}</td>
                         <td>{{ $f->short_name }}</td>
                         <td>{{ $f->nama_fakultas }}</td>
-                        <td>{{ $f->nama_pimpinan }}</td>
+                        <td>{{ $f->dekan->name ?? '-' }}</td>
                         <td style="display: flex; gap: 0.5rem;">
                             <a href="{{ route('fakultas.edit', $f->id) }}" class="btn" style="background: #e5e7eb; color: #374151; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>
                             <form action="{{ route('fakultas.destroy', $f->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this?');">

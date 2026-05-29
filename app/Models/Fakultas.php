@@ -17,7 +17,6 @@ class Fakultas extends Model
         'kode_fakultas',
         'nama_fakultas',
         'short_name',
-        'nama_pimpinan',
         'sign',
         'dekan_id',
     ];

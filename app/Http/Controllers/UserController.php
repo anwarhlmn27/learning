@@ -61,6 +61,37 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
     }
 
+    public function update(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'role_id' => 'required|exists:roles,id',
+            'password' => 'nullable|string|min:8',
+        ]);
+
+        DB::transaction(function () use ($request, $user) {
+            $updateData = [
+                'name' => $request->name,
+                'email' => $request->email,
+            ];
+
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
+            }
+
+            $user->update($updateData);
+
+            // Sync role, generate new UUID for the pivot id if attaching a new one
+            // To ensure safety, we can detach and attach, or use sync with UUID if needed.
+            // Using detach and attach ensures we always have a UUID.
+            $user->roles()->detach();
+            $user->roles()->attach($request->role_id, ['id' => (string) Str::uuid()]);
+        });
+
+        return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
+    }
+
     public function toggleStatus(User $user)
     {
         $user->status = $user->status === 'active' ? 'Inactive' : 'active';

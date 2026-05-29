@@ -92,6 +92,7 @@
                         </form>
                     </td>
                     <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">
+                        <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="openEditModal('{{ $user->id }}', '{{ addslashes($user->name) }}', '{{ $user->email }}', '{{ $user->roles->first() ? $user->roles->first()->id : '' }}')">Edit</button>
                         @if($user->id !== auth()->id())
                         <form action="{{ route('users.destroy', $user) }}" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini? Semua data relasi role juga akan terhapus.')">
                             @csrf
@@ -181,4 +182,54 @@
         </div>
     </div>
 </div>
+<!-- Modal Edit User -->
+<div id="modal-edit" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 500px; margin: 1rem;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 1.1rem;">Edit User</h3>
+            <button onclick="document.getElementById('modal-edit').style.display = 'none'" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280;">&times;</button>
+        </div>
+        <div class="card-body">
+            <form id="form-edit" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="form-group">
+                    <label class="form-label">Name <span style="color: red;">*</span></label>
+                    <input type="text" name="name" id="edit-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email <span style="color: red;">*</span></label>
+                    <input type="email" name="email" id="edit-email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role <span style="color: red;">*</span></label>
+                    <select name="role_id" id="edit-role_id" class="form-control" required>
+                        <option value="">Select Role</option>
+                        @foreach($roles as $role)
+                            <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Leave empty to keep current password)</span></label>
+                    <input type="password" name="password" class="form-control">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn" style="background: #f3f4f6; color: #374151;" onclick="document.getElementById('modal-edit').style.display = 'none'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEditModal(id, name, email, roleId) {
+        document.getElementById('form-edit').action = '/obe/users/' + id;
+        document.getElementById('edit-name').value = name;
+        document.getElementById('edit-email').value = email;
+        document.getElementById('edit-role_id').value = roleId;
+        document.getElementById('modal-edit').style.display = 'flex';
+    }
+</script>
 @endsection

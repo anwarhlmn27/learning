@@ -30,7 +30,7 @@
                         <tr>
                             <td style="font-weight: 600;">{{ $u->kode_univ }}</td>
                             <td>{{ $u->nama_univ }}</td>
-                            <td>{{ $u->nama_pimpinan }}</td>
+                            <td>{{ $u->rektor->name ?? '-' }}</td>
                             <td>{{ $u->email }}</td>
                             <td><a href="{{ $u->website }}" target="_blank" style="color: var(--primary);">Link</a></td>
                             <td style="display: flex; gap: 0.5rem;">

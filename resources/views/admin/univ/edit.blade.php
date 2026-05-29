@@ -44,26 +44,17 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                <div class="form-group">
-                    <label class="form-label">Leader Name (Rector) <span style="color: red;">*</span></label>
-                    <input type="text" name="nama_pimpinan" class="form-control @error('nama_pimpinan') is-invalid @enderror" required value="{{ old('nama_pimpinan', $univ->nama_pimpinan) }}">
-                    @error('nama_pimpinan')
-                        <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Rektor User (Optional)</label>
-                    <select name="rektor_id" class="form-control">
-                        <option value="">-- Select Rektor User --</option>
-                        @foreach($users as $u)
-                            <option value="{{ $u->id }}" {{ old('rektor_id', $univ->rektor_id) == $u->id ? 'selected' : '' }}>
-                                {{ $u->name ?? $u->email }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <small style="color: var(--text-muted);">Assign an existing user with 'rektor' role.</small>
-                </div>
+            <div class="form-group">
+                <label class="form-label">Rektor User (Optional)</label>
+                <select name="rektor_id" class="form-control">
+                    <option value="">-- Select Rektor User --</option>
+                    @foreach($users as $u)
+                        <option value="{{ $u->id }}" {{ old('rektor_id', $univ->rektor_id) == $u->id ? 'selected' : '' }}>
+                            {{ $u->name ?? $u->email }}
+                        </option>
+                    @endforeach
+                </select>
+                <small style="color: var(--text-muted);">Assign an existing user with 'rektor' role.</small>
             </div>
 
             <div class="form-group">

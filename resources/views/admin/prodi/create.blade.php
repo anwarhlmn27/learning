@@ -57,10 +57,7 @@
                 <small style="color: var(--text-muted);">Assign an existing user with 'kaprodi' role to manage this study program.</small>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Head of Study Program Name <span style="color: red;">*</span></label>
-                <input type="text" name="nama_pimpinan" class="form-control" required value="{{ old('nama_pimpinan') }}">
-            </div>
+
 
             <div class="form-group">
                 <label class="form-label">Head of SP's Signature</label>

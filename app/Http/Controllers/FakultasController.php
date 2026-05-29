@@ -31,8 +31,8 @@ class FakultasController extends Controller
             'kode_fakultas' => 'required|string|max:50',
             'nama_fakultas' => 'required|string|max:255',
             'short_name' => 'required|string|max:50',
-            'nama_pimpinan' => 'required|string|max:255',
-            'dekan_id' => 'nullable|exists:user,id',
+
+            'dekan_id' => 'nullable|exists:users,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
@@ -80,8 +80,8 @@ class FakultasController extends Controller
             'kode_fakultas' => 'required|string|max:50',
             'nama_fakultas' => 'required|string|max:255',
             'short_name' => 'required|string|max:50',
-            'nama_pimpinan' => 'required|string|max:255',
-            'dekan_id' => 'nullable|exists:user,id',
+
+            'dekan_id' => 'nullable|exists:users,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);

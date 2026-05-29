@@ -34,7 +34,7 @@
                         <td style="font-weight: 600;">{{ $p->kode_prodi }}</td>
                         <td>{{ $p->short_name }}</td>
                         <td>{{ $p->nama_prodi }}</td>
-                        <td>{{ $p->nama_pimpinan ?? '-' }}</td>
+                        <td>{{ $p->kaprodi->name ?? '-' }}</td>
                         <td>
                             <div style="display: flex; gap: 0.5rem;">
                                 <a href="{{ route('prodi.edit', $p->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>

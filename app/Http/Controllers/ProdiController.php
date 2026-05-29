@@ -30,8 +30,8 @@ class ProdiController extends Controller
             'kode_prodi' => 'required|numeric',
             'nama_prodi' => 'required|string|max:255',
             'short_name' => 'required|string|max:50',
-            'nama_pimpinan' => 'required|string|max:255',
-            'kaprodi_id' => 'nullable|exists:user,id',
+
+            'kaprodi_id' => 'nullable|exists:users,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);
@@ -77,8 +77,8 @@ class ProdiController extends Controller
             'kode_prodi' => 'required|numeric',
             'nama_prodi' => 'required|string|max:255',
             'short_name' => 'required|string|max:50',
-            'nama_pimpinan' => 'required|string|max:255',
-            'kaprodi_id' => 'nullable|exists:user,id',
+
+            'kaprodi_id' => 'nullable|exists:users,id',
             'sign' => 'nullable|string',
             'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
         ]);

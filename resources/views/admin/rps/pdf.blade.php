@@ -133,7 +133,7 @@
             <th style="text-align: left; vertical-align: middle;">Kepala Program Studi</th>
             <td style="height: 70px; vertical-align: bottom; padding-bottom: 5px;">
                 <div style="font-size: 10px; color: #777; margin-bottom: 30px;">Tanda Tangan:</div>
-                <strong>{{ $rp->subject->prodi->nama_pimpinan ?? '-' }}</strong>
+                <strong>{{ $rp->subject->prodi->kaprodi->name ?? '-' }}</strong>
             </td>
         </tr>
     </table>
