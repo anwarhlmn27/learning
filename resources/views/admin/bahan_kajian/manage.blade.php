@@ -32,13 +32,13 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Code</th>
+                        <th>{{ __('Code') }}</th>
                         <th>Name (Materi)</th>
-                        <th>PLO References</th>
-                        <th>Category</th>
-                        <th>Level</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>{{ __('PLO References') }}</th>
+                        <th>{{ __('Category') }}</th>
+                        <th>{{ __('Level') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,7 +103,7 @@
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label class="form-label" style="font-weight: 600; color: var(--primary);">PLO (CPL) References <span style="color: red;">*</span></label>
+                    <label class="form-label" style="font-weight: 600; color: var(--primary);">{{ __('PLO (CPL) References') }} <span style="color: red;">*</span></label>
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.5rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #f9fafb;">
                         @forelse($prodi->plos as $plo)
                             <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; cursor: pointer;">
@@ -124,28 +124,28 @@
 
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Kode BK <span style="color: red;">*</span></label>
-                        <input type="text" name="kode_bk" id="field_kode_bk" class="form-control" required placeholder="e.g. BK-01">
+                        <label class="form-label">{{ __('Kode BK') }} <span style="color: red;">*</span></label>
+                        <input type="text" name="kode_bk" id="field_kode_bk" class="form-control" required placeholder="{{ __('e.g. BK-01') }}">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Nama Bahan Kajian <span style="color: red;">*</span></label>
-                        <input type="text" name="nm_bahan_kajian" id="field_nm_bahan_kajian" class="form-control" required placeholder="e.g. Software Engineering">
+                        <label class="form-label">{{ __('Nama Bahan Kajian') }} <span style="color: red;">*</span></label>
+                        <input type="text" name="nm_bahan_kajian" id="field_nm_bahan_kajian" class="form-control" required placeholder="{{ __('e.g. Software Engineering') }}">
                     </div>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label class="form-label">Deskripsi <span style="color: red;">*</span></label>
-                    <textarea name="deskripsi" id="field_deskripsi" class="form-control" rows="2" required placeholder="Brief description of the study material"></textarea>
+                    <label class="form-label">{{ __('Deskripsi') }} <span style="color: red;">*</span></label>
+                    <textarea name="deskripsi" id="field_deskripsi" class="form-control" rows="2" required placeholder="{{ __('Brief description of the study material') }}"></textarea>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label class="form-label">Sub Bahan Kajian <span style="color: red;">*</span></label>
-                    <textarea name="sub_bk" id="field_sub_bk" class="form-control" rows="2" required placeholder="Sub-topics separated by comma or new lines"></textarea>
+                    <label class="form-label">{{ __('Sub Bahan Kajian') }} <span style="color: red;">*</span></label>
+                    <textarea name="sub_bk" id="field_sub_bk" class="form-control" rows="2" required placeholder="{{ __('Sub-topics separated by comma or new lines') }}"></textarea>
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Kategori <span style="color: red;">*</span></label>
+                        <label class="form-label">{{ __('Kategori') }} <span style="color: red;">*</span></label>
                         <select name="id_kategori_bk" id="field_id_kategori_bk" class="form-control" required>
                             <option value="">-- Select Category --</option>
                             @foreach($prodi->kategoriBks as $kat)
@@ -154,7 +154,7 @@
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom: 0; display: none;">
-                        <label class="form-label">Tingkat Kedalaman</label>
+                        <label class="form-label">{{ __('Tingkat Kedalaman') }} </label>
                         <select name="tingkat_kedalaman" id="field_tingkat_kedalaman" class="form-control">
                             <option value="">-- Auto Generated --</option>
                             <option value="Introductory">Introductory</option>
@@ -163,7 +163,7 @@
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Status <span style="color: red;">*</span></label>
+                        <label class="form-label">{{ __('Status') }} <span style="color: red;">*</span></label>
                         <select name="status" id="field_status" class="form-control" required>
                             <option value="Aktif">Aktif</option>
                             <option value="Revisi">Revisi</option>
@@ -173,8 +173,8 @@
                 </div>
 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label class="form-label">Sumber Acuan (References) <span style="color: red;">*</span></label>
-                    <textarea name="sumber_acuan" id="field_sumber_acuan" class="form-control" rows="2" required placeholder="Books, journals, or standards used"></textarea>
+                    <label class="form-label">{{ __('Sumber Acuan (References)') }} <span style="color: red;">*</span></label>
+                    <textarea name="sumber_acuan" id="field_sumber_acuan" class="form-control" rows="2" required placeholder="{{ __('Books, journals, or standards used') }}"></textarea>
                 </div>
 
                 <div style="display: flex; align-items: flex-end; justify-content: flex-end; margin-top: 1rem;">

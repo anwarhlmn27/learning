@@ -91,19 +91,19 @@
     <div class="section-title">Informasi Mata Kuliah</div>
     <table>
         <tr>
-            <th width="30%" style="text-align: left;">Nama Mata Kuliah</th>
+            <th width="30%" style="text-align: left;">{{ __('Nama Mata Kuliah') }}</th>
             <td>{{ $rp->subject->nama_subject ?? '-' }}</td>
         </tr>
         <tr>
-            <th style="text-align: left;">Kode Mata Kuliah</th>
+            <th style="text-align: left;">{{ __('Kode Mata Kuliah') }}</th>
             <td>{{ $rp->subject->kode_subject ?? '-' }}</td>
         </tr>
         <tr>
-            <th style="text-align: left;">Bobot SKS</th>
+            <th style="text-align: left;">{{ __('Bobot SKS') }}</th>
             <td>{{ $rp->subject->total_sks ?? '-' }} SKS (T: {{ $rp->subject->sks_t ?? 0 }}, P: {{ $rp->subject->sks_p ?? 0 }})</td>
         </tr>
         <tr>
-            <th style="text-align: left;">Semester</th>
+            <th style="text-align: left;">{{ __('Semester') }}</th>
             <td>{{ $rp->subject->semester ?? '-' }}</td>
         </tr>
         <tr>
@@ -111,26 +111,26 @@
             <td>{{ $rp->subject->prerequisites->count() > 0 ? $rp->subject->prerequisites->pluck('nama_subject')->implode(', ') : 'Tidak Ada' }}</td>
         </tr>
         <tr>
-            <th style="text-align: left;">Deskripsi Mata Kuliah</th>
+            <th style="text-align: left;">{{ __('Deskripsi Mata Kuliah') }}</th>
             <td>{{ $rp->subject->deskripsi ?? '-' }}</td>
         </tr>
         <tr>
-            <th style="text-align: left;">Tanggal Penyusunan</th>
+            <th style="text-align: left;">{{ __('Tanggal Penyusunan') }}</th>
             <td>{{ $rp->tanggal_penyusunan ? \Carbon\Carbon::parse($rp->tanggal_penyusunan)->format('d M Y') : '-' }}</td>
         </tr>
         <tr>
-            <th style="text-align: left; vertical-align: middle;">Pengembang RPS</th>
+            <th style="text-align: left; vertical-align: middle;">{{ __('Pengembang RPS') }}</th>
             <td style="height: 70px; vertical-align: bottom; padding-bottom: 5px;">
                 <div style="font-size: 10px; color: #777; margin-bottom: 30px;">Tanda Tangan:</div>
                 <strong>{{ $rp->pengembang_rps ?? '-' }}</strong>
             </td>
         </tr>
         <tr>
-            <th style="text-align: left; vertical-align: middle;">Dosen Pengampu</th>
+            <th style="text-align: left; vertical-align: middle;">{{ __('Dosen Pengampu') }}</th>
             <td style="vertical-align: middle;">{{ $rp->dosen_pengampu ?? '-' }}</td>
         </tr>
         <tr>
-            <th style="text-align: left; vertical-align: middle;">Kepala Program Studi</th>
+            <th style="text-align: left; vertical-align: middle;">{{ __('Kepala Program Studi') }}</th>
             <td style="height: 70px; vertical-align: bottom; padding-bottom: 5px;">
                 <div style="font-size: 10px; color: #777; margin-bottom: 30px;">Tanda Tangan:</div>
                 <strong>{{ $rp->subject->prodi->kaprodi->name ?? '-' }}</strong>
@@ -196,7 +196,7 @@
     <table>
         <thead>
             <tr>
-                <th width="5%">Minggu Ke</th>
+                <th width="5%">{{ __('Minggu Ke') }}</th>
                 <th width="20%">Kemampuan Akhir yang Diharapkan (Sub-CPMK)</th>
                 <th width="20%">Bahan Kajian (Materi Pembelajaran)</th>
                 <th width="30%">Metode/Aktivitas Pembelajaran<br>(Connect, Coach, Check, Wrap-up)</th>

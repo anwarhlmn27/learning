@@ -36,8 +36,8 @@
                     <input type="hidden" name="_method" id="formMethod" value="POST">
                     
                     <div class="form-group">
-                        <label class="form-label">Category Name</label>
-                        <input type="text" name="nm_kategori" id="field_nm_kategori" class="form-control" required placeholder="e.g. Core Computing">
+                        <label class="form-label">{{ __('Category Name') }} </label>
+                        <input type="text" name="nm_kategori" id="field_nm_kategori" class="form-control" required placeholder="{{ __('e.g. Core Computing') }}">
                     </div>
                     
                     <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
@@ -59,8 +59,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Category Name</th>
-                            <th style="width: 150px;">Actions</th>
+                            <th>{{ __('Category Name') }}</th>
+                            <th style="width: 150px;">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>

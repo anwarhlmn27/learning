@@ -31,11 +31,11 @@
     <div class="card-body">
         <form action="{{ route('users.index') }}" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
             <div style="flex: 1; min-width: 200px;">
-                <label class="form-label">Search</label>
-                <input type="text" name="search" class="form-control" placeholder="Name or Email" value="{{ request('search') }}">
+                <label class="form-label">{{ __('Search') }} </label>
+                <input type="text" name="search" class="form-control" placeholder="{{ __('Name or Email') }}" value="{{ request('search') }}">
             </div>
             <div style="width: 150px;">
-                <label class="form-label">Role</label>
+                <label class="form-label">{{ __('Role') }} </label>
                 <select name="role" class="form-control">
                     <option value="">All Roles</option>
                     @foreach($roles as $role)
@@ -44,7 +44,7 @@
                 </select>
             </div>
             <div style="width: 150px;">
-                <label class="form-label">Status</label>
+                <label class="form-label">{{ __('Status') }} </label>
                 <select name="status_filter" class="form-control">
                     <option value="">All Status</option>
                     <option value="active" {{ request('status_filter') == 'active' ? 'selected' : '' }}>Active</option>
@@ -64,11 +64,11 @@
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr>
-                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">Name</th>
-                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">Email</th>
-                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">Role</th>
-                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">Status</th>
-                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">Action</th>
+                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">{{ __('Name') }}</th>
+                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">{{ __('Email') }}</th>
+                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">{{ __('Role') }}</th>
+                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">{{ __('Status') }}</th>
+                    <th style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; text-align: left;">{{ __('Action') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -124,15 +124,15 @@
             <form action="{{ route('users.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">Name <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Name') }} <span style="color: red;">*</span></label>
                     <input type="text" name="name" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Email <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Email') }} <span style="color: red;">*</span></label>
                     <input type="email" name="email" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Role <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Role') }} <span style="color: red;">*</span></label>
                     <select name="role_id" class="form-control" required>
                         <option value="">Select Role</option>
                         @foreach($roles as $role)
@@ -141,7 +141,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Leave empty for default: LmsHorizon$01)</span></label>
+                    <label class="form-label">{{ __('Password') }} <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Leave empty for default: LmsHorizon$01)</span></label>
                     <input type="password" name="password" class="form-control">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
@@ -171,7 +171,7 @@
             <form action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">Upload CSV File <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Upload CSV File') }} <span style="color: red;">*</span></label>
                     <input type="file" name="file" accept=".csv" class="form-control" required style="padding: 0.5rem;">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
@@ -194,15 +194,15 @@
                 @csrf
                 @method('PUT')
                 <div class="form-group">
-                    <label class="form-label">Name <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Name') }} <span style="color: red;">*</span></label>
                     <input type="text" name="name" id="edit-name" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Email <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Email') }} <span style="color: red;">*</span></label>
                     <input type="email" name="email" id="edit-email" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Role <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Role') }} <span style="color: red;">*</span></label>
                     <select name="role_id" id="edit-role_id" class="form-control" required>
                         <option value="">Select Role</option>
                         @foreach($roles as $role)
@@ -211,7 +211,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Leave empty to keep current password)</span></label>
+                    <label class="form-label">{{ __('Password') }} <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Leave empty to keep current password)</span></label>
                     <input type="password" name="password" class="form-control">
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">

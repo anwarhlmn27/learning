@@ -18,7 +18,7 @@
             @method('PUT')
             
             <div class="form-group">
-                <label class="form-label">Faculty <span style="color: red;">*</span></label>
+                <label class="form-label">{{ __('Faculty') }} <span style="color: red;">*</span></label>
                 <select name="id_fakultas" class="form-control" required>
                     <option value="">-- Select Faculty --</option>
                     @foreach($fakultas as $f)
@@ -31,22 +31,22 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Study Program Code <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Study Program Code') }} <span style="color: red;">*</span></label>
                     <input type="number" name="kode_prodi" class="form-control" required value="{{ old('kode_prodi', $prodi->kode_prodi) }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Abbreviation <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Abbreviation') }} <span style="color: red;">*</span></label>
                     <input type="text" name="short_name" class="form-control" required value="{{ old('short_name', $prodi->short_name) }}">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Study Program Name <span style="color: red;">*</span></label>
+                <label class="form-label">{{ __('Study Program Name') }} <span style="color: red;">*</span></label>
                 <input type="text" name="nama_prodi" class="form-control" required value="{{ old('nama_prodi', $prodi->nama_prodi) }}">
             </div>
 
             <div class="form-group">
-                <label class="form-label">Kaprodi User (Optional)</label>
+                <label class="form-label">{{ __('Kaprodi User (Optional)') }} </label>
                 <select name="kaprodi_id" class="form-control">
                     <option value="">-- Select Kaprodi User --</option>
                     @foreach($users as $u)

@@ -35,14 +35,6 @@ return new class extends Migration
             $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
             $table->foreign('plo_id')->references('id')->on('plos')->onDelete('cascade');
         });
-
-        // Mapping Assessment ke CLO (Sesuai poin nomor 4 kamu)
-        // Schema::create('assessment_clo', function (Blueprint $table) {
-        //     $table->uuid('assessment_id');
-        //     $table->uuid('clo_id');
-        //     $table->foreign('assessment_id')->references('id')->on('subject_assessments')->onDelete('cascade');
-        //     $table->foreign('clo_id')->references('id')->on('clos')->onDelete('cascade');
-        // });
     }
 
     /**

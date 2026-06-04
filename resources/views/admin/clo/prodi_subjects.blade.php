@@ -17,14 +17,14 @@
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
             {{-- Search --}}
             <div style="flex: 1; min-width: 200px;">
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; text-transform: uppercase;">Search</label>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; text-transform: uppercase;">{{ __('Search') }} </label>
                 <input type="text" id="filterSearch" onkeyup="applyFilters()"
-                       placeholder="Code or subject name…"
+                       placeholder="{{ __('Code or subject name…') }}"
                        style="width: 100%; padding: 0.45rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; outline: none; box-sizing: border-box;">
             </div>
             {{-- Semester --}}
             <div style="min-width: 150px;">
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; text-transform: uppercase;">Semester</label>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; text-transform: uppercase;">{{ __('Semester') }} </label>
                 <select id="filterSemester" onchange="applyFilters()"
                         style="width: 100%; padding: 0.45rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; background: #fff; outline: none;">
                     <option value="">All Semesters</option>
@@ -35,7 +35,7 @@
             </div>
             {{-- CLO Status --}}
             <div style="min-width: 160px;">
-                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; text-transform: uppercase;">CLO Status</label>
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; text-transform: uppercase;">{{ __('CLO Status') }} </label>
                 <select id="filterCloStatus" onchange="applyFilters()"
                         style="width: 100%; padding: 0.45rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; background: #fff; outline: none;">
                     <option value="">All</option>
@@ -66,12 +66,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Subject Code</th>
-                        <th>Subject Name</th>
+                        <th>{{ __('Subject Code') }}</th>
+                        <th>{{ __('Subject Name') }}</th>
                         <th>SKS (T/P/Total)</th>
-                        <th>Semester</th>
-                        <th>CLO Count</th>
-                        <th>Actions</th>
+                        <th>{{ __('Semester') }}</th>
+                        <th>{{ __('CLO Count') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody id="cloTbody">

@@ -97,6 +97,10 @@ Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
     Route::put('/obe/assessment-types/{assessmentType}', [\App\Http\Controllers\AssessmentTypeController::class, 'update'])->name('assessment_types.update');
     Route::delete('/obe/assessment-types/{assessmentType}', [\App\Http\Controllers\AssessmentTypeController::class, 'destroy'])->name('assessment_types.destroy');
 
+    // System Logs
+    Route::get('/obe/logs', [\App\Http\Controllers\LogController::class, 'index'])->name('logs.index');
+    Route::delete('/obe/logs/clear', [\App\Http\Controllers\LogController::class, 'clear'])->name('logs.clear');
+
     // OBE Analytics
     Route::get('/obe/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
 
@@ -132,12 +136,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/dosen/import', [\App\Http\Controllers\DosenController::class, 'import'])->name('dosen.import');
     Route::get('/dosen-template', [\App\Http\Controllers\DosenController::class, 'downloadTemplate'])->name('dosen.template');
 
+    Route::post('/mahasiswa/bulk-frozen', [\App\Http\Controllers\StudentController::class, 'bulkUpdateFrozen'])->name('mahasiswa.bulk_update_frozen');
     Route::resource('/mahasiswa', \App\Http\Controllers\StudentController::class)->names('mahasiswa');
     Route::post('/mahasiswa/import', [\App\Http\Controllers\StudentController::class, 'import'])->name('mahasiswa.import');
     Route::get('/mahasiswa-template', [\App\Http\Controllers\StudentController::class, 'downloadTemplate'])->name('mahasiswa.template');
 
     // Class Enrollment & Management
     Route::resource('/classes', \App\Http\Controllers\ClassRoomController::class)->names('classes');
+    Route::get('/classes/{class}/export-grades', [\App\Http\Controllers\ClassRoomController::class, 'exportGrades'])->name('classes.export_grades');
     Route::post('/classes/{class}/generate-lms', [\App\Http\Controllers\ClassRoomController::class, 'generateLmsFromRps'])->name('classes.generate_lms');
     Route::post('/classes/{class}/enroll', [\App\Http\Controllers\ClassRoomController::class, 'enroll'])->name('classes.enroll');
     Route::post('/classes/{class}/import-students', [\App\Http\Controllers\ClassRoomController::class, 'importStudents'])->name('classes.import_students');

@@ -17,7 +17,7 @@
             <form action="{{ route('kurikulum.add-subject', $kurikulum->id) }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label">Select Subject</label>
+                    <label class="form-label">{{ __('Select Subject') }} </label>
                     <select name="id_subject" class="form-control" required>
                         <option value="" disabled selected>Select Subject</option>
                         @foreach($availableSubjects as $s)
@@ -26,7 +26,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Semester</label>
+                    <label class="form-label">{{ __('Semester') }} </label>
                     <input type="number" name="semester" class="form-control" min="1" max="8" required value="1">
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Add to Curriculum</button>
@@ -44,11 +44,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Code</th>
-                        <th>Subject Name</th>
-                        <th>Semester</th>
-                        <th>SKS</th>
-                        <th>Actions</th>
+                        <th>{{ __('Code') }}</th>
+                        <th>{{ __('Subject Name') }}</th>
+                        <th>{{ __('Semester') }}</th>
+                        <th>{{ __('SKS') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

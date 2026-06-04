@@ -38,6 +38,10 @@ class StudentController extends Controller
             $query->where('prodi_id', $request->prodi);
         }
 
+        if ($request->filled('angkatan')) {
+            $query->where('angkatan', $request->angkatan);
+        }
+
         $students = $query->latest()->paginate(10)->withQueryString();
         $prodis = Prodi::orderBy('nama_prodi')->get();
         return view('admin.students.index', compact('students', 'prodis', 'selectedProdi'));
@@ -260,5 +264,20 @@ class StudentController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function bulkUpdateFrozen(Request $request)
+    {
+        $displayedIds = $request->displayed_student_ids ?? [];
+        $frozenIds = $request->frozen_ids ?? [];
+
+        if (count($displayedIds) > 0) {
+            Student::whereIn('id', $displayedIds)->update(['is_frozen' => false]);
+            if (count($frozenIds) > 0) {
+                Student::whereIn('id', $frozenIds)->update(['is_frozen' => true]);
+            }
+        }
+
+        return back()->with('success', 'Status Eligibilitas Mahasiswa berhasil diperbarui.');
     }
 }

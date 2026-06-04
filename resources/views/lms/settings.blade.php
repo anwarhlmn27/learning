@@ -4,6 +4,33 @@
 
 @section('content')
 <div style="max-width: 800px; margin: 0 auto;">
+    @if(Auth::user()->hasRole('admin'))
+    <div class="card" style="margin-bottom: 2rem; border-top: 4px solid var(--primary);">
+        <div class="card-header">
+            {{ __('Global Settings (Admin Only)') }}
+        </div>
+        <div class="card-body">
+            <form action="{{ route('settings.global') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">{{ __('Campus Logo (Dashboard)') }}</label>
+                    @php $dashboardLogo = \App\Models\Setting::where('key', 'dashboard_logo')->value('value'); @endphp
+                    @if($dashboardLogo)
+                        <div style="margin-bottom: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px; display: inline-block;">
+                            <img src="{{ asset('img/logo_dashboard/' . $dashboardLogo) }}" style="max-height: 50px;">
+                        </div>
+                    @endif
+                    <input type="file" name="dashboard_logo" class="form-control" accept="image/*" style="max-width: 400px;">
+                    <small style="color: #6b7280; display: block; margin-top: 0.5rem;">JPG, PNG, SVG. Max 2MB. This logo replaces 'Horizon LMS' text.</small>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">{{ __('Save Global Settings') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
     <div class="card">
         <div class="card-header">
             {{ __('Personal Preferences') }}

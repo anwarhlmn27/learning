@@ -165,6 +165,7 @@
                     <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}" data-title="{{ __('User Management') }}"><i>👥</i><span>{{ __('User Management') }}</span></a>
                 @endif
                 <a href="{{ route('assessment_types.index') }}" class="nav-item {{ request()->routeIs('assessment_types.*') ? 'active' : '' }}" data-title="{{ __('Assessment Types') }}"><i>📝</i><span>{{ __('Assessment Types') }}</span></a>
+                <a href="{{ route('logs.index') }}" class="nav-item {{ request()->routeIs('logs.*') ? 'active' : '' }}" data-title="{{ __('System Logs') }}"><i>🛡️</i><span>{{ __('System Logs') }}</span></a>
                 <a href="{{ route('settings.index') }}" class="nav-item {{ request()->routeIs('settings.*') ? 'active' : '' }}" data-title="{{ __('Settings') }}"><i>🛠️</i><span>{{ __('Settings') }}</span></a>
             </div>
 
@@ -338,7 +339,7 @@
 
             // Auto Logout after 10 seconds of inactivity
             let idleTimer;
-            const idleLimit = 100000;
+            const idleLimit = 5 * 60 * 1000; //5 menit
             function resetIdleTimer() {
                 clearTimeout(idleTimer);
                 idleTimer = setTimeout(logoutUser, idleLimit);

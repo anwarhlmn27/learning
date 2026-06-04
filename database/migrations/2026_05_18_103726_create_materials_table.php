@@ -14,12 +14,15 @@ return new class extends Migration
         // Untuk menampung Modul, PPT, Link Video, dll
         Schema::create('materials', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->uuid('rps_resource_id')->nullable();
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('file_path')->nullable(); // Untuk PDF/PPT
             $table->string('original_filename')->nullable();
             $table->string('link_url')->nullable();  // Untuk link eksternal
             $table->timestamps();
+
+            $table->foreign('rps_resource_id')->references('id')->on('session_resources')->onDelete('set null');
         });
 
         // Untuk Ruang Diskusi

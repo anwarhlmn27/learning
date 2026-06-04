@@ -86,14 +86,14 @@
 </style>
 
 <div style="margin-bottom: 1.5rem;">
-    <h2 style="margin: 0 0 0.25rem; font-size: 1.35rem; font-weight: 700; color: #111827;">Program Studi</h2>
-    <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Pilih program studi untuk mengelola kelas, dosen, dan mahasiswa.</p>
+    <h2 style="margin: 0 0 0.25rem; font-size: 1.35rem; font-weight: 700; color: #111827;">{{ __('Program Studi') }}</h2>
+    <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">{{ __('Pilih program studi untuk mengelola kelas, dosen, dan mahasiswa.') }}</p>
 </div>
 
 @if($prodis->count() === 0)
     <div style="text-align:center; padding: 3rem; color: #9ca3af;">
         <p style="font-size: 2rem;">🏫</p>
-        <p>Belum ada data Program Studi. Tambahkan melalui <a href="{{ route('prodi.index') }}">halaman Prodi</a>.</p>
+        <p>{{ __('Belum ada data Program Studi. Tambahkan melalui') }} <a href="{{ route('prodi.index') }}">{{ __('halaman Prodi') }}</a>.</p>
     </div>
 @else
 <div class="prodi-grid">
@@ -103,13 +103,13 @@
         <h3>{{ $prodi->nama_prodi }}</h3>
         <p class="prodi-meta">
             📍 {{ $prodi->fakultas->nama_fakultas ?? '-' }}<br>
-            👤 Kaprodi: {{ $prodi->kaprodi->name ?? '<em>Belum ditentukan</em>' }}
+            👤 Kaprodi: {!! $prodi->kaprodi->name ?? '<em>' . __('Belum ditentukan') . '</em>' !!}
         </p>
         <div class="prodi-actions">
-            <a href="{{ route('classes.index', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-primary">📚 Kelas</a>
-            <a href="{{ route('classes.archived', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-archive">🗃 Arsip</a>
-            <a href="{{ route('dosen.index', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-outline">👨‍🏫 Dosen</a>
-            <a href="{{ route('mahasiswa.index', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-outline">🎓 Mhs</a>
+            <a href="{{ route('classes.index', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-primary">📚 {{ __('Kelas') }}</a>
+            <a href="{{ route('classes.archived', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-archive">🗃 {{ __('Arsip') }}</a>
+            <a href="{{ route('dosen.index', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-outline">👨‍🏫 {{ __('Dosen') }}</a>
+            <a href="{{ route('mahasiswa.index', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-outline">🎓 {{ __('Mhs') }}</a>
         </div>
     </div>
     @endforeach
@@ -119,10 +119,10 @@
 {{-- Link ke OBE Dashboard --}}
 <div style="margin-top: 2rem; background: #eff6ff; border-left: 4px solid #3b82f6; padding: 1rem 1.5rem; border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <h4 style="margin: 0 0 0.2rem; color: #1e3a8a;">Sistem OBE</h4>
-        <p style="margin: 0; font-size: 0.85rem; color: #3b82f6;">Kelola kurikulum, PLO, RPS, dan analitik OBE.</p>
+        <h4 style="margin: 0 0 0.2rem; color: #1e3a8a;">{{ __('Sistem OBE') }}</h4>
+        <p style="margin: 0; font-size: 0.85rem; color: #3b82f6;">{{ __('Kelola kurikulum, PLO, RPS, dan analitik OBE.') }}</p>
     </div>
-    <a href="{{ route('admin.dashboard') }}" class="btn" style="background:#3b82f6; white-space:nowrap;">Masuk ke OBE &rarr;</a>
+    <a href="{{ route('admin.dashboard') }}" class="btn" style="background:#3b82f6; white-space:nowrap;">{!! __('Masuk ke OBE &rarr;') !!}</a>
 </div>
 
 {{-- ═══════════════════════════════════════════════════════════════════════════
@@ -152,13 +152,13 @@
                     @foreach($data['classes'] as $class)
                         <div style="background: white; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <h4 style="margin: 0 0 0.25rem 0; color: var(--primary);">{{ $class->nama_kelas ?? 'Class Name' }}</h4>
+                                <h4 style="margin: 0 0 0.25rem 0; color: var(--primary);">{{ $class->nama_kelas ?? __('Class Name') }}</h4>
                                 <p style="margin: 0; font-size: 0.875rem; color: var(--text-muted);">
-                                    {{ $class->subject->nama_subject ?? 'Subject' }} ({{ $class->subject->kode_subject ?? '' }})<br>
-                                    Semester: {{ $class->semester ?? '-' }} {{ $class->tahun_akademik ?? '-' }}
+                                    {{ $class->subject->nama_subject ?? __('Subject') }} ({{ $class->subject->kode_subject ?? '' }})<br>
+                                    {{ __('Semester') }}: {{ $class->semester ?? '-' }} {{ $class->tahun_akademik ?? '-' }}
                                 </p>
                             </div>
-                            <a href="{{ route('classes.show', $class) }}" class="btn">Masuk Kelas</a>
+                            <a href="{{ route('classes.show', $class) }}" class="btn">{{ __('Masuk Kelas') }}</a>
                         </div>
                     @endforeach
                 </div>
@@ -180,7 +180,7 @@
                         <div style="border-left: 3px solid #f59e0b; padding-left: 1rem;">
                             <h4 style="margin: 0 0 0.25rem 0; font-size: 0.875rem;">{{ $assignment->title }}</h4>
                             <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">
-                                Due: {{ \Carbon\Carbon::parse($assignment->deadline)->format('d M Y, H:i') }}
+                                {{ __('Due:') }} {{ \Carbon\Carbon::parse($assignment->deadline)->format('d M Y, H:i') }}
                             </p>
                         </div>
                     @endforeach

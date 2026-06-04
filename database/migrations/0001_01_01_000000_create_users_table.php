@@ -19,6 +19,27 @@ return new class extends Migration
             $table->string('password');
             $table->integer('role')->nullable();
             $table->enum('status',['active','inactive'])->default('active');
+            
+            // Preferences
+            $table->string('avatar')->nullable();
+            $table->string('language')->default('id');
+            $table->string('sidebar_color')->nullable();
+            $table->string('sidebar_font_color')->nullable();
+            $table->string('navbar_color')->nullable();
+            $table->string('navbar_font_color')->nullable();
+            $table->string('content_color')->nullable();
+            $table->string('content_font_color')->nullable();
+            $table->string('font_family')->nullable();
+            
+            // LMS Preferences
+            $table->string('lms_sidebar_color')->nullable();
+            $table->string('lms_sidebar_font_color')->nullable();
+            $table->string('lms_navbar_color')->nullable();
+            $table->string('lms_navbar_font_color')->nullable();
+            $table->string('lms_content_color')->nullable();
+            $table->string('lms_content_font_color')->nullable();
+            $table->string('lms_font_family')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
         });

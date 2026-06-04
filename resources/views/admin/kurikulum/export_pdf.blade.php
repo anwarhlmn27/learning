@@ -127,14 +127,14 @@
                             <tr>
                                 <th rowspan="2" style="width: 15%;">Kode MK<br>(CODE)</th>
                                 <th rowspan="2" style="width: 35%;">Mata Kuliah (Subject)</th>
-                                <th colspan="4">Rincian Sebaran SKS</th>
+                                <th colspan="4">{{ __('Rincian Sebaran SKS') }}</th>
                                 <th rowspan="2" style="width: 20%;">Prasyarat<br>(Pre-requisite)</th>
                             </tr>
                             <tr>
-                                <th style="width: 7%;">T</th>
-                                <th style="width: 7%;">P</th>
-                                <th style="width: 7%;">PL</th>
-                                <th style="width: 7%;">Total</th>
+                                <th style="width: 7%;">{{ __('T') }}</th>
+                                <th style="width: 7%;">{{ __('P') }}</th>
+                                <th style="width: 7%;">{{ __('PL') }}</th>
+                                <th style="width: 7%;">{{ __('Total') }}</th>
                             </tr>
                         </thead>
                         <tbody>

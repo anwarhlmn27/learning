@@ -17,12 +17,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Curriculum Name</th>
-                        <th>Prodi</th>
-                        <th>Year</th>
-                        <th>Subjects</th>
-                        <th>Documents</th>
-                        <th>Actions</th>
+                        <th>{{ __('Curriculum Name') }}</th>
+                        <th>{{ __('Prodi') }}</th>
+                        <th>{{ __('Year') }}</th>
+                        <th>{{ __('Subjects') }}</th>
+                        <th>{{ __('Documents') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

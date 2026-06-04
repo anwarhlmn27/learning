@@ -56,6 +56,11 @@ class AuthController extends Controller
                 Auth::logout();
                 return back()->withErrors(['email' => 'Akun Anda sedang non-aktif. Silakan hubungi admin.']);
             }
+
+            if (Auth::user()->student && Auth::user()->student->is_frozen) {
+                Auth::logout();
+                return back()->withErrors(['email' => 'Anda belum eligible, segera selesaikan ke Bagian Finance.']);
+            }
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'));

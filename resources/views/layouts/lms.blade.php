@@ -150,8 +150,15 @@
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <aside class="lms-sidebar" id="lms-sidebar">
-        <div class="lms-sidebar-header">
-            <h2>Horizon LMS</h2>
+        @php
+            $dashboardLogo = \App\Models\Setting::where('key', 'dashboard_logo')->value('value');
+        @endphp
+        <div class="lms-sidebar-header" style="{{ $dashboardLogo ? 'padding: 1rem; display: flex; justify-content: center;' : '' }}">
+            @if($dashboardLogo)
+                <img src="{{ asset('img/logo_dashboard/' . $dashboardLogo) }}" alt="Campus Logo" style="max-width: 100%; height: auto; max-height: 100px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));">
+            @else
+                <h2>Horizon LMS</h2>
+            @endif
         </div>
         <nav class="lms-nav">
             @php
@@ -178,10 +185,10 @@
             @if($sidebarProdi)
             <div style="padding: 0.4rem 1rem 0.6rem; margin-bottom: 0.25rem;">
                 <div style="background: rgba(79,70,229,0.08); border-radius: 8px; padding: 0.5rem 0.75rem;">
-                    <p style="margin:0; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6b7280;">Prodi Aktif</p>
+                    <p style="margin:0; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6b7280;">{{ __('Prodi Aktif') }}</p>
                     <p style="margin:0.1rem 0 0; font-size:0.8rem; font-weight:600; color:var(--primary); line-height:1.3;">{{ $sidebarProdi->nama_prodi }}</p>
                     @if(!$sidebarUser->hasRole('kaprodi'))
-                    <a href="{{ route('dashboard') }}" onclick="sessionStorage.setItem('clear_prodi','1')" style="font-size:0.7rem; color:#6b7280; text-decoration:underline;">← Ganti Prodi</a>
+                    <a href="{{ route('dashboard') }}" onclick="sessionStorage.setItem('clear_prodi','1')" style="font-size:0.7rem; color:#6b7280; text-decoration:underline;">← {{ __('Ganti Prodi') }}</a>
                     @endif
                 </div>
             </div>
@@ -359,7 +366,7 @@
 
             // Auto Logout after 10 seconds of inactivity
             let idleTimer;
-            const idleLimit = 100000;
+            const idleLimit = 5 * 60 * 1000; //5 menit
             function resetIdleTimer() {
                 clearTimeout(idleTimer);
                 idleTimer = setTimeout(logoutUser, idleLimit);

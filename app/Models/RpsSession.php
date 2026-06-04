@@ -41,4 +41,9 @@ class RpsSession extends Model
     {
         return $this->hasMany(RpsAssessment::class, 'rps_session_id');
     }
+
+    public function resources()
+    {
+        return $this->hasMany(SessionResource::class, 'rps_session_id');
+    }
 }

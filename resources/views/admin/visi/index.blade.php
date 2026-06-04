@@ -17,12 +17,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Entity Type</th>
-                        <th>Entity Name</th>
-                        <th>Vision</th>
-                        <th>Mission</th>
-                        <th>Documents</th>
-                        <th>Actions</th>
+                        <th>{{ __('Entity Type') }}</th>
+                        <th>{{ __('Entity Name') }}</th>
+                        <th>{{ __('Vision') }}</th>
+                        <th>{{ __('Mission') }}</th>
+                        <th>{{ __('Documents') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

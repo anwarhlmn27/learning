@@ -18,7 +18,7 @@
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Entity Type <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Entity Type') }} <span style="color: red;">*</span></label>
                     <select name="entity_type" id="entity_type" class="form-control" required onchange="toggleEntities()">
                         <option value="">-- Select Type --</option>
                         <option value="Univ" {{ old('entity_type') == 'Univ' ? 'selected' : '' }}>University</option>
@@ -27,7 +27,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Select Target Entity <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Select Target Entity') }} <span style="color: red;">*</span></label>
                     <select name="entity_id" id="entity_id" class="form-control @error('entity_id') is-invalid @enderror" required>
                         <option value="">-- Select Entity --</option>
                     </select>
@@ -38,8 +38,8 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Vision (Visi) <span style="color: red;">*</span></label>
-                <textarea name="visi" class="form-control @error('visi') is-invalid @enderror" rows="3" required placeholder="Enter Vision statement">{{ old('visi') }}</textarea>
+                <label class="form-label">{{ __('Vision (Visi)') }} <span style="color: red;">*</span></label>
+                <textarea name="visi" class="form-control @error('visi') is-invalid @enderror" rows="3" required placeholder="{{ __('Enter Vision statement') }}">{{ old('visi') }}</textarea>
                 @error('visi')
                     <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
                 @enderror
@@ -54,7 +54,7 @@
                     @if(old('misi'))
                         @foreach(old('misi') as $i => $val)
                             <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                <input type="text" name="misi[]" class="form-control" value="{{ $val }}" required placeholder="Enter Mission">
+                                <input type="text" name="misi[]" class="form-control" value="{{ $val }}" required placeholder="{{ __('Enter Mission') }}">
                                 @if($i > 0)
                                 <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
                                 @endif
@@ -62,7 +62,7 @@
                         @endforeach
                     @else
                         <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="text" name="misi[]" class="form-control" required placeholder="Enter Mission">
+                            <input type="text" name="misi[]" class="form-control" required placeholder="{{ __('Enter Mission') }}">
                         </div>
                     @endif
                 </div>
@@ -83,7 +83,7 @@
                     @if(old('tujuan'))
                         @foreach(old('tujuan') as $val)
                             <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                <input type="text" name="tujuan[]" class="form-control" value="{{ $val }}" required placeholder="Enter Objective">
+                                <input type="text" name="tujuan[]" class="form-control" value="{{ $val }}" required placeholder="{{ __('Enter Objective') }}">
                                 <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
                             </div>
                         @endforeach
@@ -100,7 +100,7 @@
                     @if(old('strategi'))
                         @foreach(old('strategi') as $val)
                             <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                <input type="text" name="strategi[]" class="form-control" value="{{ $val }}" required placeholder="Enter Strategy">
+                                <input type="text" name="strategi[]" class="form-control" value="{{ $val }}" required placeholder="{{ __('Enter Strategy') }}">
                                 <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
                             </div>
                         @endforeach
@@ -111,28 +111,28 @@
             <h3 style="font-size: 1rem; font-weight: 600; margin: 1.5rem 0 1rem 0; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; color: var(--primary);">Supporting Documents</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Doc. Penyusunan</label>
+                    <label class="form-label">{{ __('Doc. Penyusunan') }} </label>
                     <input type="file" name="doc_penyusunan" class="form-control @error('doc_penyusunan') is-invalid @enderror" accept=".pdf">
                     @error('doc_penyusunan')
                         <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Doc. Pengesahan</label>
+                    <label class="form-label">{{ __('Doc. Pengesahan') }} </label>
                     <input type="file" name="doc_pengesahan" class="form-control @error('doc_pengesahan') is-invalid @enderror" accept=".pdf">
                     @error('doc_pengesahan')
                         <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Doc. Sosialisasi</label>
+                    <label class="form-label">{{ __('Doc. Sosialisasi') }} </label>
                     <input type="file" name="doc_sosialisasi" class="form-control @error('doc_sosialisasi') is-invalid @enderror" accept=".pdf">
                     @error('doc_sosialisasi')
                         <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Doc. Hasil Survey</label>
+                    <label class="form-label">{{ __('Doc. Hasil Survey') }} </label>
                     <input type="file" name="doc_hasil_survey" class="form-control @error('doc_hasil_survey') is-invalid @enderror" accept=".pdf">
                     @error('doc_hasil_survey')
                         <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>

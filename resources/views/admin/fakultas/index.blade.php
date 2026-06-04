@@ -17,12 +17,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>University</th>
-                        <th>Code</th>
-                        <th>Abbreviation</th>
-                        <th>Faculty Name</th>
+                        <th>{{ __('University') }}</th>
+                        <th>{{ __('Code') }}</th>
+                        <th>{{ __('Abbreviation') }}</th>
+                        <th>{{ __('Faculty Name') }}</th>
                         <th>Leader (Dean)</th>
-                        <th>Actions</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

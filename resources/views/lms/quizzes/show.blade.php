@@ -38,11 +38,15 @@
                                 <ul style="margin-top: 0.5rem; padding-left: 1.5rem; font-size: 0.9rem;">
                                     @foreach(json_decode($q->options, true) as $key => $opt)
                                         <li style="{{ (string)$key === $q->correct_option ? 'font-weight:bold; color:green;' : '' }}">
-                                            @if(!empty($opt['text']))
-                                                {{ $opt['text'] }}
-                                            @endif
-                                            @if(!empty($opt['image']))
-                                                <br><img src="{{ asset('storage/' . $opt['image']) }}" style="max-height:100px; border:1px solid #e2e8f0; border-radius:4px; margin-top:0.25rem;">
+                                            @if(is_string($opt))
+                                                {{ $opt }}
+                                            @else
+                                                @if(!empty($opt['text']))
+                                                    {{ $opt['text'] }}
+                                                @endif
+                                                @if(!empty($opt['image']))
+                                                    <br><img src="{{ asset('storage/' . $opt['image']) }}" style="max-height:100px; border:1px solid #e2e8f0; border-radius:4px; margin-top:0.25rem;">
+                                                @endif
                                             @endif
                                             {{ (string)$key === $q->correct_option ? ' (Jawaban Benar)' : '' }}
                                         </li>

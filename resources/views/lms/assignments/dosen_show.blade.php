@@ -86,15 +86,22 @@
                         @endif
                     </td>
                     <td style="padding: 1rem; border-bottom: 1px solid var(--border); vertical-align: top; background: #f8fafc;">
-                        <form action="{{ route('assignments.grade', [$assignment, $enrollment]) }}" method="POST">
-                            @csrf
-                            <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
-                                <input type="number" name="score" value="{{ optional($grade)->score ?? '' }}" placeholder="Skor (0-100) *" required min="0" max="100" style="width: 100px; padding: 0.25rem; border: 1px solid var(--border); border-radius: 4px;">
-                                <span style="font-size: 0.75rem; color: var(--text-muted);">/ 100</span>
+                        @if(optional($enrollment->student)->is_frozen)
+                            <div style="padding: 1rem; background: #fee2e2; color: #991b1b; border-radius: 4px; font-size: 0.85rem; text-align: center; border: 1px solid #f87171;">
+                                <strong>Belum Eligible</strong><br>
+                                Mahasiswa harus menyelesaikan administrasi ke Bagian Finance.
                             </div>
-                            <textarea name="feedback" placeholder="Feedback / Komentar" rows="2" style="width: 100%; padding: 0.25rem; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 0.5rem; font-size: 0.875rem;">{{ optional($submission)->feedback ?? '' }}</textarea>
-                            <button type="submit" class="btn" style="width: 100%; padding: 0.25rem; font-size: 0.875rem;">Simpan Nilai</button>
-                        </form>
+                        @else
+                            <form action="{{ route('assignments.grade', [$assignment, $enrollment]) }}" method="POST">
+                                @csrf
+                                <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                                    <input type="number" name="score" value="{{ optional($grade)->score ?? '' }}" placeholder="Skor (0-100) *" required min="0" max="100" style="width: 100px; padding: 0.25rem; border: 1px solid var(--border); border-radius: 4px;">
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">/ 100</span>
+                                </div>
+                                <textarea name="feedback" placeholder="Feedback / Komentar" rows="2" style="width: 100%; padding: 0.25rem; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 0.5rem; font-size: 0.875rem;">{{ optional($submission)->feedback ?? '' }}</textarea>
+                                <button type="submit" class="btn" style="width: 100%; padding: 0.25rem; font-size: 0.875rem;">Simpan Nilai</button>
+                            </form>
+                        @endif
                     </td>
                 </tr>
                 @endforeach

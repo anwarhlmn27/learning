@@ -16,6 +16,7 @@ return new class extends Migration
             $table->uuid('id_fakultas');
             $table->integer('kode_prodi');
             $table->string('nama_prodi');
+            $table->foreignUuid('kaprodi_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('short_name');
             $table->string('sign')->nullable();
             $table->timestamps();

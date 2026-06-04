@@ -50,11 +50,11 @@
     <table>
         <thead>
             <tr>
-                <th class="bg-yellow" style="width: 15%;">Kode BK</th>
+                <th class="bg-yellow" style="width: 15%;">{{ __('Kode BK') }}</th>
                 @forelse($prodi->plos as $plo)
                     <th class="bg-yellow">{{ str_replace('PLO', 'CPL', $plo->kode_plo) }}</th>
                 @empty
-                    <th class="bg-yellow">Belum ada CPL</th>
+                    <th class="bg-yellow">{{ __('Belum ada CPL') }}</th>
                 @endforelse
             </tr>
         </thead>

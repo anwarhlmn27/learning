@@ -33,10 +33,10 @@
     <table>
         <thead>
             <tr>
-                <th rowspan="2" class="no-col">No</th>
-                <th rowspan="2" class="mk-col">Kode MK</th>
-                <th rowspan="2" class="nama-col">Nama Mata Kuliah</th>
-                <th rowspan="2" class="sks-col">SKS</th>
+                <th rowspan="2" class="no-col">{{ __('No') }}</th>
+                <th rowspan="2" class="mk-col">{{ __('Kode MK') }}</th>
+                <th rowspan="2" class="nama-col">{{ __('Nama Mata Kuliah') }}</th>
+                <th rowspan="2" class="sks-col">{{ __('SKS') }}</th>
                 <th colspan="{{ $plos->count() }}">Capaian Pembelajaran Lulusan (CPL/PLO)</th>
             </tr>
             <tr>

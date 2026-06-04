@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('nim')->unique();
             $table->string('nama_student');
             $table->integer('angkatan');
+            $table->enum('status', ['aktif', 'lulus', 'cuti', 'drop_out'])->default('aktif');
+            $table->boolean('is_frozen')->default(false);
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

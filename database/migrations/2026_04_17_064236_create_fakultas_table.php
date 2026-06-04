@@ -16,6 +16,7 @@ return new class extends Migration
             $table->uuid('id_univs');
             $table->string('kode_fakultas');
             $table->string('nama_fakultas');
+            $table->foreignUuid('dekan_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('short_name');
             $table->string('sign')->nullable();
             $table->timestamps();

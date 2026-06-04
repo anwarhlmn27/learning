@@ -27,17 +27,17 @@
             @csrf
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Curriculum Name <span style="color: red;">*</span></label>
-                    <input type="text" name="nm_kurikulum" class="form-control" placeholder="e.g. Kurikulum 2024 Informatika" required value="{{ old('nm_kurikulum') }}">
+                    <label class="form-label">{{ __('Curriculum Name') }} <span style="color: red;">*</span></label>
+                    <input type="text" name="nm_kurikulum" class="form-control" placeholder="{{ __('e.g. Kurikulum 2024 Informatika') }}" required value="{{ old('nm_kurikulum') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Academic Year <span style="color: red;">*</span></label>
-                    <input type="number" name="tahun_akademik" class="form-control" placeholder="2024" required value="{{ old('tahun_akademik', date('Y')) }}">
+                    <label class="form-label">{{ __('Academic Year') }} <span style="color: red;">*</span></label>
+                    <input type="number" name="tahun_akademik" class="form-control" placeholder="{{ __('2024') }}" required value="{{ old('tahun_akademik', date('Y')) }}">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Study Program (Prodi) <span style="color: red;">*</span></label>
+                <label class="form-label">{{ __('Study Program (Prodi)') }} <span style="color: red;">*</span></label>
                 <select name="id_prodi" class="form-control" required>
                     <option value="" disabled selected>Select Prodi</option>
                     @foreach($prodis as $p)
@@ -50,29 +50,29 @@
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
                 <div class="form-group">
-                    <label class="form-label">Berita Acara FGD</label>
+                    <label class="form-label">{{ __('Berita Acara FGD') }} </label>
                     <input type="file" name="berita_acara_fgd" class="form-control" accept=".pdf">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Daftar Hadir</label>
+                    <label class="form-label">{{ __('Daftar Hadir') }} </label>
                     <input type="file" name="daftar_hadir" class="form-control" accept=".pdf">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Notulensi Diskusi</label>
+                    <label class="form-label">{{ __('Notulensi Diskusi') }} </label>
                     <input type="file" name="notulensi_diskusi" class="form-control" accept=".pdf">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Laporan Penyusunan</label>
+                    <label class="form-label">{{ __('Laporan Penyusunan') }} </label>
                     <input type="file" name="laporan_penyusunan" class="form-control" accept=".pdf">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Laporan Sosialisasi</label>
+                    <label class="form-label">{{ __('Laporan Sosialisasi') }} </label>
                     <input type="file" name="laporan_sosialisasi" class="form-control" accept=".pdf">
                 </div>
                 <div class="form-group">

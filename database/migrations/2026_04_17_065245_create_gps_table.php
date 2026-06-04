@@ -11,17 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Schema::create('gps', function (Blueprint $table) {
-        //     $table->uuid('id')->primary();
-        //     $table->uuid('id_prodi');
-        //     $table->string('nm_profil');
-        //     $table->string('deskripsi');
-        //     $table->string('expertise');
-        //     $table->string('file')->nullable();
-        //     $table->timestamps();
-
-        //     $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
-        // });
 
         Schema::create('gps', function (Blueprint $table) {
             $table->uuid('id')->primary();
@@ -51,12 +40,20 @@ return new class extends Migration
             // Status Profil
             $table->enum('status', ['Draft', 'Aktif', 'Revisi', 'Tidak Aktif'])->default('Draft');
             
-            // File pendukung (opsional)
-            $table->string('file')->nullable();
-            
             $table->timestamps();
 
             // Relasi ke tabel prodi
+            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+        });
+        
+        // 2. Create gp_attachments table for flexible document storage
+        Schema::create('gp_attachments', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('id_prodi');
+            $table->string('nm_dokumen'); // FGD Report, Alumni Survey, etc.
+            $table->string('file_path');
+            $table->timestamps();
+
             $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
         });
        
@@ -67,6 +64,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('gp_attachments');
         Schema::dropIfExists('gps');
     }
 };

@@ -50,8 +50,8 @@
     <table>
         <thead>
             <tr>
-                <th rowspan="2" class="bg-yellow" style="width: 5%;">No</th>
-                <th rowspan="2" class="bg-yellow" style="width: 15%;">Kode CPL</th>
+                <th rowspan="2" class="bg-yellow" style="width: 5%;">{{ __('No') }}</th>
+                <th rowspan="2" class="bg-yellow" style="width: 15%;">{{ __('Kode CPL') }}</th>
                 @if($prodi->gps->count() > 0)
                     <th colspan="{{ $prodi->gps->count() }}" class="bg-yellow">Profil Lulusan (PL)</th>
                 @else
@@ -62,7 +62,7 @@
                 @forelse($prodi->gps as $gp)
                     <th class="bg-yellow">{{ $gp->kode_profil }}</th>
                 @empty
-                    <th class="bg-yellow">Belum ada PL</th>
+                    <th class="bg-yellow">{{ __('Belum ada PL') }}</th>
                 @endforelse
             </tr>
         </thead>

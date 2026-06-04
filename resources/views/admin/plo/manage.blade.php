@@ -44,13 +44,13 @@
             <table>
                 <thead>
                     <tr>
-                        <th>PLO Code</th>
-                        <th>PLO Title</th>
-                        <th>GP References</th>
+                        <th>{{ __('PLO Code') }}</th>
+                        <th>{{ __('PLO Title') }}</th>
+                        <th>{{ __('GP References') }}</th>
                         <th>Outcome (Rumusan)</th>
-                        <th>Domain</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>{{ __('Domain') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -113,7 +113,7 @@
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label class="form-label" style="font-weight: 600; color: var(--primary);">Graduate Profile (GP) References <span style="color: red;">*</span></label>
+                    <label class="form-label" style="font-weight: 600; color: var(--primary);">{{ __('Graduate Profile (GP) References') }} <span style="color: red;">*</span></label>
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #f9fafb;">
                         @forelse($prodi->gps as $gp)
                             <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; cursor: pointer;">
@@ -131,15 +131,15 @@
 
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">PLO Code <span style="color: red;">*</span></label>
-                        <input type="text" name="kode_plo" id="field_kode_plo" class="form-control" required placeholder="e.g. PLO-01">
+                        <label class="form-label">{{ __('PLO Code') }} <span style="color: red;">*</span></label>
+                        <input type="text" name="kode_plo" id="field_kode_plo" class="form-control" required placeholder="{{ __('e.g. PLO-01') }}">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">PLO Title <span style="color: red;">*</span></label>
-                        <input type="text" name="plo_title" id="field_plo_title" class="form-control" required placeholder="e.g. Computing Fundamentals">
+                        <label class="form-label">{{ __('PLO Title') }} <span style="color: red;">*</span></label>
+                        <input type="text" name="plo_title" id="field_plo_title" class="form-control" required placeholder="{{ __('e.g. Computing Fundamentals') }}">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Domain <span style="color: red;">*</span></label>
+                        <label class="form-label">{{ __('Domain') }} <span style="color: red;">*</span></label>
                         <select name="domain" id="field_domain" class="form-control" required>
                             <option value="Knowledge">Knowledge</option>
                             <option value="Skill">Skill</option>
@@ -148,7 +148,7 @@
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label">Status <span style="color: red;">*</span></label>
+                        <label class="form-label">{{ __('Status') }} <span style="color: red;">*</span></label>
                         <select name="status" id="field_status" class="form-control" required>
                             <option value="Draft">Draft</option>
                             <option value="Aktif">Aktif</option>
@@ -161,12 +161,12 @@
                     <!-- Left Column -->
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Outcome (Rumusan PLO) <span style="color: red;">*</span></label>
-                            <textarea name="rumusan_plo" id="field_rumusan_plo" class="form-control" rows="3" required placeholder="Outcome statement"></textarea>
+                            <label class="form-label">{{ __('Outcome (Rumusan PLO)') }} <span style="color: red;">*</span></label>
+                            <textarea name="rumusan_plo" id="field_rumusan_plo" class="form-control" rows="3" required placeholder="{{ __('Outcome statement') }}"></textarea>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Bloom Level <span style="color: red;">*</span></label>
+                                <label class="form-label">{{ __('Bloom Level') }} <span style="color: red;">*</span></label>
                                 <select name="bloom_level" id="field_bloom_level" class="form-control" required onchange="updateKKO()">
                                     <option value="">-- Pilih Level --</option>
                                     <option value="C1">C1 - Remember</option>
@@ -178,7 +178,7 @@
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">KKO <span style="color: red;">*</span></label>
+                                <label class="form-label">{{ __('KKO') }} <span style="color: red;">*</span></label>
                                 <div class="custom-multiselect-container" style="position: relative; width: 100%;">
                                     <!-- Control box -->
                                     <div class="multiselect-control" id="kko-control" style="min-height: 38px; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.375rem 0.75rem; background: #fff; cursor: pointer; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; justify-content: space-between; transition: border-color 0.15s, box-shadow 0.15s;">
@@ -190,7 +190,7 @@
                                     <!-- Dropdown list -->
                                     <div class="multiselect-dropdown" id="kko-dropdown" style="display: none; position: absolute; top: 105%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); z-index: 50; max-height: 250px; overflow-y: auto; padding: 0.5rem;">
                                         <!-- Search bar inside dropdown -->
-                                        <input type="text" id="kko-search" placeholder="Cari KKO..." style="width: 100%; border: 1px solid #e5e7eb; border-radius: 0.25rem; padding: 0.375rem 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; outline: none; box-sizing: border-box;" onclick="event.stopPropagation()">
+                                        <input type="text" id="kko-search" placeholder="{{ __('Cari KKO...') }}" style="width: 100%; border: 1px solid #e5e7eb; border-radius: 0.25rem; padding: 0.375rem 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; outline: none; box-sizing: border-box;" onclick="event.stopPropagation()">
                                         
                                         <!-- Options -->
                                         <div id="kko-options-list">
@@ -206,16 +206,16 @@
                     <!-- Right Column -->
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label">Indicators of Achievement <span style="color: red;">*</span></label>
-                            <textarea name="indikator_ketercapaian" id="field_indikator_ketercapaian" class="form-control" rows="2" required placeholder="Achievement indicators"></textarea>
+                            <label class="form-label">{{ __('Indicators of Achievement') }} <span style="color: red;">*</span></label>
+                            <textarea name="indikator_ketercapaian" id="field_indikator_ketercapaian" class="form-control" rows="2" required placeholder="{{ __('Achievement indicators') }}"></textarea>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Target <span style="color: red;">*</span></label>
-                                <input type="text" name="target_capaian" id="field_target_capaian" class="form-control" required placeholder="e.g. 75%">
+                                <label class="form-label">{{ __('Target') }} <span style="color: red;">*</span></label>
+                                <input type="text" name="target_capaian" id="field_target_capaian" class="form-control" required placeholder="{{ __('e.g. 75%') }}">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Measurement <span style="color: red;">*</span></label>
+                                <label class="form-label">{{ __('Measurement') }} <span style="color: red;">*</span></label>
                                 <select name="metode_pengukuran" id="field_metode_pengukuran" class="form-control" required>
                                     <option value="Direct">Direct</option>
                                     <option value="Indirect">Indirect</option>

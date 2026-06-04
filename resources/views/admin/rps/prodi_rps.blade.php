@@ -21,12 +21,12 @@
             <table id="rpsTable">
                 <thead>
                     <tr>
-                        <th>Subject</th>
-                        <th>Kurikulum</th>
-                        <th>Versi</th>
-                        <th>Status</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
+                        <th>{{ __('Subject') }}</th>
+                        <th>{{ __('Kurikulum') }}</th>
+                        <th>{{ __('Versi') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Created At') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,7 +85,7 @@
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 
                 <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Subject <span style="color: red;">*</span></label>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Subject') }} <span style="color: red;">*</span></label>
                     <select name="subject_id" id="subject_id" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                         <option value="">Select Subject</option>
                         @foreach($subjects as $subject)
@@ -95,13 +95,13 @@
                 </div>
                 
                 <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nomor RPS</label>
-                    <input type="text" name="nomor_rps" id="nomor_rps" placeholder="e.g. RPS-INF-2024-001"
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Nomor RPS') }} </label>
+                    <input type="text" name="nomor_rps" id="nomor_rps" placeholder="{{ __('e.g. RPS-INF-2024-001') }}"
                            style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                 </div>
 
                 <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Kurikulum <span style="color: red;">*</span></label>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Kurikulum') }} <span style="color: red;">*</span></label>
                     <select name="kurikulum_id" id="kurikulum_id" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                         <option value="">Select Kurikulum</option>
                         @foreach($kurikulums as $kurikulum)
@@ -112,33 +112,33 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Tanggal Penyusunan</label>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Tanggal Penyusunan') }} </label>
                         <input type="date" name="tanggal_penyusunan" id="tanggal_penyusunan" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Media Pembelajaran</label>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Media Pembelajaran') }} </label>
                         <input type="text" name="media_pembelajaran" id="media_pembelajaran" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Pengembang RPS</label>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Pengembang RPS') }} </label>
                         <input type="text" name="pengembang_rps" id="pengembang_rps" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Dosen Pengampu</label>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Dosen Pengampu') }} </label>
                         <input type="text" name="dosen_pengampu" id="dosen_pengampu" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                     </div>
                 </div>
 
                 <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Referensi</label>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Referensi') }} </label>
                     <textarea name="referensi" id="referensi" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;"></textarea>
                 </div>
                 
                 <div style="margin-bottom: 1rem;" id="statusGroup">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Status <span style="color: red;">*</span></label>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Status') }} <span style="color: red;">*</span></label>
                     <select name="status" id="status" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                         <option value="Draft">Draft</option>
                         <option value="Aktif">Aktif</option>

@@ -16,7 +16,7 @@
             @csrf
             <div style="display: flex; gap: 1rem; align-items: flex-end;">
                 <div style="flex: 1;">
-                    <label class="form-label">Type Name (e.g. Quiz, Project, UAS) <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Type Name (e.g. Quiz, Project, UAS)') }} <span style="color: red;">*</span></label>
                     <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
                     @error('name')
                         <div style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">{{ $message }}</div>
@@ -32,9 +32,9 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 5%;">No</th>
-                        <th>Type Name</th>
-                        <th style="width: 20%;">Actions</th>
+                        <th style="width: 5%;">{{ __('No') }}</th>
+                        <th>{{ __('Type Name') }}</th>
+                        <th style="width: 20%;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

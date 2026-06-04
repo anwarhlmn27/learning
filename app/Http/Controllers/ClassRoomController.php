@@ -439,35 +439,132 @@ class ClassRoomController extends Controller
                     ]
                 );
 
-                $assessments = RpsAssessment::where('rps_session_id', $session->id)->get();
-                foreach ($assessments as $assessment) {
-                    // Create Assignment
-                    $assignment = Assignment::firstOrCreate(
-                        [
-                            'class_room_id' => $class->id,
-                            'rps_assessment_id' => $assessment->id,
-                        ],
-                        [
-                            'class_session_id' => $classSession->id,
-                            'title' => 'Tugas Sesi ' . $session->session_number . ': ' . $session->topic_name,
-                            'instruction' => $assessment->assignment_activities ?? 'Silakan kerjakan tugas sesuai arahan dosen.',
-                            'deadline' => now()->addDays(7),
-                            'status' => 'Draft',
-                        ]
-                    );
+                // Fetch existing assignments for this session via ClassTopic
+                $existingAssignmentTopics = \App\Models\ClassTopic::where('class_room_id', $class->id)
+                    ->where('session_number', $session->session_number)
+                    ->where('type', 'assignment')
+                    ->orderBy('created_at')
+                    ->get();
 
-                    // Sync dynamic classwork timeline (class_topics)
-                    \App\Models\ClassTopic::firstOrCreate(
-                        [
-                            'class_room_id' => $class->id,
-                            'session_number' => $session->session_number,
-                            'type' => 'assignment',
-                            'content_id' => $assignment->id,
-                        ],
-                        [
-                            'title' => $assignment->title,
-                        ]
-                    );
+                $assessments = RpsAssessment::where('rps_session_id', $session->id)->get();
+                foreach ($assessments as $index => $assessment) {
+                    $title = 'Tugas Sesi ' . $session->session_number . ': ' . $session->topic_name;
+                    $instruction = $assessment->assignment_activities ?? 'Silakan kerjakan tugas sesuai arahan dosen.';
+
+                    if (isset($existingAssignmentTopics[$index])) {
+                        // Update existing assignment if it exists, otherwise create new (might be orphaned due to cascade delete)
+                        $assignment = Assignment::find($existingAssignmentTopics[$index]->content_id);
+                        if ($assignment) {
+                            $assignment->update([
+                                'rps_assessment_id' => $assessment->id,
+                                'class_session_id' => $classSession->id,
+                                'title' => $title,
+                                'instruction' => $instruction,
+                            ]);
+                            $existingAssignmentTopics[$index]->update(['title' => $title]);
+                        } else {
+                            $assignment = Assignment::create([
+                                'class_room_id' => $class->id,
+                                'rps_assessment_id' => $assessment->id,
+                                'class_session_id' => $classSession->id,
+                                'title' => $title,
+                                'instruction' => $instruction,
+                                'deadline' => now()->addDays(7),
+                                'status' => 'Draft',
+                            ]);
+                            $existingAssignmentTopics[$index]->update([
+                                'content_id' => $assignment->id,
+                                'title' => $title
+                            ]);
+                        }
+                    } else {
+                        // Create Assignment
+                        $assignment = Assignment::firstOrCreate(
+                            [
+                                'class_room_id' => $class->id,
+                                'rps_assessment_id' => $assessment->id,
+                            ],
+                            [
+                                'class_session_id' => $classSession->id,
+                                'title' => $title,
+                                'instruction' => $instruction,
+                                'deadline' => now()->addDays(7),
+                                'status' => 'Draft',
+                            ]
+                        );
+
+                        // Sync dynamic classwork timeline (class_topics)
+                        \App\Models\ClassTopic::firstOrCreate(
+                            [
+                                'class_room_id' => $class->id,
+                                'session_number' => $session->session_number,
+                                'type' => 'assignment',
+                                'content_id' => $assignment->id,
+                            ],
+                            [
+                                'title' => $assignment->title,
+                            ]
+                        );
+                    }
+                }
+
+                // Copy Resources
+                $resources = \App\Models\SessionResource::where('rps_session_id', $session->id)->get();
+                
+                $existingMaterialTopics = \App\Models\ClassTopic::where('class_room_id', $class->id)
+                    ->where('session_number', $session->session_number)
+                    ->where('type', 'materi')
+                    ->orderBy('created_at')
+                    ->get();
+
+                foreach ($resources as $index => $res) {
+                    $material = \App\Models\Material::where('rps_resource_id', $res->id)->first();
+                    
+                    if (!$material && isset($existingMaterialTopics[$index])) {
+                        // Try to update existing material in the same slot
+                        $material = \App\Models\Material::find($existingMaterialTopics[$index]->content_id);
+                        if ($material) {
+                            $material->update([
+                                'rps_resource_id' => $res->id,
+                                'title' => $res->nm_resource,
+                                'file_path' => json_encode([$res->file_path]),
+                                'original_filename' => json_encode([$res->nm_resource]),
+                            ]);
+                            $existingMaterialTopics[$index]->update(['title' => $material->title]);
+                        } else {
+                            $material = \App\Models\Material::create([
+                                'rps_resource_id' => $res->id,
+                                'title' => $res->nm_resource,
+                                'file_path' => json_encode([$res->file_path]),
+                                'original_filename' => json_encode([$res->nm_resource]),
+                            ]);
+                            $existingMaterialTopics[$index]->update([
+                                'content_id' => $material->id,
+                                'title' => $material->title
+                            ]);
+                        }
+                    }
+                    
+                    if (!$material) {
+                        $material = \App\Models\Material::create([
+                            'rps_resource_id' => $res->id,
+                            'title' => $res->nm_resource,
+                            'file_path' => json_encode([$res->file_path]),
+                            'original_filename' => json_encode([$res->nm_resource]),
+                        ]);
+
+                        \App\Models\ClassTopic::firstOrCreate(
+                            [
+                                'class_room_id' => $class->id,
+                                'session_number' => $session->session_number,
+                                'type' => 'materi',
+                                'content_id' => $material->id,
+                            ],
+                            [
+                                'title' => $material->title,
+                            ]
+                        );
+                    }
                 }
             }
 
@@ -716,6 +813,40 @@ class ClassRoomController extends Controller
             'title' => $material->title,
         ]);
 
+        // Share to RPS if checked
+        if ($request->has('share_to_rps') && $request->share_to_rps == '1') {
+            $rps = \App\Models\Rps::where('subject_id', $class->subject_id)
+                      ->where('status', 'active')
+                      ->latest()
+                      ->first();
+            if ($rps) {
+                $rpsSession = \App\Models\RpsSession::where('rps_id', $rps->id)
+                                ->where('session_number', $request->session_number)
+                                ->first();
+                if ($rpsSession) {
+                    foreach ($filePaths as $index => $path) {
+                        $nm_resource = $request->title;
+                        if (count($filePaths) > 1 && isset($originalFilenames[$index])) {
+                            $nm_resource = $originalFilenames[$index];
+                        }
+                        
+                        $sessionResource = \App\Models\SessionResource::create([
+                            'rps_session_id' => $rpsSession->id,
+                            'nm_resource' => $nm_resource,
+                            'type' => 'Modul',
+                            'file_path' => $path,
+                        ]);
+                        
+                        // Link the material back to the RPS resource so it doesn't get duplicated if pulled again
+                        if ($index === 0) {
+                            $material->rps_resource_id = $sessionResource->id;
+                            $material->save();
+                        }
+                    }
+                }
+            }
+        }
+
         return back()->with('success', 'Materi berhasil ditambahkan pada Sesi ' . $request->session_number);
     }
 
@@ -835,13 +966,20 @@ class ClassRoomController extends Controller
         $targetPath = $filePaths[$fileIndex];
         $originalName = $originalFilenames[$fileIndex] ?? 'Materi_LMS.pdf';
 
-        // 2. Validate File Existence in secure storage
-        if (!$targetPath || !\Illuminate\Support\Facades\Storage::exists($targetPath)) {
+        // 2. Validate File Existence in secure storage or public storage (from RPS)
+        if (!$targetPath) {
+            abort(404, 'File materi tidak ditemukan di server.');
+        }
+
+        if (\Illuminate\Support\Facades\Storage::exists($targetPath)) {
+            $path = \Illuminate\Support\Facades\Storage::path($targetPath);
+        } elseif (\Illuminate\Support\Facades\Storage::disk('public')->exists($targetPath)) {
+            $path = \Illuminate\Support\Facades\Storage::disk('public')->path($targetPath);
+        } else {
             abort(404, 'File materi tidak ditemukan di server.');
         }
 
         // 3. Return Secure Download/File Response
-        $path = \Illuminate\Support\Facades\Storage::path($targetPath);
 
         // Using response()->file() directly allows viewing in browser for PDFs
         return response()->file($path, [
@@ -888,9 +1026,8 @@ class ClassRoomController extends Controller
         ]);
 
         $forum = \App\Models\Forum::create([
-            'class_room_id' => $class->id,
             'title' => $request->title,
-            'description' => $request->description,
+            'context' => $request->description,
         ]);
 
         \App\Models\ClassTopic::create([
@@ -1032,5 +1169,114 @@ class ClassRoomController extends Controller
         $finalScore = $attempt->gradeAttempt();
 
         return redirect()->route('classes.show', $class)->with('success', 'Kuis selesai dikerjakan! Nilai Anda: ' . $finalScore . '/100 (Nilai langsung disinkronisasi ke Pusat Nilai / OBE Analytics)');
+    }
+
+    public function exportGrades(ClassRoom $class)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole(['admin', 'kaprodi'])) {
+            $isStaff = $class->users()->where('user_id', $user->id)->exists();
+            if (!$isStaff) {
+                return back()->with('error', 'Anda tidak memiliki akses ke kelas ini.');
+            }
+        }
+
+        $enrollments = Enrollment::with('student.user')
+                        ->where('class_room_id', $class->id)
+                        ->latest()
+                        ->get();
+
+        $assignments = Assignment::where('class_room_id', $class->id)->get();
+        $topics = $class->topics()->where('type', 'quiz')->get();
+        $quizIds = $topics->pluck('content_id');
+        $quizzes = Quiz::whereIn('id', $quizIds)->get();
+
+        $quizAttempts = \App\Models\StudentQuizAttempt::whereIn('quiz_id', $quizzes->pluck('id'))
+            ->get()
+            ->groupBy('user_id');
+
+        $filename = "Rekap_Nilai_{$class->nama_kelas}.csv";
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=\"{$filename}\"",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['NIM', 'Nama Mahasiswa', 'Kelas', 'Nilai Tugas (Rata-rata)', 'Nilai UTS', 'Nilai UAS'];
+
+        $callback = function() use($columns, $enrollments, $class, $assignments, $quizzes, $quizAttempts) {
+            $file = fopen('php://output', 'w');
+            // Write BOM for Excel UTF-8
+            fputs($file, "\xEF\xBB\xBF");
+            fputcsv($file, $columns, ';');
+
+            foreach ($enrollments as $enrollment) {
+                $student = $enrollment->student;
+                if (!$student) continue;
+
+                $studentId = $student->id;
+                $studentUserId = $student->user_id;
+
+                $tugasScores = [];
+                $utsScore = '-';
+                $uasScore = '-';
+
+                // Process Assignments
+                foreach ($assignments as $assign) {
+                    $gradeObj = \App\Models\StudentGrade::where('enrollment_id', $enrollment->id)
+                                ->where('rps_assessment_id', $assign->rps_assessment_id)
+                                ->first();
+                    $score = $gradeObj ? $gradeObj->score : 0;
+                    
+                    $title = strtolower($assign->title);
+                    if (strpos($title, 'uts') !== false || strpos($title, 'tengah semester') !== false) {
+                        $utsScore = $score;
+                    } elseif (strpos($title, 'uas') !== false || strpos($title, 'akhir semester') !== false) {
+                        $uasScore = $score;
+                    } else {
+                        $tugasScores[] = $score;
+                    }
+                }
+
+                // Process Quizzes
+                foreach ($quizzes as $quiz) {
+                    $attempt = $studentUserId && isset($quizAttempts[$studentUserId]) 
+                        ? $quizAttempts[$studentUserId]->where('quiz_id', $quiz->id)->sortByDesc('score')->first() 
+                        : null;
+                    $score = $attempt ? $attempt->score : 0;
+
+                    $title = strtolower($quiz->title);
+                    if (strpos($title, 'uts') !== false || strpos($title, 'tengah semester') !== false) {
+                        $utsScore = $score;
+                    } elseif (strpos($title, 'uas') !== false || strpos($title, 'akhir semester') !== false) {
+                        $uasScore = $score;
+                    } else {
+                        $tugasScores[] = $score;
+                    }
+                }
+
+                $rataTugas = count($tugasScores) > 0 ? round(array_sum($tugasScores) / count($tugasScores), 2) : '-';
+
+                if ($student->is_frozen) {
+                    $rataTugas = 'Belum Eligible';
+                    $utsScore = 'Belum Eligible';
+                    $uasScore = 'Belum Eligible';
+                }
+
+                fputcsv($file, [
+                    $student->nim,
+                    $student->nama_student,
+                    $class->nama_kelas,
+                    $rataTugas,
+                    $utsScore,
+                    $uasScore
+                ], ';');
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

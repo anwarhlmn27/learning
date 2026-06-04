@@ -31,17 +31,17 @@
         <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">Session {{ $session->session_number }}: {{ $session->topic_name }}</h3>
     </div>
     <div class="card-body" id="session_{{ $session->id }}" style="display: none;">
-        <form action="{{ route('admin.rps.sessions.update', $session->id) }}" method="POST" class="session-form">
+        <form action="{{ route('admin.rps.sessions.update', $session->id) }}" method="POST" class="session-form" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div>
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Topic Name <span style="color: red;">*</span></label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">{{ __('Topic Name') }} <span style="color: red;">*</span></label>
                     <input type="text" name="topic_name" value="{{ $session->topic_name }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                 </div>
                 <div>
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Mapped CLOs (CPMK) for Topic <span style="color: red;">*</span></label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">{{ __('Mapped CLOs (CPMK) for Topic') }} <span style="color: red;">*</span></label>
                     <div style="max-height: 100px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.375rem; background: #fff;">
                         @foreach($clos as $clo)
                             <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">
@@ -61,17 +61,17 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div>
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Assessment Indicators (Indikator Penilaian) <span style="color: red;">*</span></label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">{{ __('Assessment Indicators (Indikator Penilaian)') }} <span style="color: red;">*</span></label>
                     <textarea name="assessment_indicators" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->assessment_indicators }}</textarea>
                 </div>
                 <div>
-                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Evaluation Criteria (Kriteria Evaluasi) <span style="color: red;">*</span></label>
+                    <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">{{ __('Evaluation Criteria (Kriteria Evaluasi)') }} <span style="color: red;">*</span></label>
                     <textarea name="evaluation_criteria" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->evaluation_criteria }}</textarea>
                 </div>
             </div>
 
             <div style="margin-bottom: 1rem;">
-                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Learning Materials (Bahan Kajian) <span style="color: red;">*</span></label>
+                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">{{ __('Learning Materials (Bahan Kajian)') }} <span style="color: red;">*</span></label>
                 <textarea name="learning_materials" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $session->learning_materials }}</textarea>
             </div>
 
@@ -83,7 +83,7 @@
                 @foreach($session->activities as $index => $activity)
                     <div class="activity-row" style="display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.5rem;">
                         <div style="width: 150px;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Type <span style="color: red;">*</span></label>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} <span style="color: red;">*</span></label>
                             <select name="activities[{{ $index }}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                                 <option value="Connect" {{ $activity->type == 'Connect' ? 'selected' : '' }}>Connect</option>
                                 <option value="Coach" {{ $activity->type == 'Coach' ? 'selected' : '' }}>Coach</option>
@@ -92,11 +92,11 @@
                             </select>
                         </div>
                         <div style="width: 100px;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Dur (Min) <span style="color: red;">*</span></label>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Dur (Min)') }} <span style="color: red;">*</span></label>
                             <input type="number" name="activities[{{ $index }}][duration]" value="{{ $activity->duration }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                         </div>
                         <div style="flex: 1;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Activity Content <span style="color: red;">*</span></label>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Activity Content') }} <span style="color: red;">*</span></label>
                             <textarea name="activities[{{ $index }}][content]" required rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $activity->content }}</textarea>
                         </div>
                         <div>
@@ -118,7 +118,7 @@
                     <div class="assessment-row">
                         <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
                             <div>
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Target CLO <span style="color: red;">*</span></label>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Target CLO') }} <span style="color: red;">*</span></label>
                                 <select name="assessments[{{ $index }}][clo_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                                     @foreach($clos as $clo)
                                         <option value="{{ $clo->id }}" {{ $assessment->clo_id == $clo->id ? 'selected' : '' }}>{{ $clo->kode_clo }}</option>
@@ -126,7 +126,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Tugas <span style="color: red;">*</span></label>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Tugas') }} <span style="color: red;">*</span></label>
                                 <input type="text" list="tugas_options" name="assessments[{{ $index }}][assessment_type_id]" value="{{ $assessment->type ? $assessment->type->name : '' }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                             </div>
                             <div>
@@ -139,27 +139,27 @@
                         </div>
 
                         <div style="margin-bottom: 1rem;">
-                            <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assignment Activities (Aktivitas Penugasan)</label>
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Assignment Activities (Aktivitas Penugasan)') }} </label>
                             <textarea name="assessments[{{ $index }}][assignment_activities]" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $assessment->assignment_activities }}</textarea>
                         </div>
 
                         <div style="margin-bottom: 1rem;">
-                            <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assessment Scope (Ruang Lingkup Tugas)</label>
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Assessment Scope (Ruang Lingkup Tugas)') }} </label>
                             <textarea name="assessments[{{ $index }}][assessment_scope]" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">{{ $assessment->assessment_scope }}</textarea>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                             <div>
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">How Worked (Cara Pengerjaan)</label>
-                                <input type="text" name="assessments[{{ $index }}][how_worked]" value="{{ $assessment->how_worked }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Individu, Kelompok">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('How Worked (Cara Pengerjaan)') }} </label>
+                                <input type="text" name="assessments[{{ $index }}][how_worked]" value="{{ $assessment->how_worked }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="{{ __('e.g. Individu, Kelompok') }}">
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Time Worked (Minutes)</label>
-                                <input type="number" name="assessments[{{ $index }}][time_worked]" value="{{ $assessment->time_worked }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. 60">
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Time Worked (Minutes)') }} </label>
+                                <input type="number" name="assessments[{{ $index }}][time_worked]" value="{{ $assessment->time_worked }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="{{ __('e.g. 60') }}">
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assessment Output (Luaran)</label>
-                                <textarea name="assessments[{{ $index }}][assessment_output]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Makalah, Video">{{ $assessment->assessment_output }}</textarea>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Assessment Output (Luaran)') }} </label>
+                                <textarea name="assessments[{{ $index }}][assessment_output]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="{{ __('e.g. Makalah, Video') }}">{{ $assessment->assessment_output }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -167,6 +167,41 @@
             </div>
             
             <button type="button" onclick="addAssessmentRow('{{ $session->id }}')" class="btn btn-primary" style="margin-top: 0.5rem; margin-bottom: 1.5rem; font-size: 0.75rem; background: var(--primary); color: #fff;">+ Add Assessment</button>
+
+            <!-- Resources Section -->
+            <hr style="margin: 1.5rem 0;">
+            <h4 style="font-weight: 600; margin-bottom: 1rem; color: var(--primary);">Modules / Resources</h4>
+            
+            <div id="resources_container_{{ $session->id }}">
+                @foreach($session->resources as $index => $resource)
+                    <div class="resource-row" id="resource_row_{{ $resource->id }}" style="display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <input type="hidden" name="existing_resources[{{ $index }}][id]" value="{{ $resource->id }}">
+                        <input type="checkbox" name="existing_resources[{{ $index }}][delete]" value="1" id="delete_resource_{{ $resource->id }}" style="display: none;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Resource Name') }} <span style="color: red;">*</span></label>
+                            <input type="text" name="existing_resources[{{ $index }}][nm_resource]" value="{{ $resource->nm_resource }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                        </div>
+                        <div style="width: 150px;">
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} <span style="color: red;">*</span></label>
+                            <select name="existing_resources[{{ $index }}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                                <option value="Modul" {{ $resource->type == 'Modul' ? 'selected' : '' }}>Modul</option>
+                                <option value="Materi Tambahan" {{ $resource->type == 'Materi Tambahan' ? 'selected' : '' }}>Materi Tambahan</option>
+                                <option value="Video" {{ $resource->type == 'Video' ? 'selected' : '' }}>Video</option>
+                            </select>
+                        </div>
+                        <div style="width: 250px;">
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Current File / Update</label>
+                            <a href="{{ Storage::url($resource->file_path) }}" target="_blank" style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: var(--primary);">View Current</a>
+                            <input type="file" name="existing_resources[{{ $index }}][file]" style="width: 100%; padding: 0.3rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">&nbsp;</label>
+                            <button type="button" onclick="deleteExistingResource('{{ $resource->id }}')" class="btn btn-danger" style="padding: 0.5rem; border-radius: 0.375rem; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; height: 38px;">&times;</button>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            <button type="button" onclick="addResourceRow('{{ $session->id }}')" class="btn btn-secondary" style="margin-top: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem; background: #e5e7eb; color: #374151;">+ Add Resource</button>
 
             <div style="margin-top: 1rem; text-align: right; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
                 <button type="submit" class="btn btn-primary btn-save" style="padding: 0.75rem 1.5rem; font-size: 1rem;">Save Session {{ $session->session_number }}</button>
@@ -224,14 +259,14 @@
         row.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Target CLO</label>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Target CLO') }} </label>
                     <select name="assessments[${index}][clo_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                         ${cloOptions}
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Type</label>
-                    <input type="text" list="tugas_options" name="assessments[${index}][assessment_type_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="Select or type...">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} </label>
+                    <input type="text" list="tugas_options" name="assessments[${index}][assessment_type_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="{{ __('Select or type...') }}">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Weight %</label>
@@ -243,27 +278,27 @@
             </div>
 
             <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assignment Activities (Aktivitas Penugasan)</label>
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Assignment Activities (Aktivitas Penugasan)') }} </label>
                 <textarea name="assessments[${index}][assignment_activities]" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;"></textarea>
             </div>
 
             <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assessment Scope (Ruang Lingkup Tugas)</label>
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Assessment Scope (Ruang Lingkup Tugas)') }} </label>
                 <textarea name="assessments[${index}][assessment_scope]" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;"></textarea>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">How Worked (Cara Pengerjaan)</label>
-                    <input type="text" name="assessments[${index}][how_worked]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Individu, Kelompok">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('How Worked (Cara Pengerjaan)') }} </label>
+                    <input type="text" name="assessments[${index}][how_worked]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="{{ __('e.g. Individu, Kelompok') }}">
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Time Worked (Minutes)</label>
-                    <input type="number" name="assessments[${index}][time_worked]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. 60">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Time Worked (Minutes)') }} </label>
+                    <input type="number" name="assessments[${index}][time_worked]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="{{ __('e.g. 60') }}">
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Assessment Output (Luaran)</label>
-                    <input type="text" name="assessments[${index}][assessment_output]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="e.g. Makalah, Video">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Assessment Output (Luaran)') }} </label>
+                    <input type="text" name="assessments[${index}][assessment_output]" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="{{ __('e.g. Makalah, Video') }}">
                 </div>
             </div>
         `;
@@ -281,7 +316,7 @@
         row.style.marginBottom = '0.5rem';
         row.innerHTML = `
             <div style="width: 150px;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Type</label>
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} </label>
                 <select name="activities[${index}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                     <option value="Connect">Connect</option>
                     <option value="Coach">Coach</option>
@@ -290,12 +325,12 @@
                 </select>
             </div>
             <div style="width: 100px;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Dur (Min)</label>
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Dur (Min)') }} </label>
                 <input type="number" name="activities[${index}][duration]" value="0" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
             </div>
             <div style="flex: 1;">
-                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Activity Content</label>
-                <textarea name="activities[${index}][content]" required rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="Describe activity..."></textarea>
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Activity Content') }} </label>
+                <textarea name="activities[${index}][content]" required rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="{{ __('Describe activity...') }}"></textarea>
             </div>
             <div>
                 <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">&nbsp;</label>
@@ -303,6 +338,54 @@
             </div>
         `;
         container.appendChild(row);
+    }
+
+    function addResourceRow(sessionId) {
+        const container = document.getElementById('resources_container_' + sessionId);
+        const index = Date.now();
+        const row = document.createElement('div');
+        row.className = 'resource-row';
+        row.style.display = 'flex';
+        row.style.gap = '1rem';
+        row.style.alignItems = 'flex-start';
+        row.style.marginBottom = '0.5rem';
+        row.innerHTML = `
+            <div style="flex: 1;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Resource Name') }} <span style="color: red;">*</span></label>
+                <input type="text" name="new_resources[${index}][nm_resource]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+            </div>
+            <div style="width: 150px;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} <span style="color: red;">*</span></label>
+                <select name="new_resources[${index}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                    <option value="Modul">Modul</option>
+                    <option value="Materi Tambahan">Materi Tambahan</option>
+                    <option value="Video">Video</option>
+                </select>
+            </div>
+            <div style="width: 250px;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('File') }} <span style="color: red;">*</span></label>
+                <input type="file" name="new_resources[${index}][file]" required style="width: 100%; padding: 0.3rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">&nbsp;</label>
+                <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn btn-danger" style="padding: 0.5rem; border-radius: 0.375rem; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; height: 38px;">&times;</button>
+            </div>
+        `;
+        container.appendChild(row);
+    }
+
+    function deleteExistingResource(resourceId) {
+        const row = document.getElementById('resource_row_' + resourceId);
+        const checkbox = document.getElementById('delete_resource_' + resourceId);
+        if (row && checkbox) {
+            checkbox.checked = true;
+            row.querySelectorAll('input, select, textarea').forEach(input => {
+                if (input !== checkbox) {
+                    input.removeAttribute('required');
+                }
+            });
+            row.style.display = 'none';
+        }
     }
 
     // Initial calculation

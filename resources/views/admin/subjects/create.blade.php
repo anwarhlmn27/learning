@@ -42,7 +42,7 @@
             @csrf
             
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="form-label">Program Studi <span style="color: red;">*</span></label>
+                <label class="form-label">{{ __('Program Studi') }} <span style="color: red;">*</span></label>
                 <select name="id_prodi" class="form-control" required>
                     <option value="">-- Select Program Studi --</option>
                     @foreach($prodis as $prodi)
@@ -55,31 +55,31 @@
 
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Subject Code <span style="color: red;">*</span></label>
-                    <input type="text" name="kode_subject" class="form-control" placeholder="INF101" required value="{{ old('kode_subject') }}">
+                    <label class="form-label">{{ __('Subject Code') }} <span style="color: red;">*</span></label>
+                    <input type="text" name="kode_subject" class="form-control" placeholder="{{ __('INF101') }}" required value="{{ old('kode_subject') }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Subject Name <span style="color: red;">*</span></label>
-                    <input type="text" name="nama_subject" class="form-control" placeholder="Introduction to Computer Science" required value="{{ old('nama_subject') }}">
+                    <label class="form-label">{{ __('Subject Name') }} <span style="color: red;">*</span></label>
+                    <input type="text" name="nama_subject" class="form-control" placeholder="{{ __('Introduction to Computer Science') }}" required value="{{ old('nama_subject') }}">
                 </div>
             </div>
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="form-label">Deskripsi <span style="color: red;">*</span></label>
-                <textarea name="deskripsi" class="form-control" rows="3" required placeholder="Isi dan tujuan MK">{{ old('deskripsi') }}</textarea>
+                <label class="form-label">{{ __('Deskripsi') }} <span style="color: red;">*</span></label>
+                <textarea name="deskripsi" class="form-control" rows="3" required placeholder="{{ __('Isi dan tujuan MK') }}">{{ old('deskripsi') }}</textarea>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">SKS Theory (T) <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('SKS Theory (T)') }} <span style="color: red;">*</span></label>
                     <input type="number" name="sks_t" id="sks_t" class="form-control" min="0" required value="{{ old('sks_t', 0) }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">SKS Practice (P) <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('SKS Practice (P)') }} <span style="color: red;">*</span></label>
                     <input type="number" name="sks_p" id="sks_p" class="form-control" min="0" required value="{{ old('sks_p', 0) }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">SKS Praktik Lapangan (PL) <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('SKS Praktik Lapangan (PL)') }} <span style="color: red;">*</span></label>
                     <input type="number" name="sks_pl" id="sks_pl" class="form-control" min="0" required value="{{ old('sks_pl', 0) }}">
                 </div>
                 <div class="form-group">
@@ -90,7 +90,7 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Semester <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Semester') }} <span style="color: red;">*</span></label>
                     <select name="semester" class="form-control" required>
                         @for($i = 1; $i <= 8; $i++)
                             <option value="{{ $i }}" {{ old('semester') == $i ? 'selected' : '' }}>Semester {{ $i }}</option>
@@ -98,7 +98,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Jenis Subject <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Jenis Subject') }} <span style="color: red;">*</span></label>
                     <select name="jenis_subject" class="form-control" required>
                         <option value="Wajib Prodi" {{ old('jenis_subject') == 'Wajib Prodi' ? 'selected' : '' }}>Wajib Prodi</option>
                         <option value="Wajib Universitas" {{ old('jenis_subject') == 'Wajib Universitas' ? 'selected' : '' }}>Wajib Universitas</option>
@@ -106,7 +106,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Status <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Status') }} <span style="color: red;">*</span></label>
                     <select name="status" class="form-control" required>
                         <option value="Aktif" {{ old('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
                         <option value="Revisi" {{ old('status') == 'Revisi' ? 'selected' : '' }}>Revisi</option>
@@ -116,7 +116,7 @@
             </div>
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="form-label">Prerequisite Subjects</label>
+                <label class="form-label">{{ __('Prerequisite Subjects') }} </label>
                 <div class="custom-multiselect-container" style="position: relative; width: 100%;">
                     <!-- Control box (the input box that shows selected items) -->
                     <div class="multiselect-control" id="prereq-control" style="min-height: 38px; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.375rem 0.75rem; background: #fff; cursor: pointer; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; justify-content: space-between; transition: border-color 0.15s, box-shadow 0.15s;">
@@ -128,7 +128,7 @@
                     <!-- Dropdown list -->
                     <div class="multiselect-dropdown" id="prereq-dropdown" style="display: none; position: absolute; top: 105%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); z-index: 50; max-height: 250px; overflow-y: auto; padding: 0.5rem;">
                         <!-- Search bar inside dropdown -->
-                        <input type="text" id="prereq-search" placeholder="Search subject..." style="width: 100%; border: 1px solid #e5e7eb; border-radius: 0.25rem; padding: 0.375rem 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; outline: none; box-sizing: border-box;" onclick="event.stopPropagation()">
+                        <input type="text" id="prereq-search" placeholder="{{ __('Search subject...') }}" style="width: 100%; border: 1px solid #e5e7eb; border-radius: 0.25rem; padding: 0.375rem 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; outline: none; box-sizing: border-box;" onclick="event.stopPropagation()">
                         
                         <!-- Options -->
                         <div id="prereq-options-list">
@@ -145,7 +145,7 @@
             </div>
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="form-label">Bahan Kajian (Mapping)</label>
+                <label class="form-label">{{ __('Bahan Kajian (Mapping)') }} </label>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb; max-height: 150px; overflow-y: auto;">
                     @foreach($bks as $bk)
                         <label style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; cursor: pointer;">
@@ -158,13 +158,13 @@
             </div>
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="form-label">PLO (Mapping)</label>
+                <label class="form-label">{{ __('PLO (Mapping)') }} </label>
                 <div style="padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb; max-height: 250px; overflow-y: auto;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 1px solid #e5e7eb;">
-                                <th style="text-align: left; padding: 0.5rem; font-size: 0.75rem;">PLO Code</th>
-                                <th style="text-align: left; padding: 0.5rem; font-size: 0.75rem;">Level Mapping</th>
+                                <th style="text-align: left; padding: 0.5rem; font-size: 0.75rem;">{{ __('PLO Code') }}</th>
+                                <th style="text-align: left; padding: 0.5rem; font-size: 0.75rem;">{{ __('Level Mapping') }}</th>
                             </tr>
                         </thead>
                         <tbody>

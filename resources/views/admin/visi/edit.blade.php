@@ -19,18 +19,18 @@
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label class="form-label">Entity Type</label>
+                    <label class="form-label">{{ __('Entity Type') }} </label>
                     <input type="text" class="form-control" value="{{ str_replace('App\\Models\\', '', $visi->visible_type) }}" readonly disabled>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Entity Name</label>
+                    <label class="form-label">{{ __('Entity Name') }} </label>
                     <input type="text" class="form-control" value="{{ $visi->visible->nama_univ ?? $visi->visible->nama_fakultas ?? $visi->visible->nama_prodi ?? 'N/A' }}" readonly disabled>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Vision (Visi) <span style="color: red;">*</span></label>
-                <textarea name="visi" class="form-control @error('visi') is-invalid @enderror" rows="3" required placeholder="Enter Vision statement">{{ old('visi', $visi->visi) }}</textarea>
+                <label class="form-label">{{ __('Vision (Visi)') }} <span style="color: red;">*</span></label>
+                <textarea name="visi" class="form-control @error('visi') is-invalid @enderror" rows="3" required placeholder="{{ __('Enter Vision statement') }}">{{ old('visi', $visi->visi) }}</textarea>
                 @error('visi')
                     <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
                 @enderror
@@ -52,7 +52,7 @@
                 <div id="misi-container">
                     @foreach($oldMisi as $i => $val)
                         <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="text" name="misi[]" class="form-control" value="{{ $val }}" required placeholder="Enter Mission">
+                            <input type="text" name="misi[]" class="form-control" value="{{ $val }}" required placeholder="{{ __('Enter Mission') }}">
                             @if($i > 0)
                             <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
                             @endif
@@ -75,7 +75,7 @@
                 <div id="tujuan-container">
                     @foreach($oldTujuan as $val)
                         <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="text" name="tujuan[]" class="form-control" value="{{ $val }}" required placeholder="Enter Objective">
+                            <input type="text" name="tujuan[]" class="form-control" value="{{ $val }}" required placeholder="{{ __('Enter Objective') }}">
                             <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
                         </div>
                     @endforeach
@@ -90,7 +90,7 @@
                 <div id="strategi-container">
                     @foreach($oldStrategi as $val)
                         <div class="input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="text" name="strategi[]" class="form-control" value="{{ $val }}" required placeholder="Enter Strategy">
+                            <input type="text" name="strategi[]" class="form-control" value="{{ $val }}" required placeholder="{{ __('Enter Strategy') }}">
                             <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()" style="padding: 0 1rem;">X</button>
                         </div>
                     @endforeach

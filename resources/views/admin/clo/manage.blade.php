@@ -51,10 +51,10 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">#</th>
-                        <th style="width: 10%;">CLO Code</th>
+                        <th style="width: 10%;">{{ __('CLO Code') }}</th>
                         <th style="width: 40%;">Description & Bloom Level</th>
-                        <th style="width: 15%;">Mapped PLO</th>
-                        <th style="width: 10%;">Actions</th>
+                        <th style="width: 15%;">{{ __('Mapped PLO') }}</th>
+                        <th style="width: 10%;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,17 +125,17 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label class="form-label">CLO Code <span style="color: red;">*</span></label>
+                        <label class="form-label">{{ __('CLO Code') }} <span style="color: red;">*</span></label>
                         <input type="text"
                                name="kode_clo"
                                id="field_kode_clo"
                                class="form-control @error('kode_clo') is-invalid @enderror"
                                required
-                               placeholder="e.g. CLO-01, CPMK-1"
+                               placeholder="{{ __('e.g. CLO-01, CPMK-1') }}"
                                maxlength="50">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Bloom Level <span style="color: red;">*</span></label>
+                        <label class="form-label">{{ __('Bloom Level') }} <span style="color: red;">*</span></label>
                         <select name="bloom_level" id="field_bloom_level" class="form-control" required>
                             <option value="">- Select Level -</option>
                             <option value="C1 (Mengingat)">C1 (Mengingat)</option>
@@ -155,11 +155,11 @@
                               class="form-control @error('deskripsi') is-invalid @enderror"
                               rows="3"
                               required
-                              placeholder="Describe the specific learning outcome for this course..."></textarea>
+                              placeholder="{{ __('Describe the specific learning outcome for this course...') }}"></textarea>
                 </div>
 
                 <div class="form-group" style="margin-top: 1rem;">
-                    <label class="form-label">Mapped PLO <span style="color: red;">*</span></label>
+                    <label class="form-label">{{ __('Mapped PLO') }} <span style="color: red;">*</span></label>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; max-height: 150px; overflow-y: auto; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb;">
                         @forelse($plos as $plo)
                             <label style="display: flex; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; align-items: flex-start;">

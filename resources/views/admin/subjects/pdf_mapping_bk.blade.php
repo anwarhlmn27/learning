@@ -32,9 +32,9 @@
     <table>
         <thead>
             <tr>
-                <th rowspan="2" style="width: 25px;">No</th>
-                <th rowspan="2" class="mk-col">Kode MK</th>
-                <th rowspan="2" class="nama-col">Nama MK</th>
+                <th rowspan="2" style="width: 25px;">{{ __('No') }}</th>
+                <th rowspan="2" class="mk-col">{{ __('Kode MK') }}</th>
+                <th rowspan="2" class="nama-col">{{ __('Nama MK') }}</th>
                 <th colspan="{{ $bks->count() }}">Bahan Kajian (BK)</th>
             </tr>
             <tr>

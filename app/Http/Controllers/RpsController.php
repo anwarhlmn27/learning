@@ -165,7 +165,7 @@ class RpsController extends Controller
 
     public function manageSessions(Rps $rp)
     {
-        $rp->load('sessions.activities', 'sessions.clos', 'sessions.assessments.type', 'subject.clos');
+        $rp->load('sessions.activities', 'sessions.clos', 'sessions.assessments.type', 'sessions.resources', 'subject.clos');
         $clos = $rp->subject->clos;
         $assessmentTypes = AssessmentType::orderBy('name')->get();
 
@@ -271,6 +271,47 @@ class RpsController extends Controller
                             'type' => $activity['type'],
                             'duration' => $activity['duration'] ?? 0,
                             'content' => $activity['content']
+                        ]);
+                    }
+                }
+            }
+
+            // Handle Existing Resources (update or delete)
+            if ($request->has('existing_resources') && is_array($request->existing_resources)) {
+                foreach ($request->existing_resources as $resData) {
+                    $resource = \App\Models\SessionResource::find($resData['id']);
+                    if ($resource) {
+                        if (isset($resData['delete']) && $resData['delete'] == 1) {
+                            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($resource->file_path)) {
+                                \Illuminate\Support\Facades\Storage::disk('public')->delete($resource->file_path);
+                            }
+                            $resource->delete();
+                        } else {
+                            $resource->nm_resource = $resData['nm_resource'];
+                            $resource->type = $resData['type'];
+                            
+                            if (isset($resData['file']) && $resData['file'] instanceof \Illuminate\Http\UploadedFile) {
+                                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($resource->file_path)) {
+                                    \Illuminate\Support\Facades\Storage::disk('public')->delete($resource->file_path);
+                                }
+                                $path = $resData['file']->store('session_resources', 'public');
+                                $resource->file_path = $path;
+                            }
+                            $resource->save();
+                        }
+                    }
+                }
+            }
+
+            // Handle New Resources
+            if ($request->has('new_resources') && is_array($request->new_resources)) {
+                foreach ($request->new_resources as $resData) {
+                    if (isset($resData['file']) && $resData['file'] instanceof \Illuminate\Http\UploadedFile) {
+                        $path = $resData['file']->store('session_resources', 'public');
+                        $session->resources()->create([
+                            'nm_resource' => $resData['nm_resource'],
+                            'type' => $resData['type'],
+                            'file_path' => $path,
                         ]);
                     }
                 }

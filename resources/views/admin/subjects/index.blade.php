@@ -17,11 +17,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Prodi Code</th>
-                        <th>Study Program</th>
-                        <th>Faculty</th>
-                        <th>Total Subjects</th>
-                        <th>Action</th>
+                        <th>{{ __('Prodi Code') }}</th>
+                        <th>{{ __('Study Program') }}</th>
+                        <th>{{ __('Faculty') }}</th>
+                        <th>{{ __('Total Subjects') }}</th>
+                        <th>{{ __('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>

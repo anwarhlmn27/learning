@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::create('visis', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('id_prodi');
+            $table->uuid('visible_id');
+            $table->string('visible_type');
             $table->text('visi');
-            $table->string('doc_penyusunan');
-            $table->string('doc_pengesahan');
-            $table->string('doc_sosialisasi');
-            $table->string('doc_hasil_survey');
+            $table->string('doc_penyusunan')->nullable();
+            $table->string('doc_pengesahan')->nullable();
+            $table->string('doc_sosialisasi')->nullable();
+            $table->string('doc_hasil_survey')->nullable();
             $table->timestamps();
 
-            
-            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('restrict');
+            $table->index(['visible_id', 'visible_type']);
         });
         
     }

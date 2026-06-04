@@ -232,6 +232,11 @@
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
     }
+    
+    /* Fix for input sizes exceeding containers */
+    input, select, textarea {
+        box-sizing: border-box;
+    }
 </style>
 
 <!-- Classroom Banner Card -->
@@ -388,7 +393,7 @@
                                                 $names = $topic->material->original_filenames;
                                             @endphp
                                             @foreach($paths as $index => $path)
-                                                @if(\Illuminate\Support\Facades\Storage::exists($path))
+                                                @if(\Illuminate\Support\Facades\Storage::exists($path) || \Illuminate\Support\Facades\Storage::disk('public')->exists($path))
                                                     <a href="{{ route('classes.download_material', [$class, $topic->material]) }}?file_index={{ $index }}" target="_blank" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem;">
                                                         <i>👁️</i> Buka / Download ({{ $names[$index] ?? 'File ' . ($index + 1) }})
                                                     </a>
@@ -632,9 +637,15 @@
                         Nilai tersinkronisasi otomatis dengan <strong>Pusat Nilai / OBE Analytics</strong> di sidebar untuk kalkulasi CLO/PLO.
                     </p>
                 </div>
-                <span style="font-size: 0.8rem; background: #e0e7ff; color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 600;">
-                    OBE Sync Enabled
-                </span>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <a href="{{ route('classes.export_grades', $class) }}" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; border-color: #10b981; color: #10b981; display: flex; align-items: center; gap: 0.4rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Export to Excel
+                    </a>
+                    <span style="font-size: 0.8rem; background: #e0e7ff; color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 600;">
+                        OBE Sync Enabled
+                    </span>
+                </div>
             </div>
             <div class="card-body" style="padding: 0; overflow-x: auto;">
                 <table class="matrix-table">
@@ -677,7 +688,9 @@
                                             ->first();
                                     @endphp
                                     <td>
-                                        @if($gradeObj)
+                                        @if(optional($enroll->student)->is_frozen)
+                                            <span class="badge-score" style="background: #fee2e2; color: #991b1b; border: 1px solid #f87171;" title="Mahasiswa belum eligible (administrasi)">Belum Eligible</span>
+                                        @elseif($gradeObj)
                                             <span class="badge-score passed">{{ $gradeObj->score }}</span>
                                         @elseif($sub)
                                             <a href="{{ route('assignments.show', $assign) }}" class="badge-score pending" style="text-decoration: none; display: inline-block;">
@@ -696,7 +709,9 @@
                                             : null;
                                     @endphp
                                     <td>
-                                        @if($attempt)
+                                        @if(optional($enroll->student)->is_frozen)
+                                            <span class="badge-score" style="background: #fee2e2; color: #991b1b; border: 1px solid #f87171;" title="Mahasiswa belum eligible (administrasi)">Belum Eligible</span>
+                                        @elseif($attempt)
                                             <span class="badge-score passed">{{ $attempt->score }}</span>
                                         @else
                                             <span class="badge-score empty">-</span>
@@ -904,23 +919,44 @@
             @if(count($availableStudents) > 0)
             <form action="{{ route('classes.enroll', $class) }}" method="POST">
                 @csrf
-                {{-- Live Search Input --}}
-                <div style="position: relative; margin-bottom: 1rem;">
-                    <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;">🔍</span>
-                    <input
-                        type="text"
-                        id="search-student"
-                        placeholder="Cari NIM atau nama mahasiswa..."
-                        oninput="filterStudentOptions(this.value)"
-                        style="width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; box-sizing: border-box;"
-                        autocomplete="off"
-                    >
+                {{-- Live Search Input & Filter --}}
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div style="position: relative; flex: 1;">
+                        <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;">🔍</span>
+                        <input
+                            type="text"
+                            id="search-student"
+                            placeholder="Cari NIM atau nama mahasiswa..."
+                            oninput="filterStudentOptions()"
+                            style="width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; box-sizing: border-box;"
+                            autocomplete="off"
+                        >
+                    </div>
+                    @php
+                        $uniqueAngkatan = collect($availableStudents)->pluck('angkatan')->unique()->filter()->sort()->values();
+                    @endphp
+                    <select id="filter-angkatan" onchange="filterStudentOptions()" style="padding: 0.65rem 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; box-sizing: border-box; outline: none; width: 140px; background: white;">
+                        <option value="">Semua Angkatan</option>
+                        @foreach($uniqueAngkatan as $akt)
+                            <option value="{{ $akt }}">{{ $akt }}</option>
+                        @endforeach
+                    </select>
                 </div>
+                
+                {{-- Select All Checkbox --}}
+                <div style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; padding: 0 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">
+                        <input type="checkbox" id="select-all-students" onclick="toggleSelectAllStudents(this)" style="accent-color: var(--primary); width: 16px; height: 16px;">
+                        Pilih Semua (yang tampil)
+                    </label>
+                    <span id="student-visible-count" style="font-size: 0.75rem; color: var(--text-muted);">{{ count($availableStudents) }} mahasiswa</span>
+                </div>
+
                 {{-- Student List --}}
                 <div id="student-list" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
                     @foreach($availableStudents as $student)
-                    <label class="student-option" data-search="{{ strtolower($student->nim . ' ' . $student->nama_student) }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                        <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" style="accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;">
+                    <label class="student-option" data-search="{{ strtolower($student->nim . ' ' . $student->nama_student) }}" data-angkatan="{{ $student->angkatan }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                        <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" style="accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;" onchange="updateSelectAllState()">
                         <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">
                             {{ strtoupper(substr($student->nama_student, 0, 1)) }}
                         </div>
@@ -932,7 +968,6 @@
                     @endforeach
                     <div id="no-student-result" style="display: none; padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">Tidak ada mahasiswa yang cocok.</div>
                 </div>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0 0 1.25rem;">Menampilkan <strong>{{ count($availableStudents) }}</strong> mahasiswa dari prodi terkait yang belum terdaftar di kelas ini.</p>
                 <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add').style.display = 'none'">Batal</button>
                     <button type="submit" class="btn">✅ Enroll Mahasiswa</button>
@@ -1131,6 +1166,12 @@
                             <input type="url" name="links[]" placeholder="https://youtube.com/ atau drive link" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
                         </div>
                     </div>
+                </div>
+                <div style="margin-bottom: 1.5rem; padding: 0.75rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md);">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; color: #166534; font-weight: 600;">
+                        <input type="checkbox" name="share_to_rps" value="1" style="accent-color: #16a34a; width: 16px; height: 16px;">
+                        Bagikan sebagai Modul Resmi RPS (Akan tersedia untuk kelas lain yang mengampu mata kuliah ini)
+                    </label>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
                     <button type="button" class="btn btn-outline" onclick="closeAddClassworkModal()">Cancel</button>
@@ -1375,18 +1416,71 @@
     }
 
     // 4. Live search: Mahasiswa
-    function filterStudentOptions(query) {
-        const q = query.toLowerCase().trim();
+    function filterStudentOptions() {
+        const queryInput = document.getElementById('search-student');
+        const angkatanInput = document.getElementById('filter-angkatan');
+        const q = queryInput ? queryInput.value.toLowerCase().trim() : '';
+        const angkatan = angkatanInput ? angkatanInput.value : '';
+        
         const items = document.querySelectorAll('.student-option');
         let visibleCount = 0;
         items.forEach(item => {
             const text = item.getAttribute('data-search') || '';
-            const match = !q || text.includes(q);
-            item.style.display = match ? 'flex' : 'none';
-            if (match) visibleCount++;
+            const itemAngkatan = item.getAttribute('data-angkatan') || '';
+            const matchSearch = !q || text.includes(q);
+            const matchAngkatan = !angkatan || itemAngkatan === angkatan;
+            
+            if (matchSearch && matchAngkatan) {
+                item.style.display = 'flex';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
         });
         const noResult = document.getElementById('no-student-result');
         if (noResult) noResult.style.display = visibleCount === 0 ? 'block' : 'none';
+        
+        const countDisplay = document.getElementById('student-visible-count');
+        if (countDisplay) countDisplay.innerText = visibleCount + ' mahasiswa';
+
+        // Uncheck "Select All" when filtering
+        const selectAllCheckbox = document.getElementById('select-all-students');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = false;
+        }
+        updateSelectAllState();
+    }
+
+    function toggleSelectAllStudents(checkbox) {
+        const isChecked = checkbox.checked;
+        const items = document.querySelectorAll('.student-option');
+        items.forEach(item => {
+            if (item.style.display !== 'none') {
+                const cb = item.querySelector('input[type="checkbox"]');
+                if (cb) cb.checked = isChecked;
+            }
+        });
+    }
+
+    function updateSelectAllState() {
+        const items = document.querySelectorAll('.student-option');
+        let allVisibleChecked = true;
+        let hasVisible = false;
+
+        items.forEach(item => {
+            if (item.style.display !== 'none') {
+                hasVisible = true;
+                const cb = item.querySelector('input[type="checkbox"]');
+                if (cb && !cb.checked) {
+                    allVisibleChecked = false;
+                }
+            }
+        });
+
+        const selectAllCheckbox = document.getElementById('select-all-students');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = hasVisible && allVisibleChecked;
+        }
     }
 
     // 5. Live search: Dosen
@@ -1414,7 +1508,10 @@
                     // Clear search inputs when closing
                     const searchStudent = document.getElementById('search-student');
                     const searchDosen = document.getElementById('search-dosen');
-                    if (searchStudent) { searchStudent.value = ''; filterStudentOptions(''); }
+                    const filterAngkatan = document.getElementById('filter-angkatan');
+                    if (searchStudent) { searchStudent.value = ''; }
+                    if (filterAngkatan) { filterAngkatan.value = ''; }
+                    if (searchStudent || filterAngkatan) { filterStudentOptions(); }
                     if (searchDosen) { searchDosen.value = ''; filterDosenOptions(''); }
                 }
             });

@@ -17,13 +17,13 @@
             <table>
                 <thead>
                     <tr>
-                        <th>University</th>
-                        <th>Faculty</th>
-                        <th>Code</th>
-                        <th>Abbreviation</th>
-                        <th>Study Program Name</th>
+                        <th>{{ __('University') }}</th>
+                        <th>{{ __('Faculty') }}</th>
+                        <th>{{ __('Code') }}</th>
+                        <th>{{ __('Abbreviation') }}</th>
+                        <th>{{ __('Study Program Name') }}</th>
                         <th>Leader (Head of SP)</th>
-                        <th style="width: 150px;">Actions</th>
+                        <th style="width: 150px;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
