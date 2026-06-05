@@ -119,6 +119,12 @@
     @foreach($levels as $level => $semRange)
         <div class="level-header">TINGKAT {{ $level }} (Level {{ $level }})</div>
         <div class="semester-container">
+            @php
+                $count1 = count($semesters->get($semRange[0], collect()));
+                $count2 = count($semesters->get($semRange[1], collect()));
+                $maxRows = max($count1, $count2);
+                if ($maxRows < 1) $maxRows = 1;
+            @endphp
             @foreach($semRange as $semNum)
                 <div class="semester-table-wrapper">
                     <div style="font-weight: bold; margin-bottom: 2px;">Semester {{ $semNum == 1 ? 'I' : ($semNum == 2 ? 'II' : ($semNum == 3 ? 'III' : ($semNum == 4 ? 'IV' : ($semNum == 5 ? 'V' : ($semNum == 6 ? 'VI' : ($semNum == 7 ? 'VII' : 'VIII')))))) }}</div>
@@ -164,8 +170,8 @@
                                     $totalUnits += $ks->subject->total_sks;
                                 @endphp
                             @endforeach
-                            <!-- Fill empty rows to keep tables aligned if needed? Optional -->
-                            @for($i = count($subSem); $i < 8; $i++)
+                            <!-- Fill empty rows to keep tables aligned -->
+                            @for($i = count($subSem); $i < $maxRows; $i++)
                                 <tr>
                                     <td>&nbsp;</td>
                                     <td>&nbsp;</td>
