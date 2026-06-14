@@ -2,11 +2,23 @@
 
 @section('title', __('OBE Analytics Dashboard'))
 
-@section('header_left')
-    <h1 style="margin: 0; font-size: 1.25rem; font-weight: 600;">{{ __('OBE Analytics') }}</h1>
-@endsection
+
 
 @section('content')
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('OBE Analytics') }}</h4>
+        </div>
+    </div>
+    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Academic & OBE') }}</a></li>
+            <li class="breadcrumb-item active"><a href="javascript:void(0);">{{ __('OBE Analytics') }}</a></li>
+        </ol>
+    </div>
+</div>
+
 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
     <!-- Main Charts & Tables -->
     <div style="display: flex; flex-direction: column; gap: 1.5rem;">

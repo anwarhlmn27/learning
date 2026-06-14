@@ -1,20 +1,32 @@
 @extends('layouts.admin')
 
-@section('title', 'Course (Subject) Management')
+@section('title', __('Course (Subject) Management'))
 
-@section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Subjects Management</h1>
-@endsection
+
 
 @section('content')
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('Courses') }}</h4>
+        </div>
+    </div>
+    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Academic & OBE') }}</a></li>
+            <li class="breadcrumb-item active"><a href="javascript:void(0);">{{ __('Courses') }}</a></li>
+        </ol>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
-        <span>Select Study Program (Prodi) to View Subjects</span>
-        <a href="{{ route('subjects.create') }}" class="btn btn-primary">Add New Subject</a>
+        <span>{{ __('Select Study Program (Prodi) to View Subjects') }}</span>
+        <a href="{{ route('subjects.create') }}" class="btn btn-primary">{{ __('Add New Subject') }}</a>
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th>{{ __('Prodi Code') }}</th>
@@ -32,19 +44,19 @@
                             <td>{{ $prodi->fakultas->nama_fakultas }}</td>
                             <td>
                                 <span class="badge" style="background: #e0e7ff; color: #4338ca; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
-                                    {{ $prodi->subjects_count ?? 0 }} Subjects
+                                    {{ $prodi->subjects_count ?? 0 }} {{ __('Subjects') }}
                                 </span>
                             </td>
                             <td>
                                 <a href="{{ route('subjects.prodi', $prodi->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; text-decoration: none;">
-                                    View Subjects
+                                    {{ __('View Subjects') }}
                                 </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                                No Study Programs found. Please add a Study Program first.
+                                {{ __('No Study Programs found. Please add a Study Program first.') }}
                             </td>
                         </tr>
                     @endforelse

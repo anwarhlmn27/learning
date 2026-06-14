@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Subjects for ' . $prodi->nama_prodi)
+@section('title', __('Subjects for') . ' ' . $prodi->nama_prodi)
 
 @section('header_left')
     <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">{{ __('Subjects') }}: {{ $prodi->nama_prodi }}</h1>
@@ -8,7 +8,7 @@
 
 @section('content')
 <div style="margin-bottom: 1rem;">
-    <a href="{{ route('subjects.index') }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #f3f4f6; color: #1f2937; text-decoration: none; border-radius: 4px; border: 1px solid #e5e7eb;">&larr; {{ __('Back to Prodi List') }}</a>
+    <a href="{{ route('subjects.index') }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #f3f4f6; color: #1f2937; text-decoration: none; border-radius: 4px; border: 1px solid #e5e7eb;">&larr; {{ __('Back') }}</a>
 </div>
 
 <div class="card">
@@ -28,7 +28,7 @@
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th>{{ __('Code') }}</th>
@@ -73,18 +73,18 @@
                             </td>
                             <td>
                                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                    <a href="{{ route('subjects.edit', $s->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>
-                                    <form action="{{ route('subjects.destroy', $s->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this subject?')">
+                                    <a href="{{ route('subjects.edit', $s->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Edit') }}</a>
+                                    <form action="{{ route('subjects.destroy', $s->id) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this?') }}')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
+                                        <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">{{ __('No subjects found for this Prodi.') }}</td>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">{{ __('No data found.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -103,7 +103,7 @@
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th style="width: 40px; text-align: center;">{{ __('No') }}</th>

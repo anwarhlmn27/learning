@@ -8,7 +8,7 @@
 
 @section('content')
 <div style="margin-bottom: 2rem;">
-    <a href="{{ route('clo.index') }}" style="color: var(--text-muted); font-size: 0.875rem;">← Back to Subject List</a>
+    <a href="{{ route('clo.index') }}" class="btn btn-warning btn-sm">Back to Subject List</a>
 </div>
 
 {{-- Subject Info Card --}}
@@ -47,7 +47,7 @@
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th style="width: 5%;">#</th>

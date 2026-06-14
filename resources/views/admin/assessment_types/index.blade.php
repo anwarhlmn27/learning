@@ -1,15 +1,27 @@
 @extends('layouts.admin')
 
-@section('title', 'Assessment Types Management')
+@section('title', __('Assessment Types Management'))
 
-@section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Assessment Types</h1>
-@endsection
+
 
 @section('content')
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('Assessment Types') }}</h4>
+        </div>
+    </div>
+    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Settings') }}</a></li>
+            <li class="breadcrumb-item active"><a href="javascript:void(0);">{{ __('Assessment Types') }}</a></li>
+        </ol>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
-        <span>Assessment Types Master Data</span>
+        <span>{{ __('Assessment Types Master Data') }}</span>
     </div>
     <div class="card-body">
         <form action="{{ route('assessment_types.store') }}" method="POST" style="margin-bottom: 2rem;">
@@ -23,13 +35,13 @@
                     @enderror
                 </div>
                 <div>
-                    <button type="submit" class="btn btn-primary" style="height: 38px;">+ Add Type</button>
+                    <button type="submit" class="btn btn-primary" style="height: 38px;">+ {{ __('Add Item') }}</button>
                 </div>
             </div>
         </form>
 
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th style="width: 5%;">{{ __('No') }}</th>
@@ -46,21 +58,21 @@
                                     @csrf
                                     @method('PUT')
                                     <input type="text" name="name" value="{{ $type->name }}" class="form-control" style="padding: 0.25rem 0.5rem;" required>
-                                    <button type="submit" class="btn btn-success" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">Update</button>
+                                    <button type="submit" class="btn btn-success" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">{{ __('Update Data') }}</button>
                                 </form>
                             </td>
                             <td>
-                                <form action="{{ route('assessment_types.destroy', $type->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this type?')">
+                                <form action="{{ route('assessment_types.destroy', $type->id) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this?') }}')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">Delete</button>
+                                    <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">{{ __('Delete') }}</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                                No Assessment Types found.
+                                {{ __('No data found.') }}
                             </td>
                         </tr>
                     @endforelse

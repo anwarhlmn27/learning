@@ -1,20 +1,32 @@
 @extends('layouts.admin')
 
-@section('title', 'Study Program Data')
+@section('title', __('Study Program Data'))
 
-@section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Study Program Data</h1>
-@endsection
+
 
 @section('content')
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('Study Program Data') }}</h4>
+        </div>
+    </div>
+    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Institution') }}</a></li>
+            <li class="breadcrumb-item active"><a href="javascript:void(0);">{{ __('Study Program') }}</a></li>
+        </ol>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
-        <span>Study Program List</span>
+        <span>{{ __('Study Program List') }}</span>
         <a href="{{ route('prodi.create') }}" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">Add Study Program</a>
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th>{{ __('University') }}</th>
@@ -22,7 +34,7 @@
                         <th>{{ __('Code') }}</th>
                         <th>{{ __('Abbreviation') }}</th>
                         <th>{{ __('Study Program Name') }}</th>
-                        <th>Leader (Head of SP)</th>
+                        <th>{{ __('Leader (Head of SP)') }}</th>
                         <th style="width: 150px;">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -37,11 +49,11 @@
                         <td>{{ $p->kaprodi->name ?? '-' }}</td>
                         <td>
                             <div style="display: flex; gap: 0.5rem;">
-                                <a href="{{ route('prodi.edit', $p->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>
+                                <a href="{{ route('prodi.edit', $p->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Edit') }}</a>
                                 <form action="{{ route('prodi.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
+                                    <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>
                                 </form>
                             </div>
                         </td>

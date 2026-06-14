@@ -1,14 +1,14 @@
 @extends('layouts.admin')
 
-@section('title', 'Manage Graduate Profile - ' . $prodi->nama_prodi)
+@section('title', __('Manage Graduate Profile') . ' - ' . $prodi->nama_prodi)
 
 @section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Manage GP: {{ $prodi->nama_prodi }}</h1>
+    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">{{ __('Manage GP:') }} {{ $prodi->nama_prodi }}</h1>
 @endsection
 
 @section('content')
 <div style="margin-bottom: 2rem;">
-    <a href="{{ route('gp.index') }}" style="color: var(--text-muted); font-size: 0.875rem;">← Back to List</a>
+    <a href="{{ route('gp.index') }}" class="btn btn-warning btn-sm">{{ __(' Back to List') }}</a>
 </div>
 
 
@@ -36,12 +36,12 @@
     <!-- LEFT: Graduate Profiles (Expertise) -->
     <div class="card">
         <div class="card-header">
-            <span>Profile Items (Expertise)</span>
-            <button onclick="showProfileModal()" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">+ Add Item</button>
+            <span>{{ __('Profile Items (Expertise)') }}</span>
+            <button onclick="showProfileModal()" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">+ {{ __('Add Item') }}</button>
         </div>
         <div class="card-body" style="padding: 0;">
             <div style="overflow-x: auto;">
-                <table>
+                <table class="table table-responsive-md">
                     <thead>
                         <tr>
                             <th>{{ __('Code') }}</th>
@@ -74,14 +74,14 @@
                                             data-kompetensi="{{ $gp->kompetensi }}"
                                             data-sumber_acuan="{{ $gp->sumber_acuan }}"
                                             data-stakeholders="{{ $gp->stakeholders }}"
-                                            data-status="{{ $gp->status }}">Edit</button>
+                                            data-status="{{ $gp->status }}">{{ __('Edit') }}</button>
                                         <button type="button" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
-                                            onclick="if(confirm('Delete this profile item?')) document.getElementById('delete-profile-{{ $gp->id }}').submit();">Delete</button>
+                                            onclick="if(confirm('{{ __('Delete this profile item?') }}')) document.getElementById('delete-profile-{{ $gp->id }}').submit();">{{ __('Delete') }}</button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No profiles added.</td></tr>
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">{{ __('No data found.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -92,7 +92,7 @@
     <!-- RIGHT: Supporting Documents -->
     <div class="card">
         <div class="card-header">
-            <span>Supporting Documents</span>
+            <span>{{ __('Supporting Documents') }}</span>
         </div>
         <div class="card-body">
             <!-- Upload Form -->
@@ -121,23 +121,23 @@
                         <small style="color: #dc2626; font-size: 0.75rem;">{{ $message }}</small>
                     @enderror
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Upload Attachment</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">{{ __('Upload Attachment') }}</button>
             </form>
 
             <!-- Attachments List -->
-            <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem;">Uploaded Files</h4>
+            <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem;">{{ __('Uploaded Files') }}</h4>
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 @forelse($prodi->gpAttachments as $att)
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb;">
                         <div>
                             <div style="font-weight: 600; font-size: 0.875rem;">{{ $att->nm_dokumen }}</div>
-                            <a href="{{ asset('storage/' . $att->file_path) }}" target="_blank" style="font-size: 0.75rem; color: var(--primary);">View File</a>
+                            <a href="{{ asset('storage/' . $att->file_path) }}" target="_blank" style="font-size: 0.75rem; color: var(--primary);">{{ __('View File') }}</a>
                         </div>
                         <button type="button" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.25rem;"
-                            onclick="if(confirm('Remove this attachment?')) document.getElementById('delete-attachment-{{ $att->id }}').submit();">×</button>
+                            onclick="if(confirm('{{ __('Remove this attachment?') }}')) document.getElementById('delete-attachment-{{ $att->id }}').submit();">×</button>
                     </div>
                 @empty
-                    <div style="text-align: center; color: var(--text-muted); font-size: 0.875rem;">No attachments uploaded.</div>
+                    <div style="text-align: center; color: var(--text-muted); font-size: 0.875rem;">{{ __('No data found.') }}</div>
                 @endforelse
             </div>
         </div>
@@ -148,7 +148,7 @@
 <div id="profileModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem;">
     <div class="card" style="width: 100%; max-width: 800px; margin: 0; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
         <div class="card-header" style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;">
-            <span id="modalTitle" style="font-weight: 600; font-size: 1.125rem;">Add Profile Item</span>
+            <span id="modalTitle" style="font-weight: 600; font-size: 1.125rem;">{{ __('Add Profile Item') }}</span>
             <button type="button" onclick="closeProfileModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1;">&times;</button>
         </div>
         <div class="card-body" style="overflow-y: auto; padding: 1.5rem;">
@@ -168,10 +168,10 @@
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label">{{ __('Status') }} <span style="color: red;">*</span></label>
                         <select name="status" id="field_status" class="form-control" required>
-                            <option value="Draft">Draft</option>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Revisi">Revisi</option>
-                            <option value="Tidak Aktif">Tidak Aktif</option>
+                            <option value="Draft">{{ __('Draft') }}</option>
+                            <option value="Aktif">{{ __('Aktif') }}</option>
+                            <option value="Revisi">{{ __('Revisi') }}</option>
+                            <option value="Tidak Aktif">{{ __('Tidak Aktif') }}</option>
                         </select>
                     </div>
                 </div>
@@ -205,8 +205,8 @@
                         </div>
                         <div style="display: flex; align-items: flex-end; justify-content: flex-end; flex: 1; margin-top: 1rem;">
                             <div style="display: flex; gap: 0.75rem; width: 100%;">
-                                <button type="button" onclick="closeProfileModal()" class="btn" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;">Cancel</button>
-                                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Profile</button>
+                                <button type="button" onclick="closeProfileModal()" class="btn" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;">{{ __('Cancel') }}</button>
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">{{ __('Save Data') }}</button>
                             </div>
                         </div>
                     </div>
@@ -218,7 +218,7 @@
 
 <script>
     function showProfileModal() {
-        document.getElementById('modalTitle').textContent = 'Add Profile Item';
+        document.getElementById('modalTitle').textContent = '{{ __('Add Profile Item') }}';
         document.getElementById('profileForm').action = "{{ route('gp.profile.store', $prodi->id) }}";
         document.getElementById('formMethod').value = 'POST';
         document.getElementById('field_kode_profil').value = '';
@@ -233,7 +233,7 @@
     }
 
     function editProfile(data) {
-        document.getElementById('modalTitle').textContent = 'Edit Profile Item';
+        document.getElementById('modalTitle').textContent = '{{ __('Edit Profile Item') }}';
         let updateUrl = "{{ route('gp.profile.update', ':id') }}";
         document.getElementById('profileForm').action = updateUrl.replace(':id', data.id);
         document.getElementById('formMethod').value = 'PUT';

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Add Subject')
+@section('title', __('Add Subject'))
 
 @section('styles')
 <style>
@@ -18,14 +18,14 @@
 @endsection
 
 @section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Add Subject</h1>
+    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">{{ __('Add Subject') }}</h1>
 @endsection
 
 @section('content')
 <div class="card" style="max-width: 800px; margin: 0 auto;">
     <div class="card-header">
-        <span>Subject Form</span>
-        <a href="{{ route('subjects.index') }}" style="font-size: 0.875rem; color: var(--text-muted);">Back</a>
+        <h4 class="card-title">{{ __('Subject Form') }}</h4>
+        <a href="{{ route('subjects.index') }}" class="btn btn-warning btn-sm">{{ __('Back') }}</a>
     </div>
     <div class="card-body">
         @if($errors->any())
@@ -44,7 +44,7 @@
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label class="form-label">{{ __('Program Studi') }} <span style="color: red;">*</span></label>
                 <select name="id_prodi" class="form-control" required>
-                    <option value="">-- Select Program Studi --</option>
+                    <option value="">-- {{ __('Select Program Studi') }} --</option>
                     @foreach($prodis as $prodi)
                         <option value="{{ $prodi->id }}" {{ old('id_prodi', $selected_prodi_id) == $prodi->id ? 'selected' : '' }}>
                             {{ $prodi->nama_prodi }}
@@ -83,7 +83,7 @@
                     <input type="number" name="sks_pl" id="sks_pl" class="form-control" min="0" required value="{{ old('sks_pl', 0) }}">
                 </div>
                 <div class="form-group">
-                    <label class="form-label"><b>Total SKS</b></label>
+                    <label class="form-label"><b>{{ __('Total SKS') }}</b></label>
                     <input type="number" name="total_sks" id="total_sks" class="form-control" readonly value="{{ old('total_sks', 0) }}">
                 </div>
             </div>
@@ -120,7 +120,7 @@
                 <div class="custom-multiselect-container" style="position: relative; width: 100%;">
                     <!-- Control box (the input box that shows selected items) -->
                     <div class="multiselect-control" id="prereq-control" style="min-height: 38px; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.375rem 0.75rem; background: #fff; cursor: pointer; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center; justify-content: space-between; transition: border-color 0.15s, box-shadow 0.15s;">
-                        <div id="prereq-placeholder" style="color: #6b7280; font-size: 0.875rem;">Select Prerequisite Subjects...</div>
+                        <div id="prereq-placeholder" style="color: #6b7280; font-size: 0.875rem;">{{ __('Select Prerequisite Subjects...') }}</div>
                         <div id="prereq-tags" style="display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center;"></div>
                         <span style="font-size: 0.75rem; color: #6b7280; margin-left: auto;">▼</span>
                     </div>
@@ -141,7 +141,7 @@
                         </div>
                     </div>
                 </div>
-                <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">You can select multiple prerequisite subjects for this course.</small>
+                <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; display: block;">{{ __('You can select multiple prerequisite subjects for this course.') }}</small>
             </div>
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -194,7 +194,7 @@
             </div>
 
             <div style="margin-top: 1rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; display: flex; justify-content: flex-end;">
-                <button type="submit" class="btn btn-primary">Save Subject</button>
+                <button type="submit" class="btn btn-primary">{{ __('Save Data') }}</button>
             </div>
         </form>
     </div>

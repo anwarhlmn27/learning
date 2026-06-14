@@ -9,120 +9,146 @@
 ═══════════════════════════════════════════════════════════════════════════════ --}}
 @if(Auth::user()->hasRole(['admin', 'rektor', 'dekan']))
 
-<style>
-    .prodi-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-        gap: 1.25rem;
-        margin-top: 0.5rem;
-    }
-    .prodi-card {
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-        padding: 1.4rem 1.5rem 1.25rem;
-        border-top: 4px solid var(--primary);
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        transition: transform 0.18s, box-shadow 0.18s;
-        cursor: pointer;
-        text-decoration: none;
-        color: inherit;
-    }
-    .prodi-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 28px rgba(79,70,229,0.13);
-    }
-    .prodi-card-badge {
-        display: inline-block;
-        background: rgba(79,70,229,0.08);
-        color: var(--primary);
-        border-radius: 6px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        padding: 2px 8px;
-        margin-bottom: 0.4rem;
-        text-transform: uppercase;
-    }
-    .prodi-card h3 {
-        margin: 0;
-        font-size: 1rem;
-        font-weight: 700;
-        color: #111827;
-        line-height: 1.35;
-    }
-    .prodi-card .prodi-meta {
-        font-size: 0.8rem;
-        color: #6b7280;
-        margin: 0;
-    }
-    .prodi-card .prodi-actions {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        margin-top: 0.85rem;
-        padding-top: 0.85rem;
-        border-top: 1px solid #f3f4f6;
-    }
-    .prodi-action-btn {
-        flex: 1;
-        text-align: center;
-        padding: 0.4rem 0.6rem;
-        border-radius: 7px;
-        font-size: 0.78rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: background 0.15s;
-        white-space: nowrap;
-    }
-    .prodi-action-btn.btn-primary { background: var(--primary); color: #fff; }
-    .prodi-action-btn.btn-primary:hover { background: #4338ca; }
-    .prodi-action-btn.btn-outline { background: #f3f4f6; color: #374151; }
-    .prodi-action-btn.btn-outline:hover { background: #e5e7eb; }
-    .prodi-action-btn.btn-archive { background: #fff7ed; color: #c2410c; }
-    .prodi-action-btn.btn-archive:hover { background: #ffedd5; }
-</style>
-
-<div style="margin-bottom: 1.5rem;">
-    <h2 style="margin: 0 0 0.25rem; font-size: 1.35rem; font-weight: 700; color: #111827;">{{ __('Program Studi') }}</h2>
-    <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">{{ __('Pilih program studi untuk mengelola kelas, dosen, dan mahasiswa.') }}</p>
+<div class="row page-titles mx-0">
+    <div class="col-sm-12 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('Program Studi') }}</h4>
+            <p class="mb-0 text-muted">{{ __('Pilih program studi untuk mengelola kelas, dosen, dan mahasiswa.') }}</p>
+        </div>
+    </div>
 </div>
 
 @if($prodis->count() === 0)
-    <div style="text-align:center; padding: 3rem; color: #9ca3af;">
-        <p style="font-size: 2rem;">🏫</p>
-        <p>{{ __('Belum ada data Program Studi. Tambahkan melalui') }} <a href="{{ route('prodi.index') }}">{{ __('halaman Prodi') }}</a>.</p>
-    </div>
-@else
-<div class="prodi-grid">
-    @foreach($prodis as $prodi)
-    <div class="prodi-card">
-        <span class="prodi-card-badge">{{ $prodi->kode_prodi ?? 'PRD' }}</span>
-        <h3>{{ $prodi->nama_prodi }}</h3>
-        <p class="prodi-meta">
-            📍 {{ $prodi->fakultas->nama_fakultas ?? '-' }}<br>
-            👤 Kaprodi: {!! $prodi->kaprodi->name ?? '<em>' . __('Belum ditentukan') . '</em>' !!}
-        </p>
-        <div class="prodi-actions">
-            <a href="{{ route('classes.index', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-primary">📚 {{ __('Kelas') }}</a>
-            <a href="{{ route('classes.archived', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-archive">🗃 {{ __('Arsip') }}</a>
-            <a href="{{ route('dosen.index', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-outline">👨‍🏫 {{ __('Dosen') }}</a>
-            <a href="{{ route('mahasiswa.index', ['prodi_id' => $prodi->id]) }}" class="prodi-action-btn btn-outline">🎓 {{ __('Mhs') }}</a>
+    <div class="row">
+        <div class="col-12">
+            <div class="card text-center p-5">
+                <div class="card-body">
+                    <p style="font-size: 2.5rem; margin-bottom: 1rem;">🏫</p>
+                    <h4 class="text-muted">{{ __('Belum ada data Program Studi.') }}</h4>
+                    <a href="{{ route('prodi.index') }}" class="btn btn-primary btn-sm mt-3">{{ __('Tambahkan melalui halaman Prodi') }}</a>
+                </div>
+            </div>
         </div>
     </div>
-    @endforeach
-</div>
+@else
+    @php
+        $cardColors = [
+            [
+                'bg' => 'bg-primary',
+                'badge' => 'badge-light text-primary',
+                'title_color' => 'text-white',
+                'icon_color' => 'text-white',
+                'meta_label_color' => 'text-white-50',
+                'meta_value_color' => 'text-white',
+                'border_color' => 'rgba(255, 255, 255, 0.15)',
+                'btn_kelas' => 'btn-light text-primary',
+                'btn_others' => 'btn-outline-light text-white'
+            ],
+            [
+                'bg' => 'bg-secondary',
+                'badge' => 'badge-light text-secondary',
+                'title_color' => 'text-white',
+                'icon_color' => 'text-white',
+                'meta_label_color' => 'text-white-50',
+                'meta_value_color' => 'text-white',
+                'border_color' => 'rgba(255, 255, 255, 0.15)',
+                'btn_kelas' => 'btn-light text-secondary',
+                'btn_others' => 'btn-outline-light text-white'
+            ],
+            [
+                'bg' => 'bg-success',
+                'badge' => 'badge-light text-success',
+                'title_color' => 'text-white',
+                'icon_color' => 'text-white',
+                'meta_label_color' => 'text-white-50',
+                'meta_value_color' => 'text-white',
+                'border_color' => 'rgba(255, 255, 255, 0.15)',
+                'btn_kelas' => 'btn-light text-success',
+                'btn_others' => 'btn-outline-light text-white'
+            ],
+            [
+                'bg' => 'bg-warning',
+                'badge' => 'badge-light text-warning',
+                'title_color' => 'text-white',
+                'icon_color' => 'text-white',
+                'meta_label_color' => 'text-white-50',
+                'meta_value_color' => 'text-white',
+                'border_color' => 'rgba(255, 255, 255, 0.15)',
+                'btn_kelas' => 'btn-light text-warning',
+                'btn_others' => 'btn-outline-light text-white'
+            ],
+            [
+                'bg' => 'bg-danger',
+                'badge' => 'badge-light text-danger',
+                'title_color' => 'text-white',
+                'icon_color' => 'text-white',
+                'meta_label_color' => 'text-white-50',
+                'meta_value_color' => 'text-white',
+                'border_color' => 'rgba(255, 255, 255, 0.15)',
+                'btn_kelas' => 'btn-light text-danger',
+                'btn_others' => 'btn-outline-light text-white'
+            ],
+            [
+                'bg' => 'bg-info',
+                'badge' => 'badge-light text-info',
+                'title_color' => 'text-white',
+                'icon_color' => 'text-white',
+                'meta_label_color' => 'text-white-50',
+                'meta_value_color' => 'text-white',
+                'border_color' => 'rgba(255, 255, 255, 0.15)',
+                'btn_kelas' => 'btn-light text-info',
+                'btn_others' => 'btn-outline-light text-white'
+            ]
+        ];
+    @endphp
+    <div class="row">
+        @foreach($prodis as $index => $prodi)
+        @php
+            $color = $cardColors[$index % count($cardColors)];
+        @endphp
+        <div class="col-xl-4 col-xxl-6 col-lg-6 col-md-6 col-sm-12 mb-4">
+            <div class="card h-100 mb-0 shadow-sm {{ $color['bg'] }}">
+                <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center" style="background: transparent;">
+                    <span class="badge badge-xs {{ $color['badge'] }} font-w600">{{ $prodi->kode_prodi ?? 'PRD' }}</span>
+                </div>
+                <div class="card-body pt-2 d-flex flex-column justify-content-between">
+                    <div>
+                        <h4 class="card-title {{ $color['title_color'] }} mb-3" style="font-size: 1.15rem; font-weight: 700;">{{ $prodi->nama_prodi }}</h4>
+                        <ul class="list-group mb-4 list-group-flush" style="background: transparent;">
+                            <li class="list-group-item px-0 border-top-0 d-flex justify-content-between align-items-start" style="font-size: 0.85rem; background: transparent; border-color: {{ $color['border_color'] }};">
+                                <span class="{{ $color['meta_label_color'] }}"><i class="fa fa-map-marker {{ $color['icon_color'] }} me-2"></i>{{ __('Fakultas') }} :</span>
+                                <span class="{{ $color['meta_value_color'] }} font-w600 text-end" style="max-width: 60%;">{{ $prodi->fakultas->nama_fakultas ?? '-' }}</span>
+                            </li>
+                            <li class="list-group-item px-0 d-flex justify-content-between align-items-center" style="font-size: 0.85rem; background: transparent; border-color: {{ $color['border_color'] }};">
+                                <span class="{{ $color['meta_label_color'] }}"><i class="fa fa-user {{ $color['icon_color'] }} me-2"></i>{{ __('Kaprodi') }} :</span>
+                                <span class="{{ $color['meta_value_color'] }} font-w600">{!! $prodi->kaprodi->name ?? '<span class="text-white-50 italic">' . __('Belum ditentukan') . '</span>' !!}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap mt-auto">
+                        <a href="{{ route('classes.index', ['prodi_id' => $prodi->id]) }}" class="btn {{ $color['btn_kelas'] }} btn-xs flex-fill py-2 font-w600">📚 {{ __('Kelas') }}</a>
+                        <a href="{{ route('classes.archived', ['prodi_id' => $prodi->id]) }}" class="btn {{ $color['btn_others'] }} btn-xs flex-fill py-2">🗃 {{ __('Arsip') }}</a>
+                        <a href="{{ route('dosen.index', ['prodi_id' => $prodi->id]) }}" class="btn {{ $color['btn_others'] }} btn-xs flex-fill py-2">👨‍🏫 {{ __('Dosen') }}</a>
+                        <a href="{{ route('mahasiswa.index', ['prodi_id' => $prodi->id]) }}" class="btn {{ $color['btn_others'] }} btn-xs flex-fill py-2">🎓 {{ __('Mhs') }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
 @endif
 
 {{-- Link ke OBE Dashboard --}}
-<div style="margin-top: 2rem; background: #eff6ff; border-left: 4px solid #3b82f6; padding: 1rem 1.5rem; border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <h4 style="margin: 0 0 0.2rem; color: #1e3a8a;">{{ __('Sistem OBE') }}</h4>
-        <p style="margin: 0; font-size: 0.85rem; color: #3b82f6;">{{ __('Kelola kurikulum, PLO, RPS, dan analitik OBE.') }}</p>
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="alert alert-info alert-dismissible fade show p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center shadow-sm" style="border-left: 5px solid #3b82f6 !important; background-color: #eff6ff;">
+            <div class="mb-3 mb-md-0">
+                <h4 class="alert-heading text-primary mb-1" style="font-weight: 700; font-size: 1.1rem;">{{ __('Sistem OBE') }}</h4>
+                <p class="mb-0 text-muted" style="font-size: 0.875rem;">{{ __('Kelola kurikulum, PLO, RPS, dan analitik OBE.') }}</p>
+            </div>
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-sm px-4 py-2 text-nowrap">{!! __('Masuk ke OBE &rarr;') !!}</a>
+        </div>
     </div>
-    <a href="{{ route('admin.dashboard') }}" class="btn" style="background:#3b82f6; white-space:nowrap;">{!! __('Masuk ke OBE &rarr;') !!}</a>
 </div>
 
 {{-- ═══════════════════════════════════════════════════════════════════════════

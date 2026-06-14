@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
-@section('title', 'Add Vision & Mission')
+@section('title', __('Add Vision & Mission'))
 
 @section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Add Vision & Mission</h1>
+    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">{{ __('Add Vision & Mission') }}</h1>
 @endsection
 
 @section('content')
 <div class="card" style="max-width: 900px; margin: 0 auto;">
     <div class="card-header">
-        <span>Vision & Mission Form</span>
-        <a href="{{ route('visi.index') }}" style="font-size: 0.875rem; color: var(--text-muted);">Back</a>
+        <h4 class="card-title">{{ __('Vision & Mission Form') }}</h4>
+        <a href="{{ route('visi.index') }}" class="btn btn-warning btn-sm">{{ __('Back') }}</a>
     </div>
     <div class="card-body">
         <form action="{{ route('visi.store') }}" method="POST" enctype="multipart/form-data">
@@ -20,16 +20,16 @@
                 <div class="form-group">
                     <label class="form-label">{{ __('Entity Type') }} <span style="color: red;">*</span></label>
                     <select name="entity_type" id="entity_type" class="form-control" required onchange="toggleEntities()">
-                        <option value="">-- Select Type --</option>
-                        <option value="Univ" {{ old('entity_type') == 'Univ' ? 'selected' : '' }}>University</option>
-                        <option value="Fakultas" {{ old('entity_type') == 'Fakultas' ? 'selected' : '' }}>Faculty</option>
-                        <option value="Prodi" {{ old('entity_type') == 'Prodi' ? 'selected' : '' }}>Study Program</option>
+                        <option value="">-- {{ __('Select Type') }} --</option>
+                        <option value="Univ" {{ old('entity_type') == 'Univ' ? 'selected' : '' }}>{{ __('University') }}</option>
+                        <option value="Fakultas" {{ old('entity_type') == 'Fakultas' ? 'selected' : '' }}>{{ __('Faculty') }}</option>
+                        <option value="Prodi" {{ old('entity_type') == 'Prodi' ? 'selected' : '' }}>{{ __('Study Program') }}</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">{{ __('Select Target Entity') }} <span style="color: red;">*</span></label>
                     <select name="entity_id" id="entity_id" class="form-control @error('entity_id') is-invalid @enderror" required>
-                        <option value="">-- Select Entity --</option>
+                        <option value="">-- {{ __('Select Entity') }} --</option>
                     </select>
                     @error('entity_id')
                         <div class="invalid-feedback" style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">{{ $message }}</div>
@@ -47,8 +47,8 @@
 
             <div class="dynamic-section" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">Missions (Misi)</h3>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('misi-container', 'misi[]', 'Enter Mission')">+ Add Misi</button>
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">{{ __('Missions (Misi)') }}</h3>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('misi-container', 'misi[]', '{{ __('Enter Mission') }}')">+ {{ __('Add Item') }}</button>
                 </div>
                 <div id="misi-container">
                     @if(old('misi'))
@@ -76,8 +76,8 @@
 
             <div class="dynamic-section" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">Objectives (Tujuan)</h3>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('tujuan-container', 'tujuan[]', 'Enter Objective')">+ Add Tujuan</button>
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">{{ __('Objectives (Tujuan)') }}</h3>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('tujuan-container', 'tujuan[]', '{{ __('Enter Objective') }}')">+ {{ __('Add Item') }}</button>
                 </div>
                 <div id="tujuan-container">
                     @if(old('tujuan'))
@@ -93,8 +93,8 @@
 
             <div class="dynamic-section" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">Strategies (Strategi)</h3>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('strategi-container', 'strategi[]', 'Enter Strategy')">+ Add Strategi</button>
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">{{ __('Strategies (Strategi)') }}</h3>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('strategi-container', 'strategi[]', '{{ __('Enter Strategy') }}')">+ {{ __('Add Item') }}</button>
                 </div>
                 <div id="strategi-container">
                     @if(old('strategi'))
@@ -108,7 +108,7 @@
                 </div>
             </div>
 
-            <h3 style="font-size: 1rem; font-weight: 600; margin: 1.5rem 0 1rem 0; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; color: var(--primary);">Supporting Documents</h3>
+            <h3 style="font-size: 1rem; font-weight: 600; margin: 1.5rem 0 1rem 0; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; color: var(--primary);">{{ __('Supporting Documents') }}</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 <div class="form-group">
                     <label class="form-label">{{ __('Doc. Penyusunan') }} </label>
@@ -141,7 +141,7 @@
             </div>
 
             <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
-                <button type="submit" class="btn btn-primary">Save Vision & Mission</button>
+                <button type="submit" class="btn btn-primary">{{ __('Save Data') }}</button>
             </div>
         </form>
     </div>
@@ -159,7 +159,7 @@
     function toggleEntities() {
         const type = document.getElementById('entity_type').value;
         const select = document.getElementById('entity_id');
-        select.innerHTML = '<option value="">-- Select Entity --</option>';
+        select.innerHTML = '<option value="">-- {{ __('Select Entity') }} --</option>';
 
         if (type && data[type]) {
             data[type].forEach(item => {

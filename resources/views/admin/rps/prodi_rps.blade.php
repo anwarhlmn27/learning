@@ -8,7 +8,7 @@
 
 @section('content')
 <div style="margin-bottom: 1.5rem;">
-    <a href="{{ route('admin.rps.index') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem;">← Back to Prodi List</a>
+    <a href="{{ route('admin.rps.index') }}" class="btn btn-warning btn-sm">← Back to Prodi List</a>
 </div>
 
 <div class="card">
@@ -18,7 +18,7 @@
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table id="rpsTable">
+            <table id="rpsTable" class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th>{{ __('Subject') }}</th>

@@ -2,11 +2,23 @@
 
 @section('title', 'CPMK (CLO)')
 
-@section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Course Learning Outcomes (CPMK / CLO)</h1>
-@endsection
+
 
 @section('content')
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('CPMK (CLO)') }}</h4>
+        </div>
+    </div>
+    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Academic & OBE') }}</a></li>
+            <li class="breadcrumb-item active"><a href="javascript:void(0);">{{ __('CPMK (CLO)') }}</a></li>
+        </ol>
+    </div>
+</div>
+
 
 <div class="card">
     <div class="card-header">
@@ -14,7 +26,7 @@
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th>{{ __('Prodi Code') }}</th>

@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Vision & Mission')
+@section('title', __('Edit Vision & Mission'))
 
 @section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Edit Vision & Mission</h1>
+    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">{{ __('Edit Vision & Mission') }}</h1>
 @endsection
 
 @section('content')
 <div class="card" style="max-width: 900px; margin: 0 auto;">
     <div class="card-header">
-        <span>Edit Vision & Mission Form</span>
-        <a href="{{ route('visi.index') }}" style="font-size: 0.875rem; color: var(--text-muted);">Back</a>
+        <h4 class="card-title">{{ __('Edit Vision & Mission Form') }}</h4>
+        <a href="{{ route('visi.index') }}" class="btn btn-warning btn-sm">{{ __('Back') }}</a>
     </div>
     <div class="card-body">
         <form action="{{ route('visi.update', $visi->id) }}" method="POST" enctype="multipart/form-data">
@@ -46,8 +46,8 @@
 
             <div class="dynamic-section" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">Missions (Misi)</h3>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('misi-container', 'misi[]', 'Enter Mission')">+ Add Misi</button>
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">{{ __('Missions (Misi)') }}</h3>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('misi-container', 'misi[]', '{{ __('Enter Mission') }}')">+ {{ __('Add Item') }}</button>
                 </div>
                 <div id="misi-container">
                     @foreach($oldMisi as $i => $val)
@@ -69,8 +69,8 @@
 
             <div class="dynamic-section" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">Objectives (Tujuan)</h3>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('tujuan-container', 'tujuan[]', 'Enter Objective')">+ Add Tujuan</button>
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">{{ __('Objectives (Tujuan)') }}</h3>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('tujuan-container', 'tujuan[]', '{{ __('Enter Objective') }}')">+ {{ __('Add Item') }}</button>
                 </div>
                 <div id="tujuan-container">
                     @foreach($oldTujuan as $val)
@@ -84,8 +84,8 @@
 
             <div class="dynamic-section" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">Strategies (Strategi)</h3>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('strategi-container', 'strategi[]', 'Enter Strategy')">+ Add Strategi</button>
+                    <h3 style="font-size: 1rem; font-weight: 600; color: var(--primary); margin: 0;">{{ __('Strategies (Strategi)') }}</h3>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addField('strategi-container', 'strategi[]', '{{ __('Enter Strategy') }}')">+ {{ __('Add Item') }}</button>
                 </div>
                 <div id="strategi-container">
                     @foreach($oldStrategi as $val)
@@ -97,7 +97,7 @@
                 </div>
             </div>
 
-            <h3 style="font-size: 1rem; font-weight: 600; margin: 1.5rem 0 1rem 0; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; color: var(--primary);">Supporting Documents</h3>
+            <h3 style="font-size: 1rem; font-weight: 600; margin: 1.5rem 0 1rem 0; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; color: var(--primary);">{{ __('Supporting Documents') }}</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                 @php
                     $docs = [
@@ -109,10 +109,10 @@
                 @endphp
                 @foreach($docs as $field => $label)
                     <div class="form-group">
-                        <label class="form-label">{{ $label }}</label>
+                        <label class="form-label">{{ __($label) }}</label>
                         @if($visi->$field)
                             <div style="margin-bottom: 0.5rem; font-size: 0.75rem;">
-                                <a href="{{ asset('storage/' . $visi->$field) }}" target="_blank" style="color: var(--primary);">Current File</a>
+                                <a href="{{ asset('storage/' . $visi->$field) }}" target="_blank" style="color: var(--primary);">{{ __('Current File') }}</a>
                             </div>
                         @endif
                         <input type="file" name="{{ $field }}" class="form-control @error($field) is-invalid @enderror" accept=".pdf">
@@ -124,7 +124,7 @@
             </div>
 
             <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
-                <button type="submit" class="btn btn-primary">Update Vision & Mission</button>
+                <button type="submit" class="btn btn-primary">{{ __('Update Data') }}</button>
             </div>
         </form>
     </div>

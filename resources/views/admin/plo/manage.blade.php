@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Manage PLO - ' . $prodi->nama_prodi)
+@section('title', __('Manage PLO') . ' - ' . $prodi->nama_prodi)
 
 @section('styles')
 <style>
@@ -18,12 +18,12 @@
 @endsection
 
 @section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Manage PLO: {{ $prodi->nama_prodi }}</h1>
+    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">{{ __('Manage PLO:') }} {{ $prodi->nama_prodi }}</h1>
 @endsection
 
 @section('content')
 <div style="margin-bottom: 2rem;">
-    <a href="{{ route('plo.index') }}" style="color: var(--text-muted); font-size: 0.875rem;">← Back to List</a>
+    <a href="{{ route('plo.index') }}" class="btn btn-warning btn-sm">{{ __(' Back to List') }}</a>
 </div>
 
 @if($errors->has('error'))
@@ -36,18 +36,18 @@
 
 <div class="card">
     <div class="card-header">
-        <span>Program Learning Outcomes (PLO)</span>
-        <button onclick="showPloModal()" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">+ Add PLO</button>
+        <span>{{ __('Program Learning Outcomes (PLO)') }}</span>
+        <button onclick="showPloModal()" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">+ {{ __('Add PLO') }}</button>
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th>{{ __('PLO Code') }}</th>
                         <th>{{ __('PLO Title') }}</th>
                         <th>{{ __('GP References') }}</th>
-                        <th>Outcome (Rumusan)</th>
+                        <th>{{ __('Outcome (Rumusan)') }}</th>
                         <th>{{ __('Domain') }}</th>
                         <th>{{ __('Status') }}</th>
                         <th>{{ __('Actions') }}</th>
@@ -84,15 +84,15 @@
                                     $ploData = $plo->toArray();
                                     $ploData['id_gps'] = $plo->gps->pluck('id')->toArray();
                                 @endphp
-                                <button onclick='editPlo(@json($ploData))' class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</button>
-                                <form action="{{ route('plo.destroy', $plo->id) }}" method="POST" onsubmit="return confirm('Delete this PLO?')">
+                                <button onclick='editPlo(@json($ploData))' class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Edit') }}</button>
+                                <form action="{{ route('plo.destroy', $plo->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this PLO?') }}')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
+                                    <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No PLOs added yet.</td></tr>
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">{{ __('No data found.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -104,7 +104,7 @@
 <div id="ploModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 1rem;">
     <div class="card" style="width: 100%; max-width: 800px; margin: 0; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
         <div class="card-header" style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;">
-            <span id="modalTitle" style="font-weight: 600; font-size: 1.125rem;">Add PLO Item</span>
+            <span id="modalTitle" style="font-weight: 600; font-size: 1.125rem;">{{ __('Add PLO Item') }}</span>
             <button type="button" onclick="closePloModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1;">&times;</button>
         </div>
         <div class="card-body" style="overflow-y: auto; padding: 1.5rem;">
@@ -150,9 +150,9 @@
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label">{{ __('Status') }} <span style="color: red;">*</span></label>
                         <select name="status" id="field_status" class="form-control" required>
-                            <option value="Draft">Draft</option>
-                            <option value="Aktif">Aktif</option>
-                            <option value="Revisi">Revisi</option>
+                            <option value="Draft">{{ __('Draft') }}</option>
+                            <option value="Aktif">{{ __('Aktif') }}</option>
+                            <option value="Revisi">{{ __('Revisi') }}</option>
                         </select>
                     </div>
                 </div>
@@ -225,8 +225,8 @@
                         </div>
                         <div style="display: flex; align-items: flex-end; justify-content: flex-end; flex: 1; margin-top: 1rem;">
                             <div style="display: flex; gap: 0.75rem; width: 100%;">
-                                <button type="button" onclick="closePloModal()" class="btn" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;">Cancel</button>
-                                <button type="submit" class="btn btn-primary" style="flex: 1;">Save PLO</button>
+                                <button type="button" onclick="closePloModal()" class="btn" style="flex: 1; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;">{{ __('Cancel') }}</button>
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">{{ __('Save Data') }}</button>
                             </div>
                         </div>
                     </div>
@@ -359,7 +359,7 @@
     }
 
     function showPloModal() {
-        document.getElementById('modalTitle').textContent = 'Add PLO Item';
+        document.getElementById('modalTitle').textContent = '{{ __('Add PLO Item') }}';
         document.getElementById('ploForm').action = "{{ route('plo.store', $prodi->id) }}";
         document.getElementById('formMethod').value = 'POST';
         
@@ -381,7 +381,7 @@
     }
 
     function editPlo(plo) {
-        document.getElementById('modalTitle').textContent = 'Edit PLO Item';
+        document.getElementById('modalTitle').textContent = '{{ __('Edit PLO Item') }}';
         let updateUrl = "{{ route('plo.update', ':id') }}";
         document.getElementById('ploForm').action = updateUrl.replace(':id', plo.id);
         document.getElementById('formMethod').value = 'PUT';

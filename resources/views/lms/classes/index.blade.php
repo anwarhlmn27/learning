@@ -16,7 +16,7 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">{{ __('Kelas Aktif') }}</h2>
     @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-    <button class="btn" onclick="document.getElementById('modal-add').style.display = 'flex'">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAddClass">
         <i>➕</i> {{ __('Tambah Kelas') }}
     </button>
     @endif
@@ -32,9 +32,9 @@
                 <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Search') }}</label>
                 <input type="text" name="search" placeholder="{{ __('Search by class name, subject, dosen...') }}" value="{{ request('search') }}" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
             </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button type="submit" class="btn">{{ __('Filter') }}</button>
-                <a href="{{ route('classes.index') }}" class="btn btn-outline" style="text-decoration: none; display: inline-block; text-align: center;">{{ __('Reset') }}</a>
+            <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary">{{ __('Filter') }}</button>
+                <a href="{{ route('classes.index') }}" class="btn" style="background: #f3f4f6; text-decoration: none; color: inherit;">{{ __('Reset') }}</a>
             </div>
         </form>
     </div>
@@ -109,118 +109,124 @@
 
 @if(Auth::user()->hasRole(['admin', 'kaprodi']))
 <!-- Modal Add Class -->
-<div id="modal-add" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="card" style="width: 100%; max-width: 500px; margin: 1rem; max-height: 90vh; overflow-y: auto;">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10;">
-            <h3 style="margin: 0; font-size: 1.1rem;">{{ __('Add New Class') }}</h3>
-            <button onclick="document.getElementById('modal-add').style.display = 'none'" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280;">&times;</button>
-        </div>
-        <div class="card-body">
-            <form action="{{ route('classes.store') }}" method="POST">
-                @csrf
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Mata Kuliah') }} <span style="color: red;">*</span></label>
-                    <select name="subject_id" id="add-subject" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                        <option value="">-- {{ __('Pilih Mata Kuliah') }} --</option>
-                        @foreach($subjects as $subject)
-                            <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>{{ $subject->kode_subject }} - {{ $subject->nama_subject }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Dosen Pengampu') }} <span style="color: red;">*</span></label>
-                    <select name="dosen_id" id="add-dosen" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                        <option value="">-- {{ __('Pilih Dosen') }} --</option>
-                        @foreach($dosens as $dosen)
-                            <option value="{{ $dosen->id }}" {{ old('dosen_id') == $dosen->id ? 'selected' : '' }}>{{ $dosen->nama_dosen }} ({{ $dosen->nidn }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Nama Kelas (e.g. Kelas A)') }} <span style="color: red;">*</span></label>
-                    <input type="text" name="nama_kelas" required value="{{ old('nama_kelas') }}" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                </div>
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Tahun Akademik') }} <span style="color: red;">*</span></label>
-                        <input type="text" name="tahun_akademik" placeholder="e.g. 2023/2024" required value="{{ old('tahun_akademik') }}" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Semester') }} <span style="color: red;">*</span></label>
-                        <select name="semester" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                            <option value="Ganjil" {{ old('semester') == 'Ganjil' ? 'selected' : '' }}>{{ __('Ganjil') }}</option>
-                            <option value="Genap" {{ old('semester') == 'Genap' ? 'selected' : '' }}>{{ __('Genap') }}</option>
-                            <option value="Antara" {{ old('semester') == 'Antara' ? 'selected' : '' }}>{{ __('Antara') }}</option>
+<div class="modal fade" id="modalAddClass" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ __('Tambah Kelas Baru') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('classes.store') }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Mata Kuliah') }} <span class="text-danger">*</span></label>
+                        <select name="subject_id" id="add-subject" class="form-control" required>
+                            <option value="">-- {{ __('Pilih Mata Kuliah') }} --</option>
+                            @foreach($subjects as $subject)
+                                <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>{{ $subject->kode_subject }} - {{ $subject->nama_subject }}</option>
+                            @endforeach
                         </select>
                     </div>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-                    <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add').style.display = 'none'">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn">{{ __('Save Class') }}</button>
-                </div>
-            </form>
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Dosen Pengampu') }} <span class="text-danger">*</span></label>
+                        <select name="dosen_id" id="add-dosen" class="form-control" required>
+                            <option value="">-- {{ __('Pilih Dosen') }} --</option>
+                            @foreach($dosens as $dosen)
+                                <option value="{{ $dosen->id }}" {{ old('dosen_id') == $dosen->id ? 'selected' : '' }}>{{ $dosen->nama_dosen }} ({{ $dosen->nidn }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Nama Kelas (e.g. Kelas A)') }} <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_kelas" class="form-control" required value="{{ old('nama_kelas') }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-dark font-w600">{{ __('Tahun Akademik') }} <span class="text-danger">*</span></label>
+                            <input type="text" name="tahun_akademik" class="form-control" placeholder="e.g. 2023/2024" required value="{{ old('tahun_akademik') }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-dark font-w600">{{ __('Semester') }} <span class="text-danger">*</span></label>
+                            <select name="semester" class="default-select form-control wide" required>
+                                <option value="Ganjil" {{ old('semester') == 'Ganjil' ? 'selected' : '' }}>{{ __('Ganjil') }}</option>
+                                <option value="Genap" {{ old('semester') == 'Genap' ? 'selected' : '' }}>{{ __('Genap') }}</option>
+                                <option value="Antara" {{ old('semester') == 'Antara' ? 'selected' : '' }}>{{ __('Antara') }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer px-0 pb-0 mt-3 border-0">
+                        <button type="button" class="btn btn-danger light" data-bs-dismiss="modal">{{ __('Batal') }}</button>
+                        <button type="submit" class="btn btn-primary">{{ __('Simpan Kelas') }}</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Modal Edit Class -->
-<div id="modal-edit" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="card" style="width: 100%; max-width: 500px; margin: 1rem; max-height: 90vh; overflow-y: auto;">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10;">
-            <h3 style="margin: 0; font-size: 1.1rem;">{{ __('Edit Class') }}</h3>
-            <button onclick="document.getElementById('modal-edit').style.display = 'none'" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280;">&times;</button>
-        </div>
-        <div class="card-body">
-            <form id="edit-form" method="POST">
-                @csrf
-                @method('PUT')
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Mata Kuliah') }} <span style="color: red;">*</span></label>
-                    <select name="subject_id" id="edit-subject" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                        @foreach($subjects as $subject)
-                            <option value="{{ $subject->id }}">{{ $subject->kode_subject }} - {{ $subject->nama_subject }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Dosen Pengampu') }} <span style="color: red;">*</span></label>
-                    <select name="dosen_id" id="edit-dosen" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                        @foreach($dosens as $dosen)
-                            <option value="{{ $dosen->id }}">{{ $dosen->nama_dosen }} ({{ $dosen->nidn }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Nama Kelas (e.g. Kelas A)') }} <span style="color: red;">*</span></label>
-                    <input type="text" name="nama_kelas" id="edit-nama" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                </div>
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Tahun Akademik') }} <span style="color: red;">*</span></label>
-                        <input type="text" name="tahun_akademik" id="edit-tahun" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Semester') }} <span style="color: red;">*</span></label>
-                        <select name="semester" id="edit-semester" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                            <option value="Ganjil">{{ __('Ganjil') }}</option>
-                            <option value="Genap">{{ __('Genap') }}</option>
-                            <option value="Antara">{{ __('Antara') }}</option>
+<div class="modal fade" id="modalEditClass" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ __('Edit Kelas') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-form" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Mata Kuliah') }} <span class="text-danger">*</span></label>
+                        <select name="subject_id" id="edit-subject" class="form-control" required>
+                            @foreach($subjects as $subject)
+                                <option value="{{ $subject->id }}">{{ $subject->kode_subject }} - {{ $subject->nama_subject }}</option>
+                            @endforeach
                         </select>
                     </div>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Status Kelas') }} <span style="color: red;">*</span></label>
-                    <select name="status" id="edit-status" required style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
-                        <option value="active">{{ __('Aktif') }}</option>
-                        <option value="archived">{{ __('Arsip (Read-only)') }}</option>
-                    </select>
-                    <p style="font-size: 0.75rem; color: #92400e; margin-top: 0.4rem; padding: 0.4rem 0.6rem; background: #fef9c3; border-radius: 4px;">⚠️ {!! __('Jika diubah ke <strong>Arsip</strong>, semua konten kelas menjadi read-only.') !!}</p>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-                    <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-edit').style.display = 'none'">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn">{{ __('Update Class') }}</button>
-                </div>
-            </form>
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Dosen Pengampu') }} <span class="text-danger">*</span></label>
+                        <select name="dosen_id" id="edit-dosen" class="form-control" required>
+                            @foreach($dosens as $dosen)
+                                <option value="{{ $dosen->id }}">{{ $dosen->nama_dosen }} ({{ $dosen->nidn }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Nama Kelas (e.g. Kelas A)') }} <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_kelas" id="edit-nama" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-dark font-w600">{{ __('Tahun Akademik') }} <span class="text-danger">*</span></label>
+                            <input type="text" name="tahun_akademik" id="edit-tahun" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-dark font-w600">{{ __('Semester') }} <span class="text-danger">*</span></label>
+                            <select name="semester" id="edit-semester" class="default-select form-control wide" required>
+                                <option value="Ganjil">{{ __('Ganjil') }}</option>
+                                <option value="Genap">{{ __('Genap') }}</option>
+                                <option value="Antara">{{ __('Antara') }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Status Kelas') }} <span class="text-danger">*</span></label>
+                        <select name="status" id="edit-status" class="default-select form-control wide" required>
+                            <option value="active">{{ __('Aktif') }}</option>
+                            <option value="archived">{{ __('Arsip (Read-only)') }}</option>
+                        </select>
+                        <div class="alert alert-warning light mt-2 p-2" style="font-size: 0.75rem;">
+                            ⚠️ {!! __('Jika diubah ke <strong>Arsip</strong>, semua konten kelas menjadi read-only.') !!}
+                        </div>
+                    </div>
+                    <div class="modal-footer px-0 pb-0 mt-3 border-0">
+                        <button type="button" class="btn btn-danger light" data-bs-dismiss="modal">{{ __('Batal') }}</button>
+                        <button type="submit" class="btn btn-primary">{{ __('Update Kelas') }}</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -250,22 +256,22 @@
 <script>
     $(document).ready(function() {
         $('#add-subject').select2({
-            dropdownParent: $('#modal-add'),
+            dropdownParent: $('#modalAddClass'),
             width: '100%',
             placeholder: '-- Pilih Mata Kuliah --'
         });
         $('#add-dosen').select2({
-            dropdownParent: $('#modal-add'),
+            dropdownParent: $('#modalAddClass'),
             width: '100%',
             placeholder: '-- Pilih Dosen --'
         });
         
         $('#edit-subject').select2({
-            dropdownParent: $('#modal-edit'),
+            dropdownParent: $('#modalEditClass'),
             width: '100%'
         });
         $('#edit-dosen').select2({
-            dropdownParent: $('#modal-edit'),
+            dropdownParent: $('#modalEditClass'),
             width: '100%'
         });
     });
@@ -276,9 +282,13 @@
         $('#edit-dosen').val(dosen_id).trigger('change');
         document.getElementById('edit-nama').value = nama_kelas;
         document.getElementById('edit-tahun').value = tahun_akademik;
-        document.getElementById('edit-semester').value = semester;
-        document.getElementById('edit-status').value = status;
-        document.getElementById('modal-edit').style.display = 'flex';
+        
+        $('#edit-semester').val(semester);
+        $('#edit-status').val(status);
+        $('.default-select').selectpicker('refresh');
+        
+        var editModal = new bootstrap.Modal(document.getElementById('modalEditClass'));
+        editModal.show();
     }
 </script>
 @endif

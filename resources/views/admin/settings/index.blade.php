@@ -7,6 +7,20 @@
 @endsection
 
 @section('content')
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('Settings') }}</h4>
+        </div>
+    </div>
+    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Settings') }}</a></li>
+            <li class="breadcrumb-item active"><a href="javascript:void(0);">{{ __('Settings') }}</a></li>
+        </ol>
+    </div>
+</div>
+
 <div class="settings-container">
     <div class="settings-menu">
         <a class="settings-menu-item active" onclick="switchTab('personal')"><i>👤</i> {{ __('Personal Preferences') }}</a>
@@ -48,7 +62,7 @@
                         <small style="color: #6b7280; display: block; margin-top: 0.5rem;">JPG, PNG. Max 2MB.</small>
                     </div>
 
-                    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 2rem 0;">
+                    <!-- <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 2rem 0;">
 
                     <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1rem; color: var(--text-muted);">{{ __('Theme Colors') }}</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
@@ -103,7 +117,7 @@
                             <option value="Georgia, serif" {{ ($user->font_family == "Georgia, serif") ? 'selected' : '' }}>Georgia (Serif)</option>
                             <option value="'Courier New', monospace" {{ ($user->font_family == "'Courier New', monospace") ? 'selected' : '' }}>Courier New (Monospace)</option>
                         </select>
-                    </div>
+                    </div> -->
 
                     <div style="margin-top: 2rem;">
                         <button type="submit" class="btn btn-primary">{{ __('Save Personal Settings') }}</button>

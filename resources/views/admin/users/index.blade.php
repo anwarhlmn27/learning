@@ -3,6 +3,20 @@
 @section('title', 'User Management')
 
 @section('content')
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('User Management') }}</h4>
+        </div>
+    </div>
+    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Settings') }}</a></li>
+            <li class="breadcrumb-item active"><a href="javascript:void(0);">{{ __('User Management') }}</a></li>
+        </ol>
+    </div>
+</div>
+
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <h2 style="margin: 0; font-size: 1.5rem; color: #111827;">User Management</h2>
     <div style="display: flex; gap: 0.5rem;">

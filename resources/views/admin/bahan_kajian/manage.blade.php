@@ -8,7 +8,7 @@
 
 @section('content')
 <div style="margin-bottom: 2rem;">
-    <a href="{{ route('bahan_kajian.index') }}" style="color: var(--text-muted); font-size: 0.875rem;">← Back to List</a>
+    <a href="{{ route('bahan_kajian.index') }}" class="btn btn-warning btn-sm">Back to List</a>
 </div>
 
 @if($errors->has('error'))
@@ -29,7 +29,7 @@
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th>{{ __('Code') }}</th>

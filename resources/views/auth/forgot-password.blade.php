@@ -1,71 +1,87 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - Sistem OBE</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <title>Forgot Password - System Dashboard</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset(get_setting('favicon') ? 'img/favicon/' . get_setting('favicon') : 'images/logo/icon_hui.png') }}">
+	
+	<!-- STYLESHEETS -->
+	<link href="{{ asset('vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
+    <link class="main-css" rel="stylesheet" href="{{ asset('css/style.css') }}">
     <style>
         body {
-            background: linear-gradient(rgba(17, 24, 39, 0.75), rgba(17, 24, 39, 0.75)), url('{{ asset("img/gedung.jpeg") }}') center center/cover no-repeat fixed;
+            background: url('{{ asset("images/logo/gedung2.jpeg") }}') center center/cover no-repeat fixed;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.5) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
-    <div class="login-wrapper">
-        <div class="login-card">
-            <div class="login-header">
-                <div style="margin-bottom: 1rem;">
-                    <img src="{{ asset('img/logo_hui.png') }}" alt="Logo HUI" width="200">
+    <div class="fix-wrapper">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-6">
+                    <div class="card mb-0 h-auto">
+                        <div class="card-body">
+                            <div class="text-center mb-2">
+                                <a href="{{ url('/') }}">
+                                    <img src="{{ asset(get_setting('login_logo') ? 'img/logo_login/' . get_setting('login_logo') : 'images/logo/logo_hui.png') }}" alt="Logo" width="250">
+                                </a>
+                            </div>
+                            <h4 class="text-center mb-4">Forgot Password</h4>
+                            
+                            @if (session('status'))
+                                <div class="alert alert-success alert-dismissible fade show">
+                                    {{ session('status') }}
+                                </div>
+                            @endif
+
+                            @if ($errors->any())
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                            <form method="POST" action="{{ route('password.email') }}">
+                                @csrf
+                                <div class="form-group">
+                                    <label class="form-label" for="email">Email Address</label>
+                                    <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}" required autofocus placeholder="Enter your registered email">
+                                </div>
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-block">SUBMIT</button>
+                                </div>
+                            </form>
+                            
+                            <div class="new-account mt-3">
+                                <p><a class="text-primary" href="{{ route('login') }}">&larr; Back to Login</a></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h2>Reset Password</h2>
-                <p>Enter your email to receive a password reset link and OTP</p>
             </div>
-            
-            @if (session('status'))
-                <div class="alert alert-success">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                    <div>{{ session('status') }}</div>
-                </div>
-            @endif
-
-            @if ($errors->any())
-                <div class="alert alert-error">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                    </svg>
-                    <div>
-                        @foreach ($errors->all() as $error)
-                            <div style="margin-bottom: {{ $loop->last ? '0' : '0.25rem' }}">{{ $error }}</div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('password.email') }}">
-                @csrf
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <div class="input-wrapper">
-                        <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="Enter your registered email">
-                        <span class="input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        </span>
-                    </div>
-                </div>
-                
-                <button type="submit">Send Reset Link & OTP</button>
-            </form>
-
-            <a href="{{ route('login') }}" class="back-link">
-                &larr; Back to Login
-            </a>
         </div>
     </div>
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+    <script src="{{ asset('vendor/global/global.min.js') }}"></script>
+	<script src="{{ asset('vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+    
+    <script src="{{ asset('js/custom.min.js') }}"></script>
+    <script src="{{ asset('js/dlabnav-init.js') }}"></script>
 </body>
 </html>

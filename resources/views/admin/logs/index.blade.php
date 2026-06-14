@@ -3,6 +3,20 @@
 @section('title', 'System Activity Logs')
 
 @section('content')
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('System Logs') }}</h4>
+        </div>
+    </div>
+    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Settings') }}</a></li>
+            <li class="breadcrumb-item active"><a href="javascript:void(0);">{{ __('System Logs') }}</a></li>
+        </ol>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
         <h3 style="margin: 0; font-size: 1.25rem;">System Activity Logs</h3>

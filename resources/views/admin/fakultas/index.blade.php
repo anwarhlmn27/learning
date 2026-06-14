@@ -1,27 +1,39 @@
 @extends('layouts.admin')
 
-@section('title', 'Faculty Data')
+@section('title', __('Faculty Data'))
 
-@section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Faculty Data</h1>
-@endsection
+
 
 @section('content')
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>{{ __('Faculty Data') }}</h4>
+        </div>
+    </div>
+    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0);">{{ __('Institution') }}</a></li>
+            <li class="breadcrumb-item active"><a href="javascript:void(0);">{{ __('Faculty') }}</a></li>
+        </ol>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
-        <span>Faculty List</span>
+        <span>{{ __('Faculty List') }}</span>
         <a href="{{ route('fakultas.create') }}" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">Add Faculty</a>
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
-            <table>
+            <table class="table table-responsive-md">
                 <thead>
                     <tr>
                         <th>{{ __('University') }}</th>
                         <th>{{ __('Code') }}</th>
                         <th>{{ __('Abbreviation') }}</th>
                         <th>{{ __('Faculty Name') }}</th>
-                        <th>Leader (Dean)</th>
+                        <th>{{ __('Leader (Dean)') }}</th>
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -38,7 +50,7 @@
                             <form action="{{ route('fakultas.destroy', $f->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
+                                <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>
                             </form>
                         </td>
                     </tr>

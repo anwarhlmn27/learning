@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
-@section('title', 'Add Curriculum')
+@section('title', __('Add Curriculum'))
 
 @section('header_left')
-    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Add Curriculum</h1>
+    <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">{{ __('Add Curriculum') }}</h1>
 @endsection
 
 @section('content')
 <div class="card" style="max-width: 900px; margin: 0 auto;">
     <div class="card-header">
-        <span>Curriculum Form</span>
-        <a href="{{ route('kurikulum.index') }}" style="font-size: 0.875rem; color: var(--text-muted);">Back</a>
+        <h4 class="card-title">{{ __('Curriculum Form') }}</h4>
+        <a href="{{ route('kurikulum.index') }}" class="btn btn-warning btn-sm">{{ __('Back') }}</a>
     </div>
     <div class="card-body">
         @if($errors->any())
@@ -39,14 +39,14 @@
             <div class="form-group">
                 <label class="form-label">{{ __('Study Program (Prodi)') }} <span style="color: red;">*</span></label>
                 <select name="id_prodi" class="form-control" required>
-                    <option value="" disabled selected>Select Prodi</option>
+                    <option value="" disabled selected>{{ __('Select Prodi') }}</option>
                     @foreach($prodis as $p)
                         <option value="{{ $p->id }}" {{ old('id_prodi') == $p->id ? 'selected' : '' }}>{{ $p->nama_prodi }}</option>
                     @endforeach
                 </select>
             </div>
 
-            <h3 style="font-size: 1rem; font-weight: 600; margin-top: 2rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">Document Attachments (PDF)</h3>
+            <h3 style="font-size: 1rem; font-weight: 600; margin-top: 2rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">{{ __('Document Attachments (PDF)') }}</h3>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
                 <div class="form-group">
@@ -76,13 +76,13 @@
                     <input type="file" name="laporan_sosialisasi" class="form-control" accept=".pdf">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Dokumentasi (PDF/Img)</label>
+                    <label class="form-label">{{ __('Dokumentasi (PDF/Img)') }}</label>
                     <input type="file" name="dokumentasi" class="form-control" accept=".pdf,image/*">
                 </div>
             </div>
 
             <div style="margin-top: 1rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem; display: flex; justify-content: flex-end;">
-                <button type="submit" class="btn btn-primary">Create Curriculum</button>
+                <button type="submit" class="btn btn-primary">{{ __('Save Data') }}</button>
             </div>
         </form>
     </div>

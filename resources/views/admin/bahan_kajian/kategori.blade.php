@@ -56,7 +56,7 @@
                 <span>Existing Categories</span>
             </div>
             <div class="card-body" style="padding: 0;">
-                <table>
+                <table class="table table-responsive-md">
                     <thead>
                         <tr>
                             <th>{{ __('Category Name') }}</th>

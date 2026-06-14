@@ -1,91 +1,109 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create New Password - Sistem OBE</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <title>Create New Password - System Dashboard</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset(get_setting('favicon') ? 'img/favicon/' . get_setting('favicon') : 'images/logo/icon_hui.png') }}">
+	
+	<!-- STYLESHEETS -->
+	<link href="{{ asset('vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
+    <link class="main-css" rel="stylesheet" href="{{ asset('css/style.css') }}">
     <style>
         body {
-            background: linear-gradient(rgba(17, 24, 39, 0.75), rgba(17, 24, 39, 0.75)), url('{{ asset("img/gedung.jpeg") }}') center center/cover no-repeat fixed;
+            background: url('{{ asset("images/logo/gedung2.jpeg") }}') center center/cover no-repeat fixed;
         }
-        .login-card { max-width: 420px; }
+        .card {
+            background-color: rgba(255, 255, 255, 0.5) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
-    <div class="login-wrapper">
-        <div class="login-card">
-            <div class="login-header">
-                <h2>Create New Password</h2>
-                <p>Please enter your OTP and new password</p>
+    <div class="fix-wrapper">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-6">
+                    <div class="card mb-0 h-auto">
+                        <div class="card-body">
+                            <div class="text-center mb-2">
+                                <a href="{{ url('/') }}">
+                                    <img src="{{ asset(get_setting('login_logo') ? 'img/logo_login/' . get_setting('login_logo') : 'images/logo/logo_hui.png') }}" alt="Logo" width="250">
+                                </a>
+                            </div>
+                            <h4 class="text-center mb-4">Create New Password</h4>
+                            
+                            @if ($errors->any())
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                            <form method="POST" action="{{ route('password.update') }}">
+                                @csrf
+                                <input type="hidden" name="token" value="{{ $token }}">
+                                
+                                <div class="form-group" style="display: none;">
+                                    <input type="email" name="email" value="{{ request()->query('email') }}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="otp">6-Digit OTP</label>
+                                    <input type="text" id="otp" name="otp" class="form-control" required autofocus placeholder="Enter 6-digit code" maxlength="6" pattern="\d{6}">
+                                </div>
+                                
+                                <div class="mb-4 position-relative">
+                                    <label class="form-label" for="password">New Password</label>
+                                    <input type="password" id="password" name="password" class="form-control" required placeholder="Create a strong password">
+                                    <span class="show-pass eye">
+                                        <i class="fa fa-eye-slash"></i>
+                                        <i class="fa fa-eye"></i>
+                                    </span>
+                                    <div class="mt-2 text-muted" style="font-size: 12px;">
+                                        Requirements: Min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char.
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4 position-relative">
+                                    <label class="form-label" for="password_confirmation">Confirm Password</label>
+                                    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required placeholder="Repeat your new password">
+                                    <span class="show-pass eye">
+                                        <i class="fa fa-eye-slash"></i>
+                                        <i class="fa fa-eye"></i>
+                                    </span>
+                                </div>
+
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-block">Update Password</button>
+                                </div>
+                            </form>
+                            
+                            <div class="new-account mt-3">
+                                <p><a class="text-primary" href="{{ route('login') }}">&larr; Back to Login</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            @if ($errors->any())
-                <div class="alert alert-error">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                    </svg>
-                    <div>
-                        @foreach ($errors->all() as $error)
-                            <div style="margin-bottom: {{ $loop->last ? '0' : '0.25rem' }}">{{ $error }}</div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('password.update') }}">
-                @csrf
-                <input type="hidden" name="token" value="{{ $token }}">
-                
-                <div class="form-group" style="display: none;">
-                    <input type="email" name="email" value="{{ request()->query('email') }}" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="otp">6-Digit OTP</label>
-                    <div class="input-wrapper">
-                        <input type="text" id="otp" name="otp" required autofocus placeholder="Enter 6-digit code from email" maxlength="6" pattern="\d{6}">
-                        <span class="input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">New Password</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="password" name="password" required placeholder="Create a strong password">
-                        <span class="input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"></path><circle cx="16.5" cy="7.5" r=".5"></circle></svg>
-                        </span>
-                    </div>
-                    <div class="password-rules">
-                        Requirements:
-                        <ul>
-                            <li>Minimum 8 characters</li>
-                            <li>At least one uppercase and one lowercase letter</li>
-                            <li>At least one number</li>
-                            <li>At least one special character</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="password_confirmation">Confirm Password</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="password_confirmation" name="password_confirmation" required placeholder="Repeat your new password">
-                        <span class="input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"></path><circle cx="16.5" cy="7.5" r=".5"></circle></svg>
-                        </span>
-                    </div>
-                </div>
-
-                <button type="submit">Update Password</button>
-            </form>
         </div>
     </div>
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+    <script src="{{ asset('vendor/global/global.min.js') }}"></script>
+	<script src="{{ asset('vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+    
+    <script src="{{ asset('js/custom.min.js') }}"></script>
+    <script src="{{ asset('js/dlabnav-init.js') }}"></script>
 </body>
 </html>
