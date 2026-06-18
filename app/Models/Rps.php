@@ -39,4 +39,28 @@ class Rps extends Model
     {
         return $this->hasMany(RpsSession::class, 'rps_id')->orderBy('session_number');
     }
+
+    public function isSyncedWithLms()
+    {
+        $sessionIds = $this->sessions()->pluck('id');
+        
+        $hasSyncedSessions = \App\Models\ClassSession::whereIn('rps_session_id', $sessionIds)->exists();
+        if ($hasSyncedSessions) {
+            return true;
+        }
+
+        $assessmentIds = \App\Models\RpsAssessment::whereIn('rps_session_id', $sessionIds)->pluck('id');
+        $hasSyncedAssignments = \App\Models\Assignment::whereIn('rps_assessment_id', $assessmentIds)->exists();
+        if ($hasSyncedAssignments) {
+            return true;
+        }
+
+        $resourceIds = \App\Models\SessionResource::whereIn('rps_session_id', $sessionIds)->pluck('id');
+        $hasSyncedMaterials = \App\Models\Material::whereIn('rps_resource_id', $resourceIds)->exists();
+        if ($hasSyncedMaterials) {
+            return true;
+        }
+
+        return false;
+    }
 }

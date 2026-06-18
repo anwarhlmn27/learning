@@ -14,16 +14,17 @@
 <div class="card">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
         <span>{{ __('List of Subjects') }} ({{ $subjects->count() }})</span>
-        <div style="display: flex; gap: 0.5rem;">
-            <a href="{{ route('subjects.export-bk', $prodi->id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #fff; color: #374151; border: 1px solid #d1d5db;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-left: auto;">
+            <input type="text" id="subjectSearchInput" placeholder="{{ __('Search Subject...') }}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; border-radius: 0.375rem; border: 1px solid #d1d5db; width: 200px;">
+            <a href="{{ route('subjects.export-bk', $prodi->id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #fff; color: #374151; border: 1px solid #d1d5db; margin: 0;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 {{ __('Export BK Mapping') }}
             </a>
-            <a href="{{ route('subjects.export-plo', $prodi->id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #fff; color: #374151; border: 1px solid #d1d5db;">
+            <a href="{{ route('subjects.export-plo', $prodi->id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #fff; color: #374151; border: 1px solid #d1d5db; margin: 0;">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             {{ __('Export PLO Mapping') }}
             </a>
-            <a href="{{ route('subjects.create') }}?prodi_id={{ $prodi->id }}" class="btn btn-primary">{{ __('Add New Subject') }}</a>
+            <a href="{{ route('subjects.create') }}?prodi_id={{ $prodi->id }}" class="btn btn-primary" style="margin: 0;">{{ __('Add New Subject') }}</a>
         </div>
     </div>
     <div class="card-body" style="padding: 0;">
@@ -41,7 +42,7 @@
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="subjectsTableBody">
                     @forelse($subjects as $s)
                         <tr>
                             <td style="font-weight: 600;">{{ $s->kode_subject }}</td>
@@ -93,7 +94,7 @@
     </div>
 </div>
 
-<div class="card" style="margin-top: 2rem;">
+<!-- <div class="card" style="margin-top: 2rem;">
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
         <span>{{ __('Mapping Mata Kuliah ke CPL') }}</span>
         <a href="{{ route('subjects.export-plo', $prodi->id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #fff; color: #374151; border: 1px solid #d1d5db;">
@@ -117,7 +118,7 @@
                         @endforeach
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="mappingTableBody">
                     @forelse($subjects as $index => $s)
                         <tr>
                             <td style="text-align: center;">{{ $index + 1 }}</td>
@@ -148,5 +149,47 @@
             </table>
         </div>
     </div>
-</div>
+</div> -->
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const subjectSearchInput = document.getElementById('subjectSearchInput');
+        if (subjectSearchInput) {
+            subjectSearchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                
+                // Filter Table 1 (List of Subjects)
+                const rows1 = document.querySelectorAll('#subjectsTableBody tr');
+                rows1.forEach(row => {
+                    if (row.cells.length < 7) return; // ignore empty state row
+                    const code = row.cells[0].textContent.toLowerCase();
+                    const name = row.cells[1].textContent.toLowerCase();
+                    const prereqs = row.cells[4].textContent.toLowerCase();
+                    const status = row.cells[5].textContent.toLowerCase();
+                    
+                    if (code.includes(query) || name.includes(query) || prereqs.includes(query) || status.includes(query)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Filter Table 2 (Mapping)
+                const rows2 = document.querySelectorAll('#mappingTableBody tr');
+                rows2.forEach(row => {
+                    if (row.cells.length < 4) return; // ignore empty state row
+                    const code = row.cells[1].textContent.toLowerCase();
+                    const name = row.cells[2].textContent.toLowerCase();
+                    
+                    if (code.includes(query) || name.includes(query)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+@endsection
 @endsection

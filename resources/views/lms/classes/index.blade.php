@@ -16,7 +16,7 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">{{ __('Kelas Aktif') }}</h2>
     @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAddClass">
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddClass">
         <i>➕</i> {{ __('Tambah Kelas') }}
     </button>
     @endif
@@ -33,8 +33,8 @@
                 <input type="text" name="search" placeholder="{{ __('Search by class name, subject, dosen...') }}" value="{{ request('search') }}" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
-                <button type="submit" class="btn btn-primary">{{ __('Filter') }}</button>
-                <a href="{{ route('classes.index') }}" class="btn" style="background: #f3f4f6; text-decoration: none; color: inherit;">{{ __('Reset') }}</a>
+                <button type="submit" class="btn btn-outline-primary btn-sm">{{ __('Filter') }}</button>
+                <a href="{{ route('classes.index') }}" class="btn btn-outline-secondary btn-sm">{{ __('Reset') }}</a>
             </div>
         </form>
     </div>
@@ -42,7 +42,7 @@
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
     @forelse($classRooms as $class)
-    <div class="card" style="margin-bottom: 0;">
+    <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; height: 100%;">
         <div class="card-header" style="background-color: #f8fafc; display: flex; justify-content: space-between;">
             <span style="font-weight: 700; color: var(--primary);">{{ $class->nama_kelas }}</span>
             @php
@@ -57,36 +57,38 @@
                 {{ $sc['label'] }}
             </span>
         </div>
-        <div class="card-body">
-            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">{{ optional($class->subject)->nama_subject ?? __('Unknown Subject') }}</h3>
-            <p style="margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-muted);">
-                <i>👨‍🏫</i> {{ optional($class->dosen)->nama_dosen ?? __('Unknown Lecturer') }}
-            </p>
-            
-            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
-                <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; flex: 1; text-align: center;">
-                    <strong style="display: block; color: var(--text-main);">{{ __('Tahun Akademik') }}</strong>
-                    <span style="color: var(--text-muted);">{{ $class->tahun_akademik }}</span>
-                </div>
-                <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; flex: 1; text-align: center;">
-                    <strong style="display: block; color: var(--text-main);">{{ __('Semester') }}</strong>
-                    <span style="color: var(--text-muted);">{{ $class->semester }}</span>
+        <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between; flex: 1; padding: 1.5rem 1.5rem 1.875rem 1.5rem;">
+            <div>
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">{{ optional($class->subject)->nama_subject ?? __('Unknown Subject') }}</h3>
+                <p style="margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-muted);">
+                    <i>👨‍🏫</i> {{ optional($class->dosen)->nama_dosen ?? __('Unknown Lecturer') }}
+                </p>
+                
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                    <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; flex: 1; text-align: center;">
+                        <strong style="display: block; color: var(--text-main);">{{ __('Tahun Akademik') }}</strong>
+                        <span style="color: var(--text-muted);">{{ $class->tahun_akademik }}</span>
+                    </div>
+                    <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; flex: 1; text-align: center;">
+                        <strong style="display: block; color: var(--text-main);">{{ __('Semester') }}</strong>
+                        <span style="color: var(--text-muted);">{{ $class->semester }}</span>
+                    </div>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 0.5rem;">
-                <a href="{{ route('classes.show', $class) }}" class="btn" style="flex: 1; text-align: center;">
+            <div style="display: flex; gap: 0.5rem; margin-top: auto; align-items: center;">
+                <a href="{{ route('classes.show', $class) }}" class="btn btn-primary" style="flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; height: 40px; font-weight: 600; border-radius: 6px;">
                     {{ __('Manage Enrollment') }}
                 </a>
                 
                 @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-                <button class="btn btn-outline" style="padding: 0.5rem;" onclick="openEditModal('{{ $class->id }}', '{{ $class->subject_id }}', '{{ $classPrimaryDosenMap[$class->id] ?? '' }}', '{{ addslashes($class->nama_kelas) }}', '{{ $class->tahun_akademik }}', '{{ $class->semester }}', '{{ $class->status }}')" title="{{ __('Edit Class') }}">
+                <button class="btn btn-outline-secondary" style="padding: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px;" onclick="openEditModal('{{ $class->id }}', '{{ $class->subject_id }}', '{{ $classPrimaryDosenMap[$class->id] ?? '' }}', '{{ addslashes($class->nama_kelas) }}', '{{ $class->tahun_akademik }}', '{{ $class->semester }}', '{{ $class->status }}')" title="{{ __('Edit Class') }}">
                     ✏️
                 </button>
-                <form action="{{ route('classes.destroy', $class) }}" method="POST" style="margin: 0;" onsubmit="return confirm('{{ __('Hapus kelas ini? Kelas aktif yang memiliki kegiatan tidak dapat dihapus. Arsipkan dulu jika perlu.') }}')">
+                <form action="{{ route('classes.destroy', $class) }}" method="POST" style="margin: 0; display: inline-flex;" onsubmit="return confirm('{{ __('Hapus kelas ini? Kelas aktif yang memiliki kegiatan tidak dapat dihapus. Arsipkan dulu jika perlu.') }}')">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-outline" style="padding: 0.5rem; color: #dc2626; border-color: #fecaca;" title="{{ __('Delete Class') }}">
+                    <button type="submit" class="btn btn-outline-danger" style="padding: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: #dc2626; border: 1px solid #fee2e2; background: #fff; border-radius: 6px;" title="{{ __('Delete Class') }}">
                         🗑️
                     </button>
                 </form>

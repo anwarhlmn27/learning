@@ -8,6 +8,59 @@
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/rps-sessions.css') }}">
+<style>
+    /* Card Header Session Custom Background */
+    .card-header-session {
+        background-color: #f9fafb !important;
+    }
+    .card-header-session h3 {
+        color: #111827 !important;
+    }
+
+    /* =========================================
+       Dark Mode Support
+       ========================================= */
+
+    body[data-theme-version="dark"] .sticky-counter {
+        background: #1c1c24 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body[data-theme-version="dark"] .sticky-counter h2 {
+        color: #f3f4f6 !important;
+    }
+    body[data-theme-version="dark"] .sticky-counter p {
+        color: #9ca3af !important;
+    }
+
+    body[data-theme-version="dark"] .card-header-session {
+        background-color: #1c1c24 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    body[data-theme-version="dark"] .card-header-session h3 {
+        color: #f3f4f6 !important;
+    }
+
+    body[data-theme-version="dark"] .assessment-row {
+        background: #181924 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Inputs and Forms dark mode integration */
+    body[data-theme-version="dark"] .session-form input[type="text"],
+    body[data-theme-version="dark"] .session-form input[type="number"],
+    body[data-theme-version="dark"] .session-form textarea,
+    body[data-theme-version="dark"] .session-form select {
+        background-color: #181924 !important;
+        color: #f3f4f6 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    body[data-theme-version="dark"] .session-form .clo-container {
+        background-color: #181924 !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f3f4f6 !important;
+    }
+</style>
 @endsection
 
 @section('content')
@@ -27,7 +80,7 @@
 
 @foreach($rp->sessions as $session)
 <div class="card" style="margin-bottom: 1rem;">
-    <div class="card-header" style="background-color: #f9fafb; cursor: pointer;" onclick="toggleSession('{{ $session->id }}')">
+    <div class="card-header card-header-session" style="cursor: pointer;" onclick="toggleSession('{{ $session->id }}')">
         <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">Session {{ $session->session_number }}: {{ $session->topic_name }}</h3>
     </div>
     <div class="card-body" id="session_{{ $session->id }}" style="display: none;">
@@ -42,7 +95,7 @@
                 </div>
                 <div>
                     <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">{{ __('Mapped CLOs (CPMK) for Topic') }} <span style="color: red;">*</span></label>
-                    <div style="max-height: 100px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.375rem; background: #fff;">
+                    <div class="clo-container" style="max-height: 100px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.375rem; background: #fff;">
                         @foreach($clos as $clo)
                             <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">
                                 <input type="checkbox" name="clos[]" value="{{ $clo->id }}" 

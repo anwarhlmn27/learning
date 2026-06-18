@@ -2,13 +2,92 @@
 
 @section('title', 'RPS - ' . $prodi->nama_prodi)
 
+@section('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Restore calendar picker icon for date inputs with custom SVG */
+    #tanggal_penyusunan::-webkit-calendar-picker-indicator {
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' class='bi bi-calendar' viewBox='0 0 16 16'><path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/></svg>") !important;
+        background-repeat: no-repeat !important;
+        background-position: center right !important;
+        background-size: contain !important;
+        display: inline-block !important;
+        width: 16px !important;
+        height: 16px !important;
+        position: static !important;
+        opacity: 1 !important;
+        cursor: pointer !important;
+    }
+
+    /* Custom style for Select2 to match the theme */
+    .select2-container .select2-selection--single {
+        height: 41px !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 0.375rem !important;
+        display: flex !important;
+        align-items: center !important;
+        background-color: #fff !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: normal !important;
+        color: #374151 !important;
+        padding-left: 0.75rem !important;
+        font-size: 0.875rem !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 41px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        right: 8px !important;
+    }
+    .select2-container {
+        width: 100% !important;
+        display: block !important;
+        margin-top: 0.375rem !important;
+    }
+    .select2-dropdown {
+        z-index: 99999 !important;
+    }
+</style>
+@endsection
+
 @section('header_left')
     <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">RPS Management: {{ $prodi->nama_prodi }}</h1>
 @endsection
 
 @section('content')
-<div style="margin-bottom: 1.5rem;">
+<div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
     <a href="{{ route('admin.rps.index') }}" class="btn btn-warning btn-sm">← Back to Prodi List</a>
+</div>
+
+@if(session('success'))
+    <div class="alert alert-success" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if($errors->any())
+    <div class="alert alert-danger" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+        @foreach($errors->all() as $error)
+            <div>{{ $error }}</div>
+        @endforeach
+    </div>
+@endif
+
+<!-- Filter Form -->
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-body">
+        <form action="{{ route('admin.rps.prodi', $prodi->id) }}" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 1; min-width: 250px;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Search') }}</label>
+                <input type="text" name="search" placeholder="{{ __('Search by Subject, Code, Nomor RPS or Kurikulum...') }}" value="{{ request('search') }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;">
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary">{{ __('Search') }}</button>
+                <a href="{{ route('admin.rps.prodi', $prodi->id) }}" class="btn" style="background: #f3f4f6; text-decoration: none; color: inherit; padding: 0.5rem 1rem; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; height: 38px;">{{ __('Reset') }}</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="card">
@@ -74,8 +153,8 @@
 
 <!-- Modal Create/Edit -->
 <div id="rpsModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="card" style="width: 100%; max-width: 500px; margin: 1rem;">
-        <div class="card-header">
+    <div class="card" style="width: 100%; max-width: 500px; margin: 1rem; max-height: 90vh; overflow-y: auto;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10;">
             <h3 id="modalTitle" style="margin: 0; font-size: 1.125rem;">Add RPS</h3>
             <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
         </div>
@@ -95,8 +174,8 @@
                 </div>
                 
                 <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Nomor RPS') }} </label>
-                    <input type="text" name="nomor_rps" id="nomor_rps" placeholder="{{ __('e.g. RPS-INF-2024-001') }}"
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Nomor RPS') }} <span style="color: red;">*</span></label>
+                    <input type="text" name="nomor_rps" id="nomor_rps" placeholder="{{ __('e.g. RPS-INF-2024-001') }}" required
                            style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                 </div>
 
@@ -112,23 +191,23 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Tanggal Penyusunan') }} </label>
-                        <input type="date" name="tanggal_penyusunan" id="tanggal_penyusunan" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Tanggal Penyusunan') }} <span style="color: red;">*</span></label>
+                        <input type="date" name="tanggal_penyusunan" id="tanggal_penyusunan" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Media Pembelajaran') }} </label>
-                        <input type="text" name="media_pembelajaran" id="media_pembelajaran" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Media Pembelajaran') }} <span style="color: red;">*</span></label>
+                        <input type="text" name="media_pembelajaran" id="media_pembelajaran" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Pengembang RPS') }} </label>
-                        <input type="text" name="pengembang_rps" id="pengembang_rps" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Pengembang RPS') }} <span style="color: red;">*</span></label>
+                        <input type="text" name="pengembang_rps" id="pengembang_rps" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Dosen Pengampu') }} </label>
-                        <input type="text" name="dosen_pengampu" id="dosen_pengampu" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">{{ __('Dosen Pengampu') }} <span style="color: red;">*</span></label>
+                        <input type="text" name="dosen_pengampu" id="dosen_pengampu" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem;">
                     </div>
                 </div>
 
@@ -156,12 +235,50 @@
 </div>
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    const existingRpsSubjects = {};
+    @foreach($rps as $rp)
+        if ("{{ $rp->subject_id }}" && !existingRpsSubjects["{{ $rp->subject_id }}"]) {
+            existingRpsSubjects["{{ $rp->subject_id }}"] = {
+                latest_version: {{ $rp->versi }},
+                subject_name: @json($rp->subject ? $rp->subject->nama_subject : '')
+            };
+        }
+    @endforeach
+
+    $(document).ready(function() {
+        if (typeof $.fn.selectpicker === 'function') {
+            $('#subject_id').selectpicker('destroy');
+        }
+        $('#subject_id').select2({
+            dropdownParent: $('#rpsModal'),
+            width: '100%',
+            placeholder: 'Select Subject'
+        });
+
+        $('#rpsForm').on('submit', function(e) {
+            const formMethod = $('#formMethod').val();
+            if (formMethod === 'POST') {
+                const selectedSubjectId = $('#subject_id').val();
+                if (existingRpsSubjects[selectedSubjectId]) {
+                    const subjectInfo = existingRpsSubjects[selectedSubjectId];
+                    const confirmMsg = `RPS matakuliah "${subjectInfo.subject_name}" ini sudah ada, apakah mau dibuat baru dengan versi yang berbeda?`;
+                    if (!confirm(confirmMsg)) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            }
+        });
+    });
+
     function openCreateModal() {
         document.getElementById('modalTitle').innerText = 'Add RPS';
         document.getElementById('rpsForm').action = "{{ route('admin.rps.store') }}";
         document.getElementById('formMethod').value = 'POST';
-        document.getElementById('subject_id').value = '';
+        
+        $('#subject_id').val('').trigger('change');
         document.getElementById('kurikulum_id').value = '';
         document.getElementById('nomor_rps').value = '';
         document.getElementById('tanggal_penyusunan').value = '';
@@ -171,6 +288,11 @@
         document.getElementById('dosen_pengampu').value = '';
         document.getElementById('status').value = 'Draft';
         document.getElementById('statusGroup').style.display = 'none'; // Sembunyikan status di Create
+        
+        if (window.jQuery && typeof jQuery.fn.selectpicker === 'function') {
+            $('#kurikulum_id, #status').selectpicker('refresh');
+        }
+        
         document.getElementById('rpsModal').style.display = 'flex';
     }
 
@@ -185,15 +307,28 @@
         fetch(editUrl.replace(':id', id))
             .then(response => response.json())
             .then(data => {
-                document.getElementById('subject_id').value = data.rps.subject_id;
+                $('#subject_id').val(data.rps.subject_id).trigger('change');
                 document.getElementById('kurikulum_id').value = data.rps.kurikulum_id;
                 document.getElementById('nomor_rps').value = data.rps.nomor_rps || '';
-                document.getElementById('tanggal_penyusunan').value = data.rps.tanggal_penyusunan || '';
+                
+                let dateVal = data.rps.tanggal_penyusunan || '';
+                if (dateVal && dateVal.includes(' ')) {
+                    dateVal = dateVal.split(' ')[0];
+                } else if (dateVal && dateVal.includes('T')) {
+                    dateVal = dateVal.split('T')[0];
+                }
+                document.getElementById('tanggal_penyusunan').value = dateVal;
+                
                 document.getElementById('referensi').value = data.rps.referensi || '';
                 document.getElementById('media_pembelajaran').value = data.rps.media_pembelajaran || '';
                 document.getElementById('pengembang_rps').value = data.rps.pengembang_rps || '';
                 document.getElementById('dosen_pengampu').value = data.rps.dosen_pengampu || '';
                 document.getElementById('status').value = data.rps.status;
+                
+                if (window.jQuery && typeof jQuery.fn.selectpicker === 'function') {
+                    $('#kurikulum_id, #status').selectpicker('refresh');
+                }
+                
                 document.getElementById('rpsModal').style.display = 'flex';
             });
     }

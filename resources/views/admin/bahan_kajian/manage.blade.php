@@ -20,11 +20,12 @@
 
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
         <span>Bahan Kajian (BK) Items</span>
-        <div style="display: flex; gap: 0.5rem;">
-            <a href="{{ route('bahan_kajian.kategori.manage', $prodi->id) }}" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db;">Manage Categories</a>
-            <button onclick="showBkModal()" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">+ Add BK</button>
+        <div style="display: flex; gap: 0.75rem; align-items: center; margin-left: auto;">
+            <input type="text" id="bkSearchInput" placeholder="Search BK..." style="padding: 0.25rem 0.75rem; font-size: 0.875rem; border-radius: 0.375rem; border: 1px solid #d1d5db; width: 200px;">
+            <a href="{{ route('bahan_kajian.kategori.manage', $prodi->id) }}" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; margin: 0;">Manage Categories</a>
+            <button onclick="showBkModal()" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; margin: 0;">+ Add BK</button>
         </div>
     </div>
     <div class="card-body" style="padding: 0;">
@@ -41,7 +42,7 @@
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="bkTableBody">
                     @forelse($prodi->bahanKajians as $bk)
                         <tr>
                             <td style="font-weight: 600; color: var(--primary);">{{ $bk->kode_bk }}</td>
@@ -234,6 +235,30 @@
 
     function closeBkModal() {
         document.getElementById('bkModal').style.display = 'none';
+    }
+
+    // Real-time table search filter
+    const bkSearchInput = document.getElementById('bkSearchInput');
+    if (bkSearchInput) {
+        bkSearchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#bkTableBody tr');
+            rows.forEach(row => {
+                if (row.cells.length < 7) return; // ignore no-data row
+                const code = row.cells[0].textContent.toLowerCase();
+                const name = row.cells[1].textContent.toLowerCase();
+                const plos = row.cells[2].textContent.toLowerCase();
+                const category = row.cells[3].textContent.toLowerCase();
+                const level = row.cells[4].textContent.toLowerCase();
+                const status = row.cells[5].textContent.toLowerCase();
+                
+                if (code.includes(query) || name.includes(query) || plos.includes(query) || category.includes(query) || level.includes(query) || status.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
     }
 
     // Auto-open modal if validation errors exist

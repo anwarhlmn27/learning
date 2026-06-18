@@ -480,7 +480,7 @@
             <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Dosen Pengampu / Lecturer</h3>
                 @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-                    <button class="btn" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add-dosen').style.display = 'flex'">
+                    <button class="btn btn-primary btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add-dosen').style.display = 'flex'">
                         ➕ Tambah Dosen
                     </button>
                 @endif
@@ -521,7 +521,7 @@
             <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">BAAK Staff</h3>
                 @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-                    <button class="btn" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add-baak').style.display = 'flex'">
+                    <button class="btn btn-primary btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add-baak').style.display = 'flex'">
                         ➕ Tambah BAAK
                     </button>
                 @endif
@@ -560,13 +560,13 @@
                 </h3>
                 @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
                     <div style="display: flex; gap: 0.5rem;">
-                        <a href="{{ route('classes.template') }}" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                        <a href="{{ route('classes.template') }}" class="btn btn-outline btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
                             <i>📥</i> Template
                         </a>
-                        <button class="btn btn-outline" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-import').style.display = 'flex'">
+                        <button class="btn btn-outline btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-import').style.display = 'flex'">
                             <i>📄</i> Import CSV
                         </button>
-                        <button class="btn" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add').style.display = 'flex'">
+                        <button class="btn btn-primary btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add').style.display = 'flex'">
                             <i>➕</i> Enroll Student
                         </button>
                     </div>

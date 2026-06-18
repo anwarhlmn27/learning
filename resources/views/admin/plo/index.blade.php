@@ -42,7 +42,7 @@
                             <td>{{ $p->nama_prodi }}</td>
                             <td>{{ $p->fakultas->nama_fakultas ?? '-' }}</td>
                             <td>
-                                <span class="badge" style="background: var(--primary-light); color: var(--primary);">{{ $p->plos_count }} PLOs</span>
+                                <span class="badge" style="background: #e0e7ff !important; color: #4338ca !important; padding: 0.35em 0.65em; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">{{ $p->plos_count }} PLOs</span>
                             </td>
                             <td style="display: flex; gap: 0.5rem; align-items: center;">
                                 <a href="{{ route('plo.manage', $p->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Manage PLO</a>

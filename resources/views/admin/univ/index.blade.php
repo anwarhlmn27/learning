@@ -22,7 +22,7 @@
 <div class="card">
     <div class="card-header">
         <span>{{ __('University List') }}</span>
-        <a href="{{ route('univ.create') }}" class="btn btn-primary">{{ __('Add University') }}</a>
+        <a href="{{ route('univ.create') }}" class="btn btn-primary btn-sm">{{ __('Add University') }}</a>
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">

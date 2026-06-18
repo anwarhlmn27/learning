@@ -32,8 +32,8 @@
                 <input type="text" name="search" placeholder="{{ __('Nama kelas atau mata kuliah...') }}" value="{{ request('search') }}" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
             </div>
             <div style="display: flex; gap: 0.5rem;">
-                <button type="submit" class="btn">{{ __('Cari') }}</button>
-                <a href="{{ route('classes.archived') }}" class="btn btn-outline" style="text-decoration: none; display: inline-block; text-align: center;">{{ __('Reset') }}</a>
+                <button type="submit" class="btn btn-outline-primary btn-sm">{{ __('Cari') }}</button>
+                <a href="{{ route('classes.archived') }}" class="btn btn-outline-secondary btn-sm" style="text-decoration: none; display: inline-block; text-align: center;">{{ __('Reset') }}</a>
             </div>
         </form>
     </div>

@@ -6,13 +6,13 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <h2 style="margin: 0; font-size: 1.5rem; color: #111827;">{{ __('Data Mahasiswa') }}</h2>
     <div style="display: flex; gap: 0.5rem;">
-        <a href="{{ route('mahasiswa.template') }}" class="btn" style="background: #f3f4f6; color: #374151; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+        <a href="{{ route('mahasiswa.template') }}" class="btn btn-outline btn-sm" style="background: #f3f4f6; color: #374151; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
             <i>📥</i> {{ __('Download Template') }}
         </a>
-        <button class="btn btn-primary" onclick="document.getElementById('modal-add').style.display = 'flex'">
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('modal-add').style.display = 'flex'">
             <i>➕</i> {{ __('Add Mahasiswa') }}
         </button>
-        <button class="btn btn-success" onclick="document.getElementById('modal-import').style.display = 'flex'">
+        <button class="btn btn-success btn-sm" onclick="document.getElementById('modal-import').style.display = 'flex'">
             <i>📄</i> {{ __('Import CSV') }}
         </button>
     </div>
@@ -24,11 +24,11 @@
         <form action="{{ route('mahasiswa.index') }}" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
             <div style="flex: 1; min-width: 200px;">
                 <label class="form-label">{{ __('Search') }}</label>
-                <input type="text" name="search" class="form-control" placeholder="{{ __('Name, NIM, or Email') }}" value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="{{ __('Name, NIM, or Email') }}" value="{{ request('search') }}">
             </div>
             <div style="width: 200px;">
                 <label class="form-label">{{ __('Prodi') }}</label>
-                <select name="prodi" class="form-control">
+                <select name="prodi" class="form-control form-control-sm">
                     <option value="">{{ __('All Prodi') }}</option>
                     @foreach($prodis as $prodi)
                         <option value="{{ $prodi->id }}" {{ request('prodi') == $prodi->id ? 'selected' : '' }}>{{ $prodi->nama_prodi }}</option>
@@ -37,7 +37,7 @@
             </div>
             <div style="width: 150px;">
                 <label class="form-label">{{ __('Tahun Akademik') }}</label>
-                <select name="angkatan" class="form-control">
+                <select name="angkatan" class="form-control form-control-sm">
                     <option value="">{{ __('Semua Tahun') }}</option>
                     @php
                         $angkatanList = \App\Models\Student::select('angkatan')->distinct()->orderBy('angkatan', 'desc')->pluck('angkatan');
@@ -48,8 +48,8 @@
                 </select>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-                <button type="submit" class="btn btn-primary">{{ __('Filter') }}</button>
-                <a href="{{ route('mahasiswa.index') }}" class="btn" style="background: #f3f4f6; text-decoration: none; color: inherit;">{{ __('Reset') }}</a>
+                <button type="submit" class="btn btn-outline-primary btn-sm">{{ __('Filter') }}</button>
+                <a href="{{ route('mahasiswa.index') }}" class="btn btn-outline-secondary btn-sm">{{ __('Reset') }}</a>
             </div>
         </form>
     </div>
@@ -98,7 +98,7 @@
                         @endif
                     </td>
                     <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">
-                        <button type="button" class="btn" style="background: #eef2ff; color: #4f46e5; border: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="openEditModal('{{ $student->id }}', '{{ $student->nim }}', '{{ $student->nama_student }}', '{{ $student->angkatan }}', '{{ $student->user->email ?? '' }}', '{{ $student->prodi_id }}')">Edit</button>
+                        <button type="button" class="btn" style="background: #eef2ff; color: #4f46e5; border: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="openEditModal('{{ route('mahasiswa.update', $student) }}', '{{ $student->nim }}', '{{ $student->nama_student }}', '{{ $student->angkatan }}', '{{ $student->user->email ?? '' }}', '{{ $student->prodi_id }}')">Edit</button>
                         <form action="{{ route('mahasiswa.destroy', $student) }}" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus mahasiswa ini? Akun login yang terkait juga akan dihapus.')">
                             @csrf
                             @method('DELETE')
@@ -259,13 +259,19 @@
 </div>
 
 <script>
-    function openEditModal(id, nim, nama, angkatan, email, prodi_id) {
-        document.getElementById('edit-form').action = '/mahasiswa/' + id;
+    function openEditModal(actionUrl, nim, nama, angkatan, email, prodi_id) {
+        document.getElementById('edit-form').action = actionUrl;
         document.getElementById('edit-nim').value = nim;
         document.getElementById('edit-nama').value = nama;
         document.getElementById('edit-angkatan').value = angkatan;
         document.getElementById('edit-email').value = email;
-        document.getElementById('edit-prodi').value = prodi_id;
+        
+        const prodiSelect = document.getElementById('edit-prodi');
+        prodiSelect.value = prodi_id;
+        if (window.jQuery && typeof jQuery.fn.selectpicker === 'function') {
+            $(prodiSelect).selectpicker('refresh');
+        }
+        
         document.getElementById('modal-edit').style.display = 'flex';
     }
 

@@ -137,7 +137,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dosen-template', [\App\Http\Controllers\DosenController::class, 'downloadTemplate'])->name('dosen.template');
 
     Route::post('/mahasiswa/bulk-frozen', [\App\Http\Controllers\StudentController::class, 'bulkUpdateFrozen'])->name('mahasiswa.bulk_update_frozen');
-    Route::resource('/mahasiswa', \App\Http\Controllers\StudentController::class)->names('mahasiswa');
+    Route::resource('/mahasiswa', \App\Http\Controllers\StudentController::class)->parameters(['mahasiswa' => 'student'])->names('mahasiswa');
     Route::post('/mahasiswa/import', [\App\Http\Controllers\StudentController::class, 'import'])->name('mahasiswa.import');
     Route::get('/mahasiswa-template', [\App\Http\Controllers\StudentController::class, 'downloadTemplate'])->name('mahasiswa.template');
 

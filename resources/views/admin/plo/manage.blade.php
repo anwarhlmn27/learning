@@ -35,9 +35,12 @@
 
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
         <span>{{ __('Program Learning Outcomes (PLO)') }}</span>
-        <button onclick="showPloModal()" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">+ {{ __('Add PLO') }}</button>
+        <div style="display: flex; gap: 0.75rem; align-items: center; margin-left: auto;">
+            <input type="text" id="ploSearchInput" placeholder="{{ __('Search PLO...') }}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; border-radius: 0.375rem; border: 1px solid #d1d5db; width: 200px;">
+            <button onclick="showPloModal()" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; margin: 0;">+ {{ __('Add PLO') }}</button>
+        </div>
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
@@ -53,7 +56,7 @@
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="ploTableBody">
                     @forelse($prodi->plos as $plo)
                         <tr>
                             <td style="font-weight: 600; color: var(--primary);">{{ $plo->kode_plo }}</td>
@@ -457,6 +460,30 @@
                 }
             });
         });
+
+        // Real-time table search filter
+        const tableSearchInput = document.getElementById('ploSearchInput');
+        if (tableSearchInput) {
+            tableSearchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                const rows = document.querySelectorAll('#ploTableBody tr');
+                rows.forEach(row => {
+                    if (row.cells.length < 7) return; // ignore no-data row
+                    const code = row.cells[0].textContent.toLowerCase();
+                    const title = row.cells[1].textContent.toLowerCase();
+                    const gps = row.cells[2].textContent.toLowerCase();
+                    const outcome = row.cells[3].textContent.toLowerCase();
+                    const domain = row.cells[4].textContent.toLowerCase();
+                    const status = row.cells[5].textContent.toLowerCase();
+                    
+                    if (code.includes(query) || title.includes(query) || gps.includes(query) || outcome.includes(query) || domain.includes(query) || status.includes(query)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
     });
 
     // Auto-open modal if validation errors exist

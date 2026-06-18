@@ -218,7 +218,7 @@
     <!-- Theme Switcher / Demo Panel -->
     <div class="dlab-demo-panel">
         <div class="bg-close"></div>
-        <div class="dlab-demo-trigger fas fa-cog" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: var(--primary); color: #fff; border-radius: 50% 0 0 50%; right: 0; top: 50%; position: fixed; z-index: 999; cursor: pointer; box-shadow: -2px 0 5px rgba(0,0,0,0.1);">
+        <div class="dlab-demo-trigger fas fa-cog" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: var(--primary); color: #fff; border-radius: 50% 0 0 50%; right: 0; top: 50%; position: fixed; z-index: 999; cursor: pointer; box-shadow: -2px 0 5px rgba(223, 215, 215, 0.1);">
         </div>
         <div class="dlab-demo-inner">
             <div class="dlab-demo-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #eee;">
@@ -234,9 +234,9 @@
                     <li class="nav-item">
                         <a class="nav-link active" data-bs-toggle="tab" href="#demo-theme">Theme</a>
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#demo-header">Header</a>
-                    </li>
+                    </li> -->
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#demo-content">Content</a>
                     </li>

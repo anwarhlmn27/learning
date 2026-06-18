@@ -41,3 +41,56 @@
     border: 1px solid #e5e7eb;
     margin-bottom: 0.75rem;
 }
+
+/* Card Header Session Custom Background */
+.card-header-session {
+    background-color: #f9fafb !important;
+}
+.card-header-session h3 {
+    color: #111827 !important;
+}
+
+/* =========================================
+   Dark Mode Support
+   ========================================= */
+
+body[data-theme-version="dark"] .sticky-counter {
+    background: #1e202c !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+body[data-theme-version="dark"] .sticky-counter h2 {
+    color: #f3f4f6 !important;
+}
+body[data-theme-version="dark"] .sticky-counter p {
+    color: #9ca3af !important;
+}
+
+body[data-theme-version="dark"] .card-header-session {
+    background-color: #1c1c24 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+body[data-theme-version="dark"] .card-header-session h3 {
+    color: #f3f4f6 !important;
+}
+
+body[data-theme-version="dark"] .assessment-row {
+    background: #181924 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Inputs and Forms dark mode integration */
+body[data-theme-version="dark"] .session-form input[type="text"],
+body[data-theme-version="dark"] .session-form input[type="number"],
+body[data-theme-version="dark"] .session-form textarea,
+body[data-theme-version="dark"] .session-form select {
+    background-color: #181924 !important;
+    color: #f3f4f6 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body[data-theme-version="dark"] .session-form .clo-container {
+    background-color: #181924 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #f3f4f6 !important;
+}
+

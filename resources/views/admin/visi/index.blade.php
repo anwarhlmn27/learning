@@ -22,7 +22,7 @@
 <div class="card">
     <div class="card-header">
         <span>{{ __('Vision & Mission List') }}</span>
-        <a href="{{ route('visi.create') }}" class="btn btn-primary">{{ __('Add Vision & Mission') }}</a>
+        <a href="{{ route('visi.create') }}" class="btn btn-primary btn-sm">{{ __('Add Vision & Mission') }}</a>
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
@@ -43,8 +43,17 @@
                             <td>
                                 @php
                                     $type = str_replace('App\\Models\\', '', $v->visible_type);
+                                    $bg = 'rgba(59, 130, 246, 0.15)';
+                                    $color = '#1d4ed8';
+                                    if ($type === 'Fakultas') {
+                                        $bg = 'rgba(16, 185, 129, 0.15)';
+                                        $color = '#047857';
+                                    } elseif ($type === 'Prodi') {
+                                        $bg = 'rgba(245, 158, 11, 0.15)';
+                                        $color = '#b45309';
+                                    }
                                 @endphp
-                                <span class="badge" style="background: var(--primary-light); color: var(--primary);">{{ $type }}</span>
+                                <span class="badge" style="background: {{ $bg }} !important; color: {{ $color }} !important; font-weight: 600; padding: 0.35em 0.65em; font-size: 0.75rem; border-radius: 4px;">{{ $type }}</span>
                             </td>
                             <td style="font-weight: 600;">
                                 @if($type == 'Univ')

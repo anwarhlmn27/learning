@@ -28,11 +28,27 @@ class RpsController extends Controller
         return view('admin.rps.index', compact('prodis'));
     }
 
-    public function prodiRps(Prodi $prodi)
+    public function prodiRps(Request $request, Prodi $prodi)
     {
-        $rps = Rps::whereHas('subject', function($q) use ($prodi) {
+        $query = Rps::whereHas('subject', function($q) use ($prodi) {
             $q->where('id_prodi', $prodi->id);
-        })->with(['subject', 'kurikulum'])->latest()->get();
+        });
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_rps', 'like', "%{$search}%")
+                  ->orWhereHas('subject', function($sq) use ($search) {
+                      $sq->where('nama_subject', 'like', "%{$search}%")
+                        ->orWhere('kode_subject', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('kurikulum', function($kq) use ($search) {
+                      $kq->where('nm_kurikulum', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $rps = $query->with(['subject', 'kurikulum'])->latest()->get();
         
         $subjects = Subject::where('id_prodi', $prodi->id)->get();
         $kurikulums = Kurikulum::orderBy('tahun_akademik', 'desc')->get();
@@ -45,18 +61,30 @@ class RpsController extends Controller
         $request->validate([
             'subject_id' => 'required|exists:subjects,id',
             'kurikulum_id' => 'required|exists:kurikulums,id',
-            'nomor_rps' => 'nullable|string|max:255',
-            'tanggal_penyusunan' => 'nullable|date',
+            'nomor_rps' => 'required|string|max:255',
+            'tanggal_penyusunan' => 'required|date',
             'referensi' => 'nullable|string',
-            'media_pembelajaran' => 'nullable|string',
-            'pengembang_rps' => 'nullable|string',
-            'dosen_pengampu' => 'nullable|string',
+            'media_pembelajaran' => 'required|string',
+            'pengembang_rps' => 'required|string',
+            'dosen_pengampu' => 'required|string',
             'status' => 'nullable|in:Draft,Aktif,Arsip',
         ]);
 
         $data = $request->all();
-        $data['versi'] = 1;
+        
+        $latestRps = Rps::where('subject_id', $request->subject_id)->orderBy('versi', 'desc')->first();
+        if ($latestRps) {
+            $data['versi'] = $latestRps->versi + 1;
+        } else {
+            $data['versi'] = 1;
+        }
+        
         Rps::create($data);
+
+        $subject = Subject::find($request->subject_id);
+        if ($subject && $subject->id_prodi) {
+            return redirect()->route('admin.rps.prodi', $subject->id_prodi)->with('success', 'RPS created successfully.');
+        }
 
         return redirect()->route('admin.rps.index')->with('success', 'RPS created successfully.');
     }
@@ -77,23 +105,37 @@ class RpsController extends Controller
         $request->validate([
             'subject_id' => 'required|exists:subjects,id',
             'kurikulum_id' => 'required|exists:kurikulums,id',
-            'nomor_rps' => 'nullable|string|max:255',
-            'tanggal_penyusunan' => 'nullable|date',
+            'nomor_rps' => 'required|string|max:255',
+            'tanggal_penyusunan' => 'required|date',
             'referensi' => 'nullable|string',
-            'media_pembelajaran' => 'nullable|string',
-            'pengembang_rps' => 'nullable|string',
-            'dosen_pengampu' => 'nullable|string',
+            'media_pembelajaran' => 'required|string',
+            'pengembang_rps' => 'required|string',
+            'dosen_pengampu' => 'required|string',
             'status' => 'required|in:Draft,Aktif,Arsip',
         ]);
 
         $rp->update($request->all());
+
+        if ($rp->subject && $rp->subject->id_prodi) {
+            return redirect()->route('admin.rps.prodi', $rp->subject->id_prodi)->with('success', 'RPS updated successfully.');
+        }
 
         return redirect()->route('admin.rps.index')->with('success', 'RPS updated successfully.');
     }
 
     public function destroy(Rps $rp)
     {
+        $prodiId = optional($rp->subject)->id_prodi;
+        
+        if ($rp->isSyncedWithLms()) {
+            return redirect()->back()->withErrors(['error' => 'RPS tidak dapat dihapus karena sudah disinkronisasikan dan digunakan di kelas LMS.']);
+        }
+
         $rp->delete();
+        
+        if ($prodiId) {
+            return redirect()->route('admin.rps.prodi', $prodiId)->with('success', 'RPS deleted successfully.');
+        }
         return redirect()->route('admin.rps.index')->with('success', 'RPS deleted successfully.');
     }
 
