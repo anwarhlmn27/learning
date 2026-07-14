@@ -191,8 +191,9 @@
                         <ul aria-expanded="false">
                             @if(!Auth::user()->hasRole('kaprodi'))
                                 <li><a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'mm-active' : '' }}">{{ __('User Management') }}</a></li>
+                                <li><a href="{{ route('rbac.index') }}" class="{{ request()->routeIs('rbac.*') ? 'mm-active' : '' }}">{{ __('Hak Akses (RBAC)') }}</a></li>
                             @endif
-                            <li><a href="{{ route('assessment_types.index') }}" class="{{ request()->routeIs('assessment_types.*') ? 'mm-active' : '' }}">{{ __('Assessment Types') }}</a></li>
+                            <!-- <li><a href="{{ route('assessment_types.index') }}" class="{{ request()->routeIs('assessment_types.*') ? 'mm-active' : '' }}">{{ __('Assessment Types') }}</a></li> -->
                             <li><a href="{{ route('logs.index') }}" class="{{ request()->routeIs('logs.*') ? 'mm-active' : '' }}">{{ __('System Logs') }}</a></li>
                             <li><a href="{{ route('settings.index') }}" class="{{ request()->routeIs('settings.*') ? 'mm-active' : '' }}">{{ __('Settings') }}</a></li>
                         </ul>

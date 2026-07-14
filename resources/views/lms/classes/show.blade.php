@@ -138,6 +138,47 @@
         display: block;
     }
 
+    /* Star Rating Styling */
+    .rating-container {
+        margin-top: 1.5rem;
+        padding: 1.25rem;
+        background: #f8fafc;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+    }
+    .rating-stars-wrapper {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 0.25rem;
+        margin: 0.5rem 0;
+    }
+    .rating-stars-wrapper input {
+        display: none;
+    }
+    .rating-stars-wrapper label {
+        font-size: 1.75rem;
+        color: #cbd5e1;
+        cursor: pointer;
+        transition: color 0.15s ease-in-out;
+        margin: 0;
+    }
+    .rating-stars-wrapper label:hover,
+    .rating-stars-wrapper label:hover ~ label,
+    .rating-stars-wrapper input:checked ~ label {
+        color: #fbbf24;
+    }
+    .rating-history-item {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
     /* Activity cards styling */
     .activity-card {
         display: flex;
@@ -463,6 +504,180 @@
                     @empty
                         <p style="margin: 0; color: var(--text-muted); font-size: 0.875rem; text-align: center; padding: 1rem 0;">Belum ada aktivitas pada sesi ini.</p>
                     @endforelse
+
+                    <!-- Rating Sesi / Pertemuan (Khusus Mahasiswa) -->
+                    @if(Auth::user()->student && $lecturers->count() > 0)
+                        @php
+                            $sessionRatings = isset($myRatings[$number]) ? $myRatings[$number] : collect();
+                            // Filter dosen mana saja yang sudah dinilai mahasiswa pada sesi ini
+                            $ratedDosenIds = $sessionRatings->pluck('dosen_id')->toArray();
+                            // Filter dosen yang terdaftar di kelas dan memiliki relasi 'dosen'
+                            $classDosens = $lecturers->filter(fn($l) => $l->dosen !== null);
+                        @endphp
+
+                        @if($classDosens->count() > 0)
+                            <div class="rating-container">
+                                <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                                    ⭐ Penilaian Dosen untuk Sesi {{ $number }}
+                                </h4>
+                                <p style="margin: 0 0 1rem 0; font-size: 0.85rem; color: var(--text-muted);">
+                                    Berikan penilaian Anda terhadap dosen pengampu pada pertemuan ini untuk membantu meningkatkan kualitas pengajaran.
+                                </p>
+
+                                <!-- Tampilkan riwayat rating yang sudah diberikan -->
+                                @if($sessionRatings->count() > 0)
+                                    <div style="margin-bottom: 1rem;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.5rem;">Rating yang telah Anda kirimkan:</span>
+                                        @foreach($sessionRatings as $ratingRecord)
+                                            <div class="rating-history-item">
+                                                <div>
+                                                    <strong style="font-size: 0.85rem; color: var(--text-primary); display: block;">
+                                                        {{ $ratingRecord->dosen->nama_dosen }}
+                                                    </strong>
+                                                    @if($ratingRecord->comments)
+                                                        <span style="font-size: 0.8rem; color: var(--text-muted); font-style: italic; display: block; margin-top: 0.25rem;">
+                                                            "{{ $ratingRecord->comments }}"
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div style="color: #fbbf24; font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 0.15rem;">
+                                                    @for($i = 1; $i <= 5; $i++)
+                                                        {{ $i <= $ratingRecord->rating ? '★' : '☆' }}
+                                                    @endfor
+                                                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 0.25rem; font-weight: normal;">({{ $ratingRecord->rating }}/5)</span>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                <!-- Form rating (hanya jika ada dosen yang belum dinilai) -->
+                                @php
+                                    $unratedDosens = $classDosens->filter(fn($l) => !in_array($l->dosen->id, $ratedDosenIds));
+                                @endphp
+
+                                @if($unratedDosens->count() > 0)
+                                    <form action="{{ route('classes.rate_session', [$class, $number]) }}" method="POST" style="margin: 0;">
+                                        @csrf
+                                        
+                                        <!-- Pemilihan Dosen (jika dosen pengampu lebih dari satu) -->
+                                        <div style="margin-bottom: 0.75rem;">
+                                            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Pilih Dosen Pengajar:</label>
+                                            @if($unratedDosens->count() == 1)
+                                                @php $singleDosen = $unratedDosens->first(); @endphp
+                                                <input type="hidden" name="dosen_id" value="{{ $singleDosen->dosen->id }}">
+                                                <div style="padding: 0.5rem 0.75rem; background: white; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; color: var(--text-primary); font-weight: 500;">
+                                                    {{ $singleDosen->name }}
+                                                </div>
+                                            @else
+                                                <select name="dosen_id" required style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: white;">
+                                                    <option value="" disabled selected>-- Pilih Dosen --</option>
+                                                    @foreach($unratedDosens as $dUser)
+                                                        <option value="{{ $dUser->dosen->id }}">{{ $dUser->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            @endif
+                                        </div>
+
+                                        <!-- Rating Bintang -->
+                                        <div style="margin-bottom: 0.75rem;">
+                                            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 0.15rem;">Beri Rating:</label>
+                                            <div class="rating-stars-wrapper">
+                                                <input type="radio" id="star5-{{ $number }}" name="rating" value="5" required />
+                                                <label for="star5-{{ $number }}" title="Sangat Baik">★</label>
+                                                <input type="radio" id="star4-{{ $number }}" name="rating" value="4" />
+                                                <label for="star4-{{ $number }}" title="Baik">★</label>
+                                                <input type="radio" id="star3-{{ $number }}" name="rating" value="3" />
+                                                <label for="star3-{{ $number }}" title="Cukup">★</label>
+                                                <input type="radio" id="star2-{{ $number }}" name="rating" value="2" />
+                                                <label for="star2-{{ $number }}" title="Kurang">★</label>
+                                                <input type="radio" id="star1-{{ $number }}" name="rating" value="1" />
+                                                <label for="star1-{{ $number }}" title="Sangat Kurang">★</label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Komentar -->
+                                        <div style="margin-bottom: 1rem;">
+                                            <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Ulasan / Komentar (Opsional):</label>
+                                            <textarea name="comments" rows="2" placeholder="Tulis masukan Anda mengenai materi atau cara penyampaian dosen..." style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; resize: vertical; font-family: inherit;"></textarea>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                            📤 Kirim Penilaian
+                                        </button>
+                                    </form>
+                                @else
+                                    <div style="padding: 0.75rem; background: #ecfdf5; color: #047857; border-radius: 6px; font-size: 0.85rem; font-weight: 600; text-align: center; border: 1px solid #a7f3d0; margin-top: 0.5rem;">
+                                        ✅ Anda sudah memberikan rating untuk semua dosen pengampu di pertemuan ini.
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    @endif
+
+                    <!-- Ringkasan Rating Sesi / Pertemuan (Dinamis Berbasis Permission) -->
+                    @if(Auth::user()->can('view-ratings-anonymous') || Auth::user()->can('view-ratings-transparent'))
+                        @php
+                            $sessionRatings = isset($allRatings[$number]) ? $allRatings[$number] : collect();
+                            $avgRating = $sessionRatings->count() > 0 ? round($sessionRatings->avg('rating'), 1) : 0;
+                        @endphp
+                        
+                        <div class="rating-container" style="border-left: 4px solid var(--primary); margin-top: 1.5rem;">
+                            <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; justify-content: space-between;">
+                                <span>📊 Umpan Balik & Rating Sesi {{ $number }}</span>
+                                @if($sessionRatings->count() > 0)
+                                    <span style="font-size: 0.85rem; background: #fef3c7; color: #d97706; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                        ⭐ {{ $avgRating }} / 5.0
+                                    </span>
+                                @endif
+                            </h4>
+                            
+                            @if($sessionRatings->count() > 0)
+                                <p style="margin: 0 0 1rem 0; font-size: 0.85rem; color: var(--text-muted);">
+                                    Menerima <strong>{{ $sessionRatings->count() }} penilaian</strong> dari mahasiswa pada sesi ini.
+                                </p>
+                                
+                                <div style="max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+                                    @foreach($sessionRatings as $ratingRecord)
+                                        <div class="rating-history-item" style="border-left: 3px solid #fbbf24; margin-bottom: 0.75rem; background: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem 1rem; display: flex; align-items: flex-start; justify-content: space-between;">
+                                            <div style="flex: 1; width: 100%;">
+                                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                                                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">
+                                                        @if(Auth::user()->can('view-ratings-transparent'))
+                                                            {{ $ratingRecord->student->nama_student }} <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">(NIM: {{ $ratingRecord->student->nim }})</span>
+                                                        @else
+                                                            Mahasiswa (Anonim)
+                                                        @endif
+                                                    </span>
+                                                    <span style="color: #fbbf24; font-weight: bold; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.1rem;">
+                                                        @for($i = 1; $i <= 5; $i++)
+                                                            {{ $i <= $ratingRecord->rating ? '★' : '☆' }}
+                                                        @endfor
+                                                    </span>
+                                                </div>
+                                                
+                                                @if(Auth::user()->can('view-ratings-transparent'))
+                                                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">
+                                                        Dinilai untuk: <strong>{{ $ratingRecord->dosen->nama_dosen }}</strong>
+                                                    </span>
+                                                @endif
+                                                
+                                                @if($ratingRecord->comments)
+                                                    <span style="font-size: 0.8rem; color: var(--text-primary); font-style: italic; display: block; background: #f1f5f9; padding: 0.4rem 0.6rem; border-radius: 4px; margin-top: 0.25rem;">
+                                                        "{{ $ratingRecord->comments }}"
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p style="margin: 0; padding: 1rem; background: white; border: 1px dashed var(--border-color); border-radius: 6px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                                    Belum ada penilaian atau komentar yang dikirimkan oleh mahasiswa untuk sesi ini.
+                                </p>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         @endforeach
@@ -498,6 +713,9 @@
                                 @if($dosenUser->dosen)
                                     <span style="font-size: 0.75rem; background: #e0e7ff; color: var(--primary); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.25rem;">
                                         {{ $dosenUser->dosen->nidn ?? '' }}
+                                    </span>
+                                    <span style="font-size: 0.75rem; background: #fef3c7; color: #d97706; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.25rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem;" title="{{ __('Rata-rata Rating Kuliah') }}">
+                                        ⭐ {{ number_format($dosenUser->dosen->average_rating, 1) }} ({{ $dosenUser->dosen->sessionRatings()->count() }} {{ __('ulasan') }})
                                     </span>
                                 @endif
                             </div>
@@ -857,12 +1075,9 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Mata Kuliah <span style="color: red;">*</span></label>
-                                <select name="subject_id" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                                    @foreach($subjects as $subject)
-                                        <option value="{{ $subject->id }}" {{ $class->subject_id == $subject->id ? 'selected' : '' }}>{{ $subject->nama_subject }}</option>
-                                    @endforeach
-                                </select>
+                                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Mata Kuliah</label>
+                                <input type="hidden" name="subject_id" value="{{ $class->subject_id }}">
+                                <input type="text" value="{{ $class->subject->nama_subject }}" disabled style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: #f1f5f9; color: var(--text-muted); cursor: not-allowed; font-weight: 500;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Dosen Pengampu Utama <span style="color: red;">*</span></label>
@@ -878,10 +1093,14 @@
                         </div>
 
                         <div style="margin-bottom: 1.5rem;">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
-                                <input type="checkbox" name="is_active" value="1" {{ $class->is_active ? 'checked' : '' }} style="width: 18px; height: 18px;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin: 0;">
+                                <input type="hidden" name="status" value="archived">
+                                <input type="checkbox" name="status" value="active" {{ $class->status === 'active' ? 'checked' : '' }} style="width: 18px; height: 18px;">
                                 Aktifkan kelas ini untuk pembelajaran mahasiswa (Active Classroom)
                             </label>
+                            <p style="margin: 0.25rem 0 0 1.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                                Jika dinonaktifkan, kelas akan masuk ke folder arsip (archived) dan semua konten menjadi read-only bagi mahasiswa.
+                            </p>
                         </div>
 
                         <div style="display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
@@ -916,36 +1135,61 @@
             <button onclick="document.getElementById('modal-add').style.display = 'none'" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 1rem;">&times;</button>
         </div>
         <div style="padding: 1.5rem;">
-            @if(count($availableStudents) > 0)
-            <form action="{{ route('classes.enroll', $class) }}" method="POST">
-                @csrf
-                {{-- Live Search Input & Filter --}}
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                    <div style="position: relative; flex: 1;">
-                        <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;">🔍</span>
-                        <input
-                            type="text"
-                            id="search-student"
-                            placeholder="Cari NIM atau nama mahasiswa..."
-                            oninput="filterStudentOptions()"
-                            style="width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; box-sizing: border-box;"
-                            autocomplete="off"
-                        >
-                    </div>
-                    @php
-                        $uniqueAngkatan = collect($availableStudents)->pluck('angkatan')->unique()->filter()->sort()->values();
-                    @endphp
-                    <select id="filter-angkatan" onchange="filterStudentOptions()" style="padding: 0.65rem 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; box-sizing: border-box; outline: none; width: 140px; background: white;">
-                        <option value="">Semua Angkatan</option>
-                        @foreach($uniqueAngkatan as $akt)
-                            <option value="{{ $akt }}">{{ $akt }}</option>
+            {{-- Filter Lintas Prodi Dinamis (Fakultas, Prodi, Angkatan) --}}
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem;">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Fakultas:</label>
+                    <select id="enroll-filter-fakultas" onchange="onFakultasChange()" style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; background: white; outline: none; font-weight: 500; color: var(--text-primary);">
+                        <option value="">-- Semua Fakultas --</option>
+                        @foreach($allFakultas as $fak)
+                            <option value="{{ $fak->id }}" {{ $selectedEnrollFakultasId == $fak->id ? 'selected' : '' }}>
+                                {{ $fak->nama_fakultas }}
+                            </option>
                         @endforeach
                     </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.75rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Program Studi:</label>
+                        <select id="enroll-filter-prodi" onchange="onProdiChange()" style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; background: white; outline: none; font-weight: 500; color: var(--text-primary);">
+                            <option value="">-- Semua Prodi --</option>
+                            @foreach($allProdis as $prod)
+                                <option value="{{ $prod->id }}" data-fakultas="{{ $prod->id_fakultas }}" {{ $selectedEnrollProdiId == $prod->id ? 'selected' : '' }}>
+                                    {{ $prod->nama_prodi }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Angkatan:</label>
+                        <select id="enroll-filter-angkatan" onchange="loadStudentsAjax()" style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; background: white; outline: none; font-weight: 500; color: var(--text-primary);">
+                            <option value="">-- Semua --</option>
+                            @foreach($allAngkatans as $angk)
+                                <option value="{{ $angk }}">{{ $angk }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <form action="{{ route('classes.enroll', $class) }}" method="POST" style="margin: 0;">
+                @csrf
+                {{-- Live Search Input --}}
+                <div style="position: relative; margin-bottom: 1rem;">
+                    <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;">🔍</span>
+                    <input
+                        type="text"
+                        id="search-student"
+                        placeholder="Cari NIM atau nama mahasiswa..."
+                        oninput="filterStudentOptions()"
+                        style="width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; box-sizing: border-box;"
+                        autocomplete="off"
+                    >
                 </div>
                 
                 {{-- Select All Checkbox --}}
                 <div style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; padding: 0 0.5rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin: 0;">
                         <input type="checkbox" id="select-all-students" onclick="toggleSelectAllStudents(this)" style="accent-color: var(--primary); width: 16px; height: 16px;">
                         Pilih Semua (yang tampil)
                     </label>
@@ -954,8 +1198,8 @@
 
                 {{-- Student List --}}
                 <div id="student-list" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
-                    @foreach($availableStudents as $student)
-                    <label class="student-option" data-search="{{ strtolower($student->nim . ' ' . $student->nama_student) }}" data-angkatan="{{ $student->angkatan }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                    @forelse($availableStudents as $student)
+                    <label class="student-option" data-search="{{ strtolower($student->nim . ' ' . $student->nama_student) }}" data-angkatan="{{ $student->angkatan }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s; margin: 0;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
                         <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" style="accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;" onchange="updateSelectAllState()">
                         <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">
                             {{ strtoupper(substr($student->nama_student, 0, 1)) }}
@@ -965,22 +1209,15 @@
                             <span style="font-size: 0.75rem; color: var(--text-muted);">NIM: {{ $student->nim }} &bull; Angkatan {{ $student->angkatan ?? '-' }}</span>
                         </div>
                     </label>
-                    @endforeach
-                    <div id="no-student-result" style="display: none; padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">Tidak ada mahasiswa yang cocok.</div>
+                    @empty
+                    <div id="no-student-result" style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">Tidak ada mahasiswa yang belum terdaftar.</div>
+                    @endforelse
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add').style.display = 'none'">Batal</button>
                     <button type="submit" class="btn">✅ Enroll Mahasiswa</button>
                 </div>
             </form>
-            @else
-            <div style="text-align: center; padding: 2rem 1rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🎓</div>
-                <p style="margin: 0 0 0.5rem; font-weight: 600; color: var(--text-primary);">Semua Mahasiswa Sudah Terdaftar</p>
-                <p style="margin: 0 0 1.5rem; font-size: 0.85rem; color: var(--text-muted);">Semua mahasiswa dari prodi terkait sudah terdaftar di kelas ini.</p>
-                <button type="button" class="btn btn-outline" onclick="document.getElementById('modal-add').style.display = 'none'">Tutup</button>
-            </div>
-            @endif
         </div>
     </div>
 </div>
@@ -1654,6 +1891,144 @@
     
     function closeEditMaterialModal() {
         document.getElementById('modal-edit-material').style.display = 'none';
+    }
+
+    let allProdiOptions = [];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const prodiSelect = document.getElementById('enroll-filter-prodi');
+        if (prodiSelect) {
+            allProdiOptions = Array.from(prodiSelect.querySelectorAll('option'));
+            filterProdis();
+        }
+
+        // Auto-open enroll modal and switch to people tab if open_enroll_modal parameter is present
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('open_enroll_modal') === '1') {
+            const modal = document.getElementById('modal-add');
+            if (modal) modal.style.display = 'flex';
+            
+            // Switch active tab to tab-people
+            document.querySelectorAll('.tab-trigger').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            const peopleTabTrigger = document.querySelector('.tab-trigger[data-tab="tab-people"]');
+            if (peopleTabTrigger) peopleTabTrigger.classList.add('active');
+            
+            const peopleTabContent = document.getElementById('tab-people');
+            if (peopleTabContent) peopleTabContent.classList.add('active');
+        }
+    });
+
+    function filterProdis() {
+        const fakultasId = document.getElementById('enroll-filter-fakultas').value;
+        const prodiSelect = document.getElementById('enroll-filter-prodi');
+        if (!prodiSelect) return;
+        
+        const currentValue = prodiSelect.value;
+        
+        // Clear options
+        prodiSelect.innerHTML = '';
+        
+        allProdiOptions.forEach(opt => {
+            const optFakultasId = opt.dataset.fakultas;
+            if (opt.value === "" || !fakultasId || optFakultasId === fakultasId) {
+                prodiSelect.appendChild(opt.cloneNode(true));
+            }
+        });
+        
+        // Preserve selected value if it's still an option, otherwise select empty
+        const optionExists = Array.from(prodiSelect.options).some(opt => opt.value === currentValue);
+        if (optionExists) {
+            prodiSelect.value = currentValue;
+        } else {
+            prodiSelect.value = "";
+        }
+    }
+
+    function onFakultasChange() {
+        filterProdis();
+        loadStudentsAjax();
+    }
+
+    function onProdiChange() {
+        loadStudentsAjax();
+    }
+
+    function loadStudentsAjax() {
+        const fakultasId = document.getElementById('enroll-filter-fakultas').value;
+        const prodiId = document.getElementById('enroll-filter-prodi').value;
+        const angkatan = document.getElementById('enroll-filter-angkatan').value;
+        const studentListContainer = document.getElementById('student-list');
+        const selectAllCheckbox = document.getElementById('select-all-students');
+        const visibleCountSpan = document.getElementById('student-visible-count');
+
+        if (!studentListContainer) return;
+
+        // Show loading spinner
+        studentListContainer.innerHTML = `
+            <div style="padding: 2.5rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                <span style="display: inline-block; width: 1.5rem; height: 1.5rem; border: 2px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 0.5rem; vertical-align: middle;"></span>
+                Memuat data mahasiswa...
+            </div>
+            <style>
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
+        `;
+        
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+
+        const url = `/classes/{{ $class->id }}/available-students?fakultas_id=${fakultasId}&prodi_id=${prodiId}&angkatan=${angkatan}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(students => {
+                studentListContainer.innerHTML = '';
+                
+                if (students.length === 0) {
+                    studentListContainer.innerHTML = '<div id="no-student-result" style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">Tidak ada mahasiswa yang belum terdaftar.</div>';
+                    if (visibleCountSpan) visibleCountSpan.textContent = '0 mahasiswa';
+                    return;
+                }
+
+                if (visibleCountSpan) visibleCountSpan.textContent = `${students.length} mahasiswa`;
+
+                students.forEach(student => {
+                    const label = document.createElement('label');
+                    label.className = 'student-option';
+                    label.dataset.search = `${student.nim} ${student.nama_student}`.toLowerCase();
+                    label.dataset.angkatan = student.angkatan;
+                    label.style.display = 'flex';
+                    label.style.alignItems = 'center';
+                    label.style.gap = '0.75rem';
+                    label.style.padding = '0.75rem 1rem';
+                    label.style.cursor = 'pointer';
+                    label.style.borderBottom = '1px solid #f1f5f9';
+                    label.style.transition = 'background 0.15s';
+                    label.style.margin = '0';
+                    
+                    label.onmouseover = () => { label.style.background = '#f8fafc'; };
+                    label.onmouseout = () => { label.style.background = 'white'; };
+
+                    const initials = student.nama_student.substring(0, 1).toUpperCase();
+
+                    label.innerHTML = `
+                        <input type="checkbox" name="student_ids[]" value="${student.id}" style="accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;" onchange="updateSelectAllState()">
+                        <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">
+                            ${initials}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <strong style="display: block; font-size: 0.9rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${student.nama_student}</strong>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">NIM: ${student.nim} &bull; Angkatan ${student.angkatan || '-'}</span>
+                        </div>
+                    `;
+                    studentListContainer.appendChild(label);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                studentListContainer.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: #ef4444; font-size: 0.875rem;">Gagal memuat data mahasiswa. Silakan coba lagi.</div>';
+            });
     }
 </script>
 @endsection

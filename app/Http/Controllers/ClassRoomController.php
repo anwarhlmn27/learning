@@ -250,7 +250,7 @@ class ClassRoomController extends Controller
         return view('lms.classes.archived', compact('classRooms', 'selectedProdi'));
     }
 
-    public function show(ClassRoom $class)
+    public function show(Request $request, ClassRoom $class)
     {
         $user = Auth::user();
         
@@ -275,15 +275,20 @@ class ClassRoomController extends Controller
         $lecturers = $class->dosens()->get();
         $baakStaff = $class->baaks()->get();
 
-        $prodiId = $class->subject->id_prodi ?? null;
+        $selectedEnrollProdiId = $request->input('enroll_prodi_id', $class->subject->id_prodi ?? null);
+        $selectedEnrollFakultasId = $request->input('enroll_fakultas_id', $class->subject->prodi->id_fakultas ?? null);
+        
         $availableStudents = [];
-        if ($prodiId) {
+        if ($selectedEnrollProdiId) {
             $enrolledStudentIds = $enrollments->pluck('student_id')->toArray();
-            $availableStudents = Student::where('prodi_id', $prodiId)
+            $availableStudents = Student::where('prodi_id', $selectedEnrollProdiId)
                                     ->whereNotIn('id', $enrolledStudentIds)
                                     ->orderBy('nama_student')
                                     ->get();
         }
+        $allFakultas = \App\Models\Fakultas::orderBy('nama_fakultas')->get();
+        $allProdis = \App\Models\Prodi::orderBy('nama_prodi')->get();
+        $allAngkatans = \App\Models\Student::select('angkatan')->distinct()->orderBy('angkatan', 'desc')->pluck('angkatan')->filter()->values();
 
         // 2. Classwork / Sesi Tab data (timeline of 14 sessions)
         $topics = $class->topics()->with(['material', 'assignment', 'forum', 'quiz'])->get();
@@ -329,6 +334,29 @@ class ClassRoomController extends Controller
             $q->where('name', 'baak');
         })->whereNotIn('id', $enrolledBaakUserIds)->orderBy('name')->get();
 
+        // Fetch current student's ratings for this class
+        $myRatings = [];
+        if ($user->student) {
+            $myRatings = \App\Models\SessionRating::where('class_room_id', $class->id)
+                ->where('student_id', $user->student->id)
+                ->get()
+                ->groupBy('session_number');
+        }
+
+        // Fetch ratings for dosen or admins
+        $allRatings = [];
+        if ($user->hasRole(['admin', 'kaprodi', 'baak']) || $user->dosen) {
+            $queryRatings = \App\Models\SessionRating::with(['student', 'dosen'])
+                ->where('class_room_id', $class->id);
+
+            // Dosen should only see their own ratings
+            if (!$user->hasRole(['admin', 'kaprodi']) && $user->dosen) {
+                $queryRatings->where('dosen_id', $user->dosen->id);
+            }
+
+            $allRatings = $queryRatings->get()->groupBy('session_number');
+        }
+
         return view('lms.classes.show', compact(
             'class', 
             'enrollments', 
@@ -343,8 +371,48 @@ class ClassRoomController extends Controller
             'subjects',
             'dosens',
             'availableDosens',
-            'availableBaaks'
+            'availableBaaks',
+            'myRatings',
+            'allRatings',
+            'selectedEnrollProdiId',
+            'selectedEnrollFakultasId',
+            'allFakultas',
+            'allProdis',
+            'allAngkatans'
         ));
+    }
+
+    /**
+     * API Endpoint to retrieve available students based on filters (Faculty, Prodi, Angkatan).
+     */
+    public function getAvailableStudents(Request $request, ClassRoom $class)
+    {
+        $query = Student::query();
+
+        // Exclude students who are already enrolled in this class
+        $enrolledStudentIds = Enrollment::where('class_room_id', $class->id)->pluck('student_id')->toArray();
+        $query->whereNotIn('id', $enrolledStudentIds);
+
+        // Filter by Fakultas (through prodi)
+        if ($request->filled('fakultas_id')) {
+            $query->whereHas('prodi', function($q) use ($request) {
+                $q->where('id_fakultas', $request->fakultas_id);
+            });
+        }
+
+        // Filter by Prodi
+        if ($request->filled('prodi_id')) {
+            $query->where('prodi_id', $request->prodi_id);
+        }
+
+        // Filter by Angkatan
+        if ($request->filled('angkatan')) {
+            $query->where('angkatan', $request->angkatan);
+        }
+
+        $students = $query->orderBy('nama_student')->get(['id', 'nim', 'nama_student', 'angkatan']);
+
+        return response()->json($students);
     }
 
     public function addStaff(Request $request, ClassRoom $class)

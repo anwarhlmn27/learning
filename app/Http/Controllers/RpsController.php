@@ -207,9 +207,8 @@ class RpsController extends Controller
 
     public function manageSessions(Rps $rp)
     {
-        $rp->load('sessions.activities', 'sessions.clos', 'sessions.assessments.type', 'sessions.resources', 'subject.clos');
+        $rp->load('sessions.activities', 'sessions.clos', 'sessions.assessments', 'sessions.resources', 'subject.clos');
         $clos = $rp->subject->clos;
-        $assessmentTypes = AssessmentType::orderBy('name')->get();
 
         // Calculate current total weight
         $totalWeight = $rp->sessions->flatMap->assessments->sum('weight');
@@ -228,10 +227,10 @@ class RpsController extends Controller
                     'evaluation_criteria' => '',
                 ]);
             }
-            $rp->load('sessions.activities', 'sessions.clos', 'sessions.assessments.type');
+            $rp->load('sessions.activities', 'sessions.clos', 'sessions.assessments');
         }
 
-        return view('admin.rps.manage_sessions', compact('rp', 'clos', 'assessmentTypes', 'totalWeight'));
+        return view('admin.rps.manage_sessions', compact('rp', 'clos', 'totalWeight'));
     }
 
     public function updateSession(Request $request, RpsSession $session)
@@ -249,7 +248,7 @@ class RpsController extends Controller
             'activities.*.content' => 'required_with:activities|string',
             'assessments' => 'nullable|array',
             'assessments.*.clo_id' => 'required_with:assessments|exists:clos,id',
-            'assessments.*.assessment_type_id' => 'required_with:assessments',
+            'assessments.*.assessment_type' => 'required_with:assessments|string',
             'assessments.*.assignment_activities' => 'nullable|string',
             'assessments.*.assessment_scope' => 'nullable|string',
             'assessments.*.how_worked' => 'nullable|string',
@@ -281,12 +280,9 @@ class RpsController extends Controller
             $session->assessments()->delete();
             if ($request->has('assessments') && is_array($request->assessments)) {
                 foreach ($request->assessments as $assess) {
-                    $typeInput = $assess['assessment_type_id'];
-                    $typeModel = \App\Models\AssessmentType::firstOrCreate(['name' => $typeInput]);
-
                     $session->assessments()->create([
                         'clo_id' => $assess['clo_id'],
-                        'assessment_type_id' => $typeModel->id,
+                        'assessment_type' => $assess['assessment_type'],
                         'assignment_activities' => $assess['assignment_activities'] ?? null,
                         'assessment_scope' => $assess['assessment_scope'] ?? null,
                         'how_worked' => $assess['how_worked'] ?? null,
@@ -396,7 +392,7 @@ class RpsController extends Controller
             'subject.bks', 
             'sessions.activities', 
             'sessions.clos',
-            'sessions.assessments.type',
+            'sessions.assessments',
             'sessions.assessments.clo'
         ]);
         

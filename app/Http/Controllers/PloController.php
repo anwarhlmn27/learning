@@ -8,6 +8,8 @@ use App\Models\Gp;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
+use App\Models\PloTerm;
+use App\Models\PloIndicator;
 
 class PloController extends Controller
 {
@@ -115,5 +117,65 @@ class PloController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->withErrors(['error' => $this->handleException($e, 'Failed to delete PLO.')]);
         }
+    }
+
+    public function show(Plo $plo)
+    {
+        $plo->load(['terms', 'indicators']);
+        return view('admin.plo.show', compact('plo'));
+    }
+
+    // --- PLO TERMS ---
+    public function storeTerm(Request $request, Plo $plo)
+    {
+        $request->validate(['description' => 'required|string']);
+        $plo->terms()->create(['description' => $request->description]);
+        return redirect()->back()->with('success', 'Key Term added successfully.');
+    }
+
+    public function updateTerm(Request $request, PloTerm $term)
+    {
+        $request->validate(['description' => 'required|string']);
+        $term->update(['description' => $request->description]);
+        return redirect()->back()->with('success', 'Key Term updated successfully.');
+    }
+
+    public function destroyTerm(PloTerm $term)
+    {
+        $term->delete();
+        return redirect()->back()->with('success', 'Key Term deleted successfully.');
+    }
+
+    // --- PLO INDICATORS ---
+    public function storeIndicator(Request $request, Plo $plo)
+    {
+        $request->validate([
+            'indicator_code' => 'required|string',
+            'indicator_description' => 'required|string'
+        ]);
+        $plo->indicators()->create([
+            'indicator_code' => $request->indicator_code,
+            'indicator_description' => $request->indicator_description
+        ]);
+        return redirect()->back()->with('success', 'Performance Indicator added successfully.');
+    }
+
+    public function updateIndicator(Request $request, PloIndicator $indicator)
+    {
+        $request->validate([
+            'indicator_code' => 'required|string',
+            'indicator_description' => 'required|string'
+        ]);
+        $indicator->update([
+            'indicator_code' => $request->indicator_code,
+            'indicator_description' => $request->indicator_description
+        ]);
+        return redirect()->back()->with('success', 'Performance Indicator updated successfully.');
+    }
+
+    public function destroyIndicator(PloIndicator $indicator)
+    {
+        $indicator->delete();
+        return redirect()->back()->with('success', 'Performance Indicator deleted successfully.');
     }
 }

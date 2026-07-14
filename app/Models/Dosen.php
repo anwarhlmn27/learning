@@ -21,4 +21,14 @@ class Dosen extends Model
     {
         return $this->belongsTo(Prodi::class);
     }
+
+    public function sessionRatings()
+    {
+        return $this->hasMany(SessionRating::class, 'dosen_id');
+    }
+
+    public function getAverageRatingAttribute(): float
+    {
+        return round($this->sessionRatings()->avg('rating') ?? 0.0, 1);
+    }
 }

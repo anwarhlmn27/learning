@@ -156,14 +156,54 @@
 ═══════════════════════════════════════════════════════════════════════════════ --}}
 @else
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-    <div style="background: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid var(--primary);">
-        <h3 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">{{ __('Total Classes') }}</h3>
-        <p style="margin: 0; font-size: 2rem; font-weight: 700; color: var(--text-main);">{{ $data['total_classes'] }}</p>
+<div class="row mb-4">
+    <!-- Card 1: Total Kelas -->
+    <div class="col-xl-6 col-xxl-6 col-sm-6 mb-3 mb-sm-0">
+        <div class="widget-stat card bg-primary" style="margin-bottom: 0; height: auto !important; min-height: 145px;">
+            <div class="card-body" style="padding: 1.25rem 1.25rem 1.5rem 1.25rem;">
+                <div class="media">
+                    <span class="me-3" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0;">
+                        <i class="la la-graduation-cap"></i>
+                    </span>
+                    <div class="media-body text-white">
+                        <p class="mb-1 text-white" style="font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px;">{{ __('Total Kelas') }}</p>
+                        <h3 class="text-white" style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.35rem;">{{ $data['total_classes'] }}</h3>
+                        <div class="progress mb-2 bg-white" style="height: 4px; opacity: 0.8;">
+                            <div class="progress-bar progress-animated bg-white" style="width: 100%; height: 4px;"></div>
+                        </div>
+                        <small style="opacity: 0.9; font-size: 0.75rem; display: block; line-height: 1.2;">{{ ($data['view_type'] ?? '') == 'dosen' ? __('Kelas aktif yang Anda ampu') : __('Kelas aktif yang Anda ikuti') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div style="background: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #f59e0b;">
-        <h3 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">{{ __('Pending Assignments') }}</h3>
-        <p style="margin: 0; font-size: 2rem; font-weight: 700; color: var(--text-main);">{{ $data['total_assignments'] }}</p>
+    
+    <!-- Card 2: Tugas Tertunda / Perlu Dinilai -->
+    <div class="col-xl-6 col-xxl-6 col-sm-6">
+        @php
+            $isDosen = ($data['view_type'] ?? '') == 'dosen';
+        @endphp
+        <div class="widget-stat card {{ $isDosen ? 'bg-danger' : 'bg-warning' }}" style="margin-bottom: 0; height: auto !important; min-height: 145px;">
+            <div class="card-body" style="padding: 1.25rem 1.25rem 1.5rem 1.25rem;">
+                <div class="media">
+                    <span class="me-3" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0;">
+                        <i class="la la-tasks"></i>
+                    </span>
+                    <div class="media-body text-white">
+                        <p class="mb-1 text-white" style="font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px;">
+                            {{ $isDosen ? __('Tugas Perlu Dinilai') : __('Tugas Tertunda') }}
+                        </p>
+                        <h3 class="text-white" style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.35rem;">{{ $data['total_assignments'] }}</h3>
+                        <div class="progress mb-2 bg-white" style="height: 4px; opacity: 0.8;">
+                            <div class="progress-bar progress-animated bg-white" style="width: 100%; height: 4px;"></div>
+                        </div>
+                        <small style="opacity: 0.9; font-size: 0.75rem; display: block; line-height: 1.2;">
+                            {{ $isDosen ? __('Tugas mahasiswa belum dinilai') : __('Tugas belum dikumpulkan') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -184,7 +224,7 @@
                                     {{ __('Semester') }}: {{ $class->semester ?? '-' }} {{ $class->tahun_akademik ?? '-' }}
                                 </p>
                             </div>
-                            <a href="{{ route('classes.show', $class) }}" class="btn">{{ __('Masuk Kelas') }}</a>
+                            <a href="{{ route('classes.show', $class) }}" class="btn btn-primary btn-sm text-white px-4" style="border-radius: var(--radius-md);">{{ __('Masuk Kelas') }}</a>
                         </div>
                     @endforeach
                 </div>

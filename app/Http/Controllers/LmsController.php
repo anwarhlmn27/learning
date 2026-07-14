@@ -47,7 +47,12 @@ class LmsController extends Controller
                 $data['classes']           = $classes;
                 $classIds                  = $classes->pluck('id');
                 $data['assignments']       = Assignment::whereIn('class_room_id', $classIds)->orderBy('deadline')->take(5)->get();
-                $data['total_assignments'] = Assignment::whereIn('class_room_id', $classIds)->count();
+                
+                // Tugas Perlu Dinilai: hitung semua pengumpulan tugas mahasiswa yang berstatus 'Submitted' atau 'Late' di kelas-kelas dosen ini
+                $assignmentIds = Assignment::whereIn('class_room_id', $classIds)->pluck('id');
+                $data['total_assignments'] = \App\Models\AssignmentSubmission::whereIn('assignment_id', $assignmentIds)
+                    ->whereIn('status', ['Submitted', 'Late'])
+                    ->count();
             }
             $data['view_type'] = 'dosen';
         } else {
@@ -57,8 +62,26 @@ class LmsController extends Controller
                 $classIds              = $enrollments->pluck('class_room_id');
                 $data['total_classes'] = $enrollments->count();
                 $data['classes']       = $enrollments->map(fn($e) => $e->classRoom);
-                $data['assignments']       = Assignment::whereIn('class_room_id', $classIds)->orderBy('deadline')->take(5)->get();
-                $data['total_assignments'] = Assignment::whereIn('class_room_id', $classIds)->count();
+                
+                // Ambil daftar assignment di kelas yang diiikuti mahasiswa
+                $assignments = Assignment::whereIn('class_room_id', $classIds)->get();
+                $assignmentIds = $assignments->pluck('id');
+                
+                // Cari assignment yang sudah dikumpulkan oleh mahasiswa ini
+                $submittedAssignmentIds = \App\Models\AssignmentSubmission::where('student_id', $student->id)
+                    ->whereIn('assignment_id', $assignmentIds)
+                    ->pluck('assignment_id')
+                    ->toArray();
+
+                // Tugas Tertunda: tugas di kelas terdaftar yang BELUM dikumpulkan
+                $data['total_assignments'] = $assignments->whereNotIn('id', $submittedAssignmentIds)->count();
+                
+                // Tampilkan hanya tugas mendatang yang belum dikumpulkan
+                $data['assignments']       = Assignment::whereIn('class_room_id', $classIds)
+                    ->whereNotIn('id', $submittedAssignmentIds)
+                    ->orderBy('deadline')
+                    ->take(5)
+                    ->get();
             }
             $data['view_type'] = 'student';
         }

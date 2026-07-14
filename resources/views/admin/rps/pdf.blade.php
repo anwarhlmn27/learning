@@ -239,7 +239,7 @@
                         <div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #eee;">
                         @foreach($session->assessments as $assess)
                             <div style="margin-bottom: 8px; border-bottom: 1px dotted #eee; padding-bottom: 5px;">
-                                <strong>{{ $assess->type->name }} ({{ $assess->clo->kode_clo }}):</strong><br>
+                                <strong>{{ $assess->assessment_type }} ({{ $assess->clo->kode_clo }}):</strong><br>
                                 @if($assess->assessment_output) Luaran: {{ $assess->assessment_output }}<br> @endif
                                 @if($assess->assignment_activities) <span style="font-size: 10px;">Aktivitas: {{ $assess->assignment_activities }}</span><br> @endif
                                 <strong>Weight: {{ $assess->weight }}%</strong>

@@ -15,7 +15,9 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('rps_session_id'); // Relasi ke Pertemuan 1-14
             $table->uuid('clo_id');        // Langsung tunjuk ke CLO mana
-            $table->uuid('assessment_type_id'); // Relasi ke master data assessment_types
+            // $table->uuid('assessment_type_id'); // Relasi ke master data assessment_types
+            $table->text('assessment_type'); // Teks: Lisan, Tertulis, Kinerja, Portofolio, Proyek
+            
             // Assessment per Session
             $table->text('assignment_activities')->nullable(); //Aktivitas Penugasan
             $table->text('assessment_scope')->nullable(); //Ruang Lingkup Tugas
@@ -27,7 +29,7 @@ return new class extends Migration
 
             $table->foreign('rps_session_id')->references('id')->on('rps_sessions')->onDelete('cascade');
             $table->foreign('clo_id')->references('id')->on('clos')->onDelete('cascade');
-            $table->foreign('assessment_type_id')->references('id')->on('assessment_types')->onDelete('cascade');
+            // $table->foreign('assessment_type_id')->references('id')->on('assessment_types')->onDelete('cascade');
         });
     }
 

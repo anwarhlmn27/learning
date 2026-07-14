@@ -180,7 +180,7 @@
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Tugas') }} <span style="color: red;">*</span></label>
-                                <input type="text" list="tugas_options" name="assessments[{{ $index }}][assessment_type_id]" value="{{ $assessment->type ? $assessment->type->name : '' }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                                <textarea name="assessments[{{ $index }}][assessment_type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; height: 38px; resize: vertical; min-height: 38px;">{{ $assessment->assessment_type }}</textarea>
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Weight % <span style="color: red;">*</span></label>
@@ -270,11 +270,7 @@
     @endforeach
 </div>
 
-<datalist id="tugas_options">
-    @foreach($assessmentTypes as $type)
-        <option value="{{ $type->name }}">{{ $type->name }}</option>
-    @endforeach
-</datalist>
+
 
 @section('scripts')
 <script>
@@ -318,8 +314,8 @@
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} </label>
-                    <input type="text" list="tugas_options" name="assessments[${index}][assessment_type_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;" placeholder="{{ __('Select or type...') }}">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} <span style="color: red;">*</span></label>
+                    <textarea name="assessments[${index}][assessment_type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; height: 38px; resize: vertical; min-height: 38px;" placeholder="{{ __('e.g. Lisan, Tertulis, Kinerja') }}"></textarea>
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">Weight %</label>

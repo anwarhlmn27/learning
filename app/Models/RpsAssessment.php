@@ -13,7 +13,7 @@ class RpsAssessment extends Model
     protected $fillable = [
         'rps_session_id',
         'clo_id',
-        'assessment_type_id',
+                'assessment_type',
         'assignment_activities',
         'assessment_scope',
         'how_worked',
@@ -30,10 +30,5 @@ class RpsAssessment extends Model
     public function clo()
     {
         return $this->belongsTo(Clo::class, 'clo_id');
-    }
-
-    public function type()
-    {
-        return $this->belongsTo(AssessmentType::class, 'assessment_type_id');
     }
 }

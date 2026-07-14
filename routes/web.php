@@ -21,6 +21,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
     Route::get('/obe/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // RBAC Settings Matrix
+    Route::get('/obe/rbac', [\App\Http\Controllers\RbacController::class, 'index'])->name('rbac.index');
+    Route::post('/obe/rbac/toggle', [\App\Http\Controllers\RbacController::class, 'togglePermission'])->name('rbac.toggle');
+
     Route::resource('/obe/univ', \App\Http\Controllers\UnivController::class)->names('univ');
     Route::resource('/obe/fakultas', \App\Http\Controllers\FakultasController::class)->names('fakultas');
     Route::resource('/obe/prodi', \App\Http\Controllers\ProdiController::class)->names('prodi');
@@ -42,6 +47,14 @@ Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
     Route::post('/obe/plo/{prodi}', [\App\Http\Controllers\PloController::class, 'store'])->name('plo.store');
     Route::put('/obe/plo/{plo}', [\App\Http\Controllers\PloController::class, 'update'])->name('plo.update');
     Route::delete('/obe/plo/{plo}', [\App\Http\Controllers\PloController::class, 'destroy'])->name('plo.destroy');
+    
+    Route::get('/obe/plo/detail/{plo}', [\App\Http\Controllers\PloController::class, 'show'])->name('plo.show');
+    Route::post('/obe/plo/{plo}/terms', [\App\Http\Controllers\PloController::class, 'storeTerm'])->name('plo.terms.store');
+    Route::put('/obe/plo/terms/{term}', [\App\Http\Controllers\PloController::class, 'updateTerm'])->name('plo.terms.update');
+    Route::delete('/obe/plo/terms/{term}', [\App\Http\Controllers\PloController::class, 'destroyTerm'])->name('plo.terms.destroy');
+    Route::post('/obe/plo/{plo}/indicators', [\App\Http\Controllers\PloController::class, 'storeIndicator'])->name('plo.indicators.store');
+    Route::put('/obe/plo/indicators/{indicator}', [\App\Http\Controllers\PloController::class, 'updateIndicator'])->name('plo.indicators.update');
+    Route::delete('/obe/plo/indicators/{indicator}', [\App\Http\Controllers\PloController::class, 'destroyIndicator'])->name('plo.indicators.destroy');
 
     // Bahan Kajian (BK) Routes
     Route::get('/obe/bahan-kajian', [BahanKajianController::class, 'index'])->name('bahan_kajian.index');
@@ -176,6 +189,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/questions/{question}', [\App\Http\Controllers\QuizController::class, 'destroyQuestion'])->name('quizzes.destroy_question');
     Route::get('/quizzes/{quiz}/grade/{attempt}', [\App\Http\Controllers\QuizController::class, 'gradeForm'])->name('quizzes.grade_form');
     Route::post('/quizzes/{quiz}/grade/{attempt}', [\App\Http\Controllers\QuizController::class, 'saveGrade'])->name('quizzes.save_grade');
+
+    // Session Ratings
+    Route::post('/classes/{class}/sessions/{session_number}/rate', [\App\Http\Controllers\SessionRatingController::class, 'store'])->name('classes.rate_session');
+
+    // Available Students for Class Enrollment
+    Route::get('/classes/{class}/available-students', [\App\Http\Controllers\ClassRoomController::class, 'getAvailableStudents'])->name('classes.available_students');
 });
 
 

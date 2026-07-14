@@ -40,4 +40,13 @@ class Plo extends Model
         return $this->belongsToMany(Clo::class, 'clo_plo', 'plo_id', 'clo_id')->withTimestamps();
     }
 
+    public function terms()
+    {
+        return $this->hasMany(PloTerm::class, 'plo_id');
+    }
+
+    public function indicators()
+    {
+        return $this->hasMany(PloIndicator::class, 'plo_id');
+    }
 }

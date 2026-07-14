@@ -21,4 +21,9 @@ class Student extends Model
     {
         return $this->belongsTo(Prodi::class);
     }
+
+    public function sessionRatings()
+    {
+        return $this->hasMany(SessionRating::class, 'student_id');
+    }
 }
