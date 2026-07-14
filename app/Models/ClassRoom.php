@@ -64,18 +64,14 @@ class ClassRoom extends Model
      * Get only Dosen (Lecturers) in this classroom.
      */
     public function dosens() {
-        return $this->users()->whereHas('roles', function($q) {
-            $q->where('name', 'dosen');
-        });
+        return $this->users()->whereHas('dosen');
     }
 
     /**
      * Get only Students (Mahasiswa) in this classroom.
      */
     public function students() {
-        return $this->users()->whereHas('roles', function($q) {
-            $q->whereIn('name', ['student', 'mahasiswa']);
-        });
+        return $this->users()->whereHas('student');
     }
 
     /**

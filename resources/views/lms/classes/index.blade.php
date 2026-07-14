@@ -61,7 +61,10 @@
             <div>
                 <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">{{ optional($class->subject)->nama_subject ?? __('Unknown Subject') }}</h3>
                 <p style="margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-muted);">
-                    <i>👨‍🏫</i> {{ optional($class->dosen)->nama_dosen ?? __('Unknown Lecturer') }}
+                    @php
+                        $firstDosenUser = $class->dosens()->first();
+                    @endphp
+                    <i>👨‍🏫</i> {{ $firstDosenUser ? ($firstDosenUser->dosen->nama_dosen ?? $firstDosenUser->name) : __('Unknown Lecturer') }}
                 </p>
                 
                 <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
