@@ -8,7 +8,7 @@
 
 @section('content')
 <div style="margin-bottom: 1rem;">
-    <a href="{{ route('subjects.index') }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #f3f4f6; color: #1f2937; text-decoration: none; border-radius: 4px; border: 1px solid #e5e7eb;">&larr; {{ __('Back') }}</a>
+    <a href="{{ route('subjects.index') }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #efef42ff; color: #1f2937; text-decoration: none; border-radius: 4px; border: 1px solid #e7d351ff;">&larr; {{ __('Back') }}</a>
 </div>
 
 <div class="card">

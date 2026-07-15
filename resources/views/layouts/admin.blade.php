@@ -97,7 +97,7 @@
                 <nav class="navbar navbar-expand">
                     <div class="collapse navbar-collapse justify-content-between">
                         <div class="header-left">
-                            <h3 style="margin: 0; font-weight: 600; color: #333;">@yield('header_title', 'Dashboard')</h3>
+                            <h3 style="margin: 0; font-weight: 600;">@yield('header_title', 'Dashboard')</h3>
                             <div class="ms-3">@yield('header_left')</div>
                             @if(Auth::check())
                                 @foreach(Auth::user()->roles as $role)

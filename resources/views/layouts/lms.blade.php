@@ -96,7 +96,7 @@
                 <nav class="navbar navbar-expand">
                     <div class="collapse navbar-collapse justify-content-between">
                         <div class="header-left">
-                            <h3 style="margin: 0; font-weight: 600; color: #333;">@yield('header_title', 'Dashboard')</h3>
+                            <h3 style="margin: 0; font-weight: 600;">@yield('header_title', 'Dashboard')</h3>
                             @if(Auth::check())
                                 @foreach(Auth::user()->roles as $role)
                                     <span class="badge badge-primary light mt-1" style="font-weight: 600; text-transform: uppercase;">
