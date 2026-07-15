@@ -159,7 +159,9 @@
                     <label class="form-label">{{ __('Password') }} <span style="font-size:0.75rem;color:#6b7280;font-weight:normal;">{{ __('(Kosongkan untuk default: LmsHorizon$01)') }}</span></label>
                     <div style="position:relative;">
                         <input type="password" name="password" id="add-mhs-password" class="form-control" autocomplete="new-password" style="padding-right:2.8rem;" oninput="checkMhsPassword(this.value)">
-                        <button type="button" onclick="toggleMhsPassword()" title="Tampilkan/Sembunyikan" style="position:absolute;right:0.6rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6b7280;font-size:1.1rem;line-height:1;padding:0;" id="add-mhs-eye">👁️</button>
+                        <span onclick="toggleMhsPassword()" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);cursor:pointer;color:#6b7280;font-size:1rem;z-index:10;" title="{{ __('Lihat Password') }}" id="add-mhs-eye">
+                            <i class="fa fa-eye-slash" style="font-size:1.1rem;"></i>
+                        </span>
                     </div>
                     <div id="add-mhs-rules" style="margin-top:0.5rem;display:none;">
                         <div style="font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">{{ __('Persyaratan password:') }}</div>
@@ -285,13 +287,16 @@
     /* --- Password toggle & validation for Add Mahasiswa modal --- */
     function toggleMhsPassword() {
         const inp = document.getElementById('add-mhs-password');
-        const btn = document.getElementById('add-mhs-eye');
+        const triggerEl = document.getElementById('add-mhs-eye');
+        const icon = triggerEl.querySelector('i');
         if (inp.type === 'password') {
             inp.type = 'text';
-            btn.textContent = '🙈';
+            if (icon) icon.className = 'fa fa-eye';
+            triggerEl.title = '{{ __('Sembunyikan Password') }}';
         } else {
             inp.type = 'password';
-            btn.textContent = '👁️';
+            if (icon) icon.className = 'fa fa-eye-slash';
+            triggerEl.title = '{{ __('Lihat Password') }}';
         }
     }
 

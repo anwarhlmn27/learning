@@ -155,8 +155,23 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">{{ __('Password') }} <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Leave empty for default: LmsHorizon$01)</span></label>
-                    <input type="password" name="password" class="form-control">
+                    <label class="form-label">{{ __('Password') }} <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">{{ __('(Kosongkan untuk default: LmsHorizon$01)') }}</span></label>
+                    <div style="position: relative;">
+                        <input type="password" name="password" id="add-password" class="form-control" autocomplete="new-password" style="padding-right: 2.8rem;" oninput="checkPasswordRequirement(this.value, 'add-rules', 'add-rule-min', 'add-rule-upper', 'add-rule-lower', 'add-rule-number', 'add-rule-symbol')">
+                        <span onclick="togglePasswordVisibility('add-password', this)" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280; font-size: 1rem; z-index: 10;" title="{{ __('Lihat Password') }}">
+                            <i class="fa fa-eye-slash" style="font-size: 1.1rem;"></i>
+                        </span>
+                    </div>
+                    <div id="add-rules" style="margin-top: 0.5rem; display: none;">
+                        <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">{{ __('Persyaratan kata sandi:') }}</div>
+                        <ul style="margin: 0; padding-left: 1.2rem; list-style: none;">
+                            <li id="add-rule-min"    style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Minimal 8 karakter') }}</li>
+                            <li id="add-rule-upper"  style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Mengandung huruf BESAR') }}</li>
+                            <li id="add-rule-lower"  style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Mengandung huruf kecil') }}</li>
+                            <li id="add-rule-number" style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Mengandung angka') }}</li>
+                            <li id="add-rule-symbol" style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Mengandung simbol (!@#$...)') }}</li>
+                        </ul>
+                    </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
                     <button type="button" class="btn" style="background: #f3f4f6; color: #374151;" onclick="document.getElementById('modal-add').style.display = 'none'">Cancel</button>
@@ -220,13 +235,28 @@
                     <select name="role_id" id="edit-role_id" class="form-control" required>
                         <option value="">Select Role</option>
                         @foreach($roles as $role)
-                            <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
+                                <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">{{ __('Password') }} <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">(Leave empty to keep current password)</span></label>
-                    <input type="password" name="password" class="form-control">
+                    <label class="form-label">{{ __('Password') }} <span style="font-size: 0.75rem; color: #6b7280; font-weight: normal;">{{ __('(Tinggalkan kosong untuk mempertahankan password saat ini)') }}</span></label>
+                    <div style="position: relative;">
+                        <input type="password" name="password" id="edit-password" class="form-control" autocomplete="new-password" style="padding-right: 2.8rem;" oninput="checkPasswordRequirement(this.value, 'edit-rules', 'edit-rule-min', 'edit-rule-upper', 'edit-rule-lower', 'edit-rule-number', 'edit-rule-symbol')">
+                        <span onclick="togglePasswordVisibility('edit-password', this)" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280; font-size: 1rem; z-index: 10;" title="{{ __('Lihat Password') }}">
+                            <i class="fa fa-eye-slash" style="font-size: 1.1rem;"></i>
+                        </span>
+                    </div>
+                    <div id="edit-rules" style="margin-top: 0.5rem; display: none;">
+                        <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">{{ __('Persyaratan kata sandi:') }}</div>
+                        <ul style="margin: 0; padding-left: 1.2rem; list-style: none;">
+                            <li id="edit-rule-min"    style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Minimal 8 karakter') }}</li>
+                            <li id="edit-rule-upper"  style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Mengandung huruf BESAR') }}</li>
+                            <li id="edit-rule-lower"  style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Mengandung huruf kecil') }}</li>
+                            <li id="edit-rule-number" style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Mengandung angka') }}</li>
+                            <li id="edit-rule-symbol" style="font-size: 0.78rem; color: #9ca3af; transition: color .2s;">✗ {{ __('Mengandung simbol (!@#$...)') }}</li>
+                        </ul>
+                    </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
                     <button type="button" class="btn" style="background: #f3f4f6; color: #374151;" onclick="document.getElementById('modal-edit').style.display = 'none'">Cancel</button>
@@ -239,11 +269,58 @@
 
 <script>
     function openEditModal(id, name, email, roleId) {
-        document.getElementById('form-edit').action = '/obe/users/' + id;
+        document.getElementById('form-edit').action = "{{ route('users.index') }}/" + id;
         document.getElementById('edit-name').value = name;
         document.getElementById('edit-email').value = email;
-        document.getElementById('edit-role_id').value = roleId;
+        
+        var selectEl = document.getElementById('edit-role_id');
+        if (window.jQuery) {
+            window.jQuery(selectEl).val(roleId).trigger('change');
+        } else {
+            selectEl.value = String(roleId).trim();
+            var event = new Event('change', { bubbles: true });
+            selectEl.dispatchEvent(event);
+        }
+        
         document.getElementById('modal-edit').style.display = 'flex';
+    }
+
+    function togglePasswordVisibility(inputId, triggerEl) {
+        var input = document.getElementById(inputId);
+        var icon = triggerEl.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (icon) icon.className = 'fa fa-eye';
+            triggerEl.title = '{{ __('Sembunyikan Password') }}';
+        } else {
+            input.type = 'password';
+            if (icon) icon.className = 'fa fa-eye-slash';
+            triggerEl.title = '{{ __('Lihat Password') }}';
+        }
+    }
+
+    function setPasswordRule(id, ok) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (ok) {
+            el.style.color = '#16a34a';
+            el.textContent = '✓ ' + el.textContent.slice(2);
+        } else {
+            el.style.color = '#9ca3af';
+            el.textContent = '✗ ' + el.textContent.slice(2);
+        }
+    }
+
+    function checkPasswordRequirement(val, rulesId, rMin, rUpper, rLower, rNumber, rSymbol) {
+        const rules = document.getElementById(rulesId);
+        if (rules) {
+            rules.style.display = val.length > 0 ? 'block' : 'none';
+        }
+        setPasswordRule(rMin,    val.length >= 8);
+        setPasswordRule(rUpper,  /[A-Z]/.test(val));
+        setPasswordRule(rLower,  /[a-z]/.test(val));
+        setPasswordRule(rNumber, /[0-9]/.test(val));
+        setPasswordRule(rSymbol, /[^A-Za-z0-9]/.test(val));
     }
 </script>
 @endsection
