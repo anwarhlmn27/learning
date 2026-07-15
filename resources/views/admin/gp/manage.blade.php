@@ -76,7 +76,7 @@
                                             data-stakeholders="{{ $gp->stakeholders }}"
                                             data-status="{{ $gp->status }}">{{ __('Edit') }}</button>
                                         <button type="button" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
-                                            onclick="if(confirm('{{ __('Delete this profile item?') }}')) document.getElementById('delete-profile-{{ $gp->id }}').submit();">{{ __('Delete') }}</button>
+                                            onclick="Swal.fire({title: 'Konfirmasi', text: '{{ __('Delete this profile item?') }}', icon: 'warning', showCancelButton: true, confirmButtonColor: '#3085d6', cancelButtonColor: '#d33', confirmButtonText: 'Ya', cancelButtonText: 'Batal'}).then((result) => { if (result.isConfirmed) document.getElementById('delete-profile-{{ $gp->id }}').submit(); });">{{ __('Delete') }}</button>
                                     </div>
                                 </td>
                             </tr>
@@ -134,7 +134,7 @@
                             <a href="{{ asset('storage/' . $att->file_path) }}" target="_blank" style="font-size: 0.75rem; color: var(--primary);">{{ __('View File') }}</a>
                         </div>
                         <button type="button" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.25rem;"
-                            onclick="if(confirm('{{ __('Remove this attachment?') }}')) document.getElementById('delete-attachment-{{ $att->id }}').submit();">×</button>
+                            onclick="Swal.fire({title: 'Konfirmasi', text: '{{ __('Remove this attachment?') }}', icon: 'warning', showCancelButton: true, confirmButtonColor: '#3085d6', cancelButtonColor: '#d33', confirmButtonText: 'Ya', cancelButtonText: 'Batal'}).then((result) => { if (result.isConfirmed) document.getElementById('delete-attachment-{{ $att->id }}').submit(); });">×</button>
                     </div>
                 @empty
                     <div style="text-align: center; color: var(--text-muted); font-size: 0.875rem;">{{ __('No data found.') }}</div>

@@ -50,7 +50,7 @@
                         <td>
                             <div style="display: flex; gap: 0.5rem;">
                                 <a href="{{ route('prodi.edit', $p->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Edit') }}</a>
-                                <form action="{{ route('prodi.destroy', $p->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this?');">
+                                <form action="{{ route('prodi.destroy', $p->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="Are you sure you want to delete this?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>

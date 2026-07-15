@@ -89,7 +89,7 @@
                                 @endphp
                                 <a href="{{ route('plo.show', $plo->id) }}" class="btn btn-info" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: white;">{{ __('Detail / Indikator') }}</a>
                                 <button onclick='editPlo(@json($ploData))' class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Edit') }}</button>
-                                <form action="{{ route('plo.destroy', $plo->id) }}" method="POST" onsubmit="return confirm('{{ __('Delete this PLO?') }}')">
+                                <form action="{{ route('plo.destroy', $plo->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="{{ __('Delete this PLO?') }}">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>
                                 </form>

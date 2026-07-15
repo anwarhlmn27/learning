@@ -76,7 +76,7 @@
                                     $bkData['id_plos'] = $bk->plos->pluck('id')->toArray();
                                 @endphp
                                 <button onclick='editBk(@json($bkData))' class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</button>
-                                <form action="{{ route('bahan_kajian.destroy', $bk->id) }}" method="POST" onsubmit="return confirm('Delete this Bahan Kajian?')">
+                                <form action="{{ route('bahan_kajian.destroy', $bk->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="Delete this Bahan Kajian?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
                                 </form>

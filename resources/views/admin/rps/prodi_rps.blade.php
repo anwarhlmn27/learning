@@ -132,7 +132,7 @@
                                     <a href="{{ route('admin.rps.sessions', $rp->id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #f3f4f6; color: #1f2937;">Manage Sessions</a>
                                     <button onclick="openEditModal('{{ $rp->id }}')" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</button>
                                     <a href="{{ route('admin.rps.export_pdf', $rp->id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #e5e7eb; color: #1f2937;">PDF</a>
-                                    <form action="{{ route('admin.rps.destroy', $rp->id) }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                                    <form action="{{ route('admin.rps.destroy', $rp->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="Are you sure?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
@@ -257,17 +257,34 @@
             placeholder: 'Select Subject'
         });
 
+        let skipRpsCheck = false;
         $('#rpsForm').on('submit', function(e) {
+            if (skipRpsCheck) return true;
+            
             const formMethod = $('#formMethod').val();
             if (formMethod === 'POST') {
                 const selectedSubjectId = $('#subject_id').val();
                 if (existingRpsSubjects[selectedSubjectId]) {
+                    e.preventDefault();
                     const subjectInfo = existingRpsSubjects[selectedSubjectId];
                     const confirmMsg = `RPS matakuliah "${subjectInfo.subject_name}" ini sudah ada, apakah mau dibuat baru dengan versi yang berbeda?`;
-                    if (!confirm(confirmMsg)) {
-                        e.preventDefault();
-                        return false;
-                    }
+                    
+                    Swal.fire({
+                        title: 'Konfirmasi',
+                        text: confirmMsg,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            skipRpsCheck = true;
+                            $('#rpsForm').submit();
+                        }
+                    });
+                    return false;
                 }
             }
         });

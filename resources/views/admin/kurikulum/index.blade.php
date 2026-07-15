@@ -72,7 +72,7 @@
                             <td style="display: flex; gap: 0.5rem; align-items: center;">
                                 <a href="{{ route('kurikulum.edit', $k->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Edit') }}</a>
                                 <a href="{{ route('kurikulum.export_pdf', $k->id) }}" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #dc2626; color: white; border: none; border-radius: 4px; text-decoration: none;">{{ __('Export PDF') }}</a>
-                                <form action="{{ route('kurikulum.destroy', $k->id) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this?') }}')">
+                                <form action="{{ route('kurikulum.destroy', $k->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="{{ __('Are you sure you want to delete this?') }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>

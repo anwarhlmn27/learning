@@ -21,7 +21,7 @@
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
         <h3 style="margin: 0; font-size: 1.25rem;">System Activity Logs</h3>
         <div>
-            <form action="{{ route('logs.clear') }}" method="POST" onsubmit="return confirm('Are you sure you want to clear all system logs? This action cannot be undone.')">
+            <form action="{{ route('logs.clear') }}" method="POST" class="swal-confirm-form" data-swal-msg="Are you sure you want to clear all system logs? This action cannot be undone.">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger" style="background-color: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">

@@ -68,7 +68,7 @@
                                 <td>{{ $ks->semester }}</td>
                                 <td>{{ $ks->subject->total_sks }}</td>
                                 <td>
-                                    <form action="{{ route('kurikulum.remove-subject', $ks->id) }}" method="POST" onsubmit="return confirm('{{ __('Remove this subject from curriculum?') }}')">
+                                    <form action="{{ route('kurikulum.remove-subject', $ks->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="{{ __('Remove this subject from curriculum?') }}">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Remove') }}</button>

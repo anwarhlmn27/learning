@@ -21,7 +21,7 @@
                         <div style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9;">
                             <div style="display: flex; justify-content: space-between;">
                                 <strong>{{ $index + 1 }}. {{ $q->question_text }}</strong>
-                                <form action="{{ route('quizzes.destroy_question', $q) }}" method="POST" onsubmit="return confirm('Yakin hapus soal ini?');">
+                                <form action="{{ route('quizzes.destroy_question', $q) }}" method="POST" class="swal-confirm-form" data-swal-msg="Yakin hapus soal ini?">
                                     @csrf @method('DELETE')
                                     <button type="submit" style="background:none; border:none; color:red; cursor:pointer;">Hapus</button>
                                 </form>

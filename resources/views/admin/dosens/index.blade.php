@@ -66,7 +66,7 @@
                     <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">{{ optional($dosen->prodi)->nama_prodi ?? '-' }}</td>
                     <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">
                         <button class="btn" style="background: #eef2ff; color: #4f46e5; border: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="openEditModal('{{ route('dosen.update', $dosen) }}', '{{ $dosen->nidn }}', '{{ $dosen->nama_dosen }}', '{{ $dosen->gelar }}', '{{ $dosen->user->email ?? '' }}', '{{ $dosen->prodi_id }}')">{{ __('Edit') }}</button>
-                        <form action="{{ route('dosen.destroy', $dosen) }}" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus dosen ini? Akun login yang terkait juga akan dihapus.')">
+                        <form action="{{ route('dosen.destroy', $dosen) }}" method="POST" style="display: inline;" class="swal-confirm-form" data-swal-msg="Apakah Anda yakin ingin menghapus dosen ini? Akun login yang terkait juga akan dihapus.">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>

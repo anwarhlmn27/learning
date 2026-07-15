@@ -88,7 +88,7 @@
                 <button class="btn btn-outline-secondary" style="padding: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px;" onclick="openEditModal('{{ $class->id }}', '{{ $class->subject_id }}', '{{ $classPrimaryDosenMap[$class->id] ?? '' }}', '{{ addslashes($class->nama_kelas) }}', '{{ $class->tahun_akademik }}', '{{ $class->semester }}', '{{ $class->status }}')" title="{{ __('Edit Class') }}">
                     ✏️
                 </button>
-                <form action="{{ route('classes.destroy', $class) }}" method="POST" style="margin: 0; display: inline-flex;" onsubmit="return confirm('{{ __('Hapus kelas ini? Kelas aktif yang memiliki kegiatan tidak dapat dihapus. Arsipkan dulu jika perlu.') }}')">
+                <form action="{{ route('classes.destroy', $class) }}" method="POST" style="margin: 0; display: inline-flex;" class="swal-confirm-form" data-swal-msg="{{ __('Hapus kelas ini? Kelas aktif yang memiliki kegiatan tidak dapat dihapus. Arsipkan dulu jika perlu.') }}">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-outline-danger" style="padding: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: #dc2626; border: 1px solid #fee2e2; background: #fff; border-radius: 6px;" title="{{ __('Delete Class') }}">
@@ -114,7 +114,7 @@
 
 @if(Auth::user()->hasRole(['admin', 'kaprodi']))
 <!-- Modal Add Class -->
-<div class="modal fade" id="modalAddClass" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="modalAddClass" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -126,7 +126,7 @@
                     @csrf
                     <div class="mb-3">
                         <label class="form-label text-dark font-w600">{{ __('Mata Kuliah') }} <span class="text-danger">*</span></label>
-                        <select name="subject_id" id="add-subject" class="form-control" required>
+                        <select name="subject_id" id="add-subject" class="default-select form-control wide" data-live-search="true" required>
                             <option value="">-- {{ __('Pilih Mata Kuliah') }} --</option>
                             @foreach($subjects as $subject)
                                 <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>{{ $subject->kode_subject }} - {{ $subject->nama_subject }}</option>
@@ -135,7 +135,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-dark font-w600">{{ __('Dosen Pengampu') }} <span class="text-danger">*</span></label>
-                        <select name="dosen_id" id="add-dosen" class="form-control" required>
+                        <select name="dosen_id" id="add-dosen" class="default-select form-control wide" data-live-search="true" required>
                             <option value="">-- {{ __('Pilih Dosen') }} --</option>
                             @foreach($dosens as $dosen)
                                 <option value="{{ $dosen->id }}" {{ old('dosen_id') == $dosen->id ? 'selected' : '' }}>{{ $dosen->nama_dosen }} ({{ $dosen->nidn }})</option>
@@ -171,7 +171,7 @@
 </div>
 
 <!-- Modal Edit Class -->
-<div class="modal fade" id="modalEditClass" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="modalEditClass" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -184,7 +184,7 @@
                     @method('PUT')
                     <div class="mb-3">
                         <label class="form-label text-dark font-w600">{{ __('Mata Kuliah') }} <span class="text-danger">*</span></label>
-                        <select name="subject_id" id="edit-subject" class="form-control" required>
+                        <select name="subject_id" id="edit-subject" class="default-select form-control wide" data-live-search="true" required>
                             @foreach($subjects as $subject)
                                 <option value="{{ $subject->id }}">{{ $subject->kode_subject }} - {{ $subject->nama_subject }}</option>
                             @endforeach
@@ -192,7 +192,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-dark font-w600">{{ __('Dosen Pengampu') }} <span class="text-danger">*</span></label>
-                        <select name="dosen_id" id="edit-dosen" class="form-control" required>
+                        <select name="dosen_id" id="edit-dosen" class="default-select form-control wide" data-live-search="true" required>
                             @foreach($dosens as $dosen)
                                 <option value="{{ $dosen->id }}">{{ $dosen->nama_dosen }} ({{ $dosen->nidn }})</option>
                             @endforeach
@@ -236,50 +236,9 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<style>
-    /* Styling to make Select2 look similar to original inputs */
-    .select2-container .select2-selection--single {
-        height: 38px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: normal;
-        color: var(--text-main);
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 36px;
-    }
-</style>
 
 <script>
-    $(document).ready(function() {
-        $('#add-subject').select2({
-            dropdownParent: $('#modalAddClass'),
-            width: '100%',
-            placeholder: '-- Pilih Mata Kuliah --'
-        });
-        $('#add-dosen').select2({
-            dropdownParent: $('#modalAddClass'),
-            width: '100%',
-            placeholder: '-- Pilih Dosen --'
-        });
-        
-        $('#edit-subject').select2({
-            dropdownParent: $('#modalEditClass'),
-            width: '100%'
-        });
-        $('#edit-dosen').select2({
-            dropdownParent: $('#modalEditClass'),
-            width: '100%'
-        });
-    });
 
     function openEditModal(id, subject_id, dosen_id, nama_kelas, tahun_akademik, semester, status) {
         document.getElementById('edit-form').action = '/classes/' + id;

@@ -56,7 +56,7 @@
                                 <div style="width: 16px; height: 16px; background: #fef08a; border-radius: 2px;"></div> Belum Diisi / Dilewati
                             </div>
                         </div>
-                        <button type="submit" class="btn" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem; font-size: 1rem; background: var(--success, #10b981); color: white; border: none; border-radius: 6px; cursor:pointer;" onclick="return confirm('Apakah Anda yakin ingin submit kuis ini? Pastikan semua soal telah dijawab semampu Anda.')">
+                        <button type="submit" class="btn" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem; font-size: 1rem; background: var(--success, #10b981); color: white; border: none; border-radius: 6px; cursor:pointer;" class="swal-confirm-btn" data-swal-msg="Apakah Anda yakin ingin submit kuis ini? Pastikan semua soal telah dijawab semampu Anda.">
                             Submit Kuis
                         </button>
                     </div>

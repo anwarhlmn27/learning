@@ -89,7 +89,7 @@
                             </td>
                             <td style="display: flex; gap: 0.5rem;">
                                 <a href="{{ route('visi.edit', $v->id) }}" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Edit') }}</a>
-                                <form action="{{ route('visi.destroy', $v->id) }}" method="POST" onsubmit="return confirm('{{ __('Are you sure you want to delete this?') }}')">
+                                <form action="{{ route('visi.destroy', $v->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="{{ __('Are you sure you want to delete this?') }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>

@@ -47,7 +47,7 @@
                         <td>{{ $f->dekan->name ?? '-' }}</td>
                         <td style="display: flex; gap: 0.5rem;">
                             <a href="{{ route('fakultas.edit', $f->id) }}" class="btn" style="background: #e5e7eb; color: #374151; padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</a>
-                            <form action="{{ route('fakultas.destroy', $f->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this?');">
+                            <form action="{{ route('fakultas.destroy', $f->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="Are you sure you want to delete this?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">{{ __('Delete') }}</button>

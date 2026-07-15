@@ -90,7 +90,7 @@
                                         $mappedPlos = $clo->plos->pluck('id')->toArray();
                                     @endphp
                                     <button onclick='editClo({!! json_encode($clo) !!}, {!! json_encode($mappedPlos) !!})' class="btn btn-primary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Edit</button>
-                                    <form action="{{ route('clo.destroy', $clo->id) }}" method="POST" onsubmit="return confirm('Delete CLO {{ $clo->kode_clo }}?')">
+                                    <form action="{{ route('clo.destroy', $clo->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="Delete CLO {{ $clo->kode_clo }}?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Delete</button>

@@ -630,7 +630,63 @@
             });
             resetIdleTimer();
         });
+
+        // Global SweetAlert2 Interceptor
+        document.addEventListener('DOMContentLoaded', function() {
+            // For Forms
+            document.body.addEventListener('submit', function(e) {
+                if (e.target && e.target.classList.contains('swal-confirm-form')) {
+                    e.preventDefault();
+                    const msg = e.target.getAttribute('data-swal-msg') || 'Apakah Anda yakin ingin melanjutkan?';
+                    Swal.fire({
+                        title: 'Konfirmasi',
+                        text: msg,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            e.target.submit();
+                        }
+                    });
+                }
+            });
+
+            // For Buttons/Links
+            document.body.addEventListener('click', function(e) {
+                const btn = e.target.closest('.swal-confirm-btn');
+                if (btn) {
+                    e.preventDefault();
+                    const msg = btn.getAttribute('data-swal-msg') || 'Apakah Anda yakin ingin melanjutkan?';
+                    Swal.fire({
+                        title: 'Konfirmasi',
+                        text: msg,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // If it's a link, navigate
+                            if (btn.tagName === 'A' && btn.href) {
+                                window.location.href = btn.href;
+                            } 
+                            // If it's a submit button, submit its form
+                            else if (btn.tagName === 'BUTTON' && btn.type === 'submit' && btn.closest('form')) {
+                                btn.closest('form').submit();
+                            }
+                        }
+                    });
+                }
+            });
+        });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @yield('scripts')
     @stack('scripts')
 </body>

@@ -108,7 +108,7 @@
                     <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">
                         <button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="openEditModal('{{ $user->id }}', '{{ addslashes($user->name) }}', '{{ $user->email }}', '{{ $user->roles->first() ? $user->roles->first()->id : '' }}')">Edit</button>
                         @if($user->id !== auth()->id())
-                        <form action="{{ route('users.destroy', $user) }}" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini? Semua data relasi role juga akan terhapus.')">
+                        <form action="{{ route('users.destroy', $user) }}" method="POST" style="display: inline;" class="swal-confirm-form" data-swal-msg="Apakah Anda yakin ingin menghapus user ini? Semua data relasi role juga akan terhapus.">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>

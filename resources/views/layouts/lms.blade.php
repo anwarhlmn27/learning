@@ -11,6 +11,7 @@
     <!-- Stylesheets -->
     <link href="{{ asset('vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
     <link class="main-css" rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     
     <style>
         /* Toast Notification System */
@@ -435,6 +436,7 @@
     
     <script src="{{ asset('js/custom.min.js') }}"></script>
     <script src="{{ asset('js/dlabnav-init.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
         /* Theme Switcher Scripting */
@@ -657,6 +659,62 @@
             });
             resetIdleTimer();
         });
+
+        // Global SweetAlert2 Interceptor
+        document.addEventListener('DOMContentLoaded', function() {
+            // For Forms
+            document.body.addEventListener('submit', function(e) {
+                if (e.target && e.target.classList.contains('swal-confirm-form')) {
+                    e.preventDefault();
+                    const msg = e.target.getAttribute('data-swal-msg') || 'Apakah Anda yakin ingin melanjutkan?';
+                    Swal.fire({
+                        title: 'Konfirmasi',
+                        text: msg,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            e.target.submit();
+                        }
+                    });
+                }
+            });
+
+            // For Buttons/Links
+            document.body.addEventListener('click', function(e) {
+                const btn = e.target.closest('.swal-confirm-btn');
+                if (btn) {
+                    e.preventDefault();
+                    const msg = btn.getAttribute('data-swal-msg') || 'Apakah Anda yakin ingin melanjutkan?';
+                    Swal.fire({
+                        title: 'Konfirmasi',
+                        text: msg,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // If it's a link, navigate
+                            if (btn.tagName === 'A' && btn.href) {
+                                window.location.href = btn.href;
+                            } 
+                            // If it's a submit button, submit its form
+                            else if (btn.tagName === 'BUTTON' && btn.type === 'submit' && btn.closest('form')) {
+                                btn.closest('form').submit();
+                            }
+                        }
+                    });
+                }
+            });
+        });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

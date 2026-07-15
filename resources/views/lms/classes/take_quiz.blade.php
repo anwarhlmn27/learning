@@ -121,7 +121,7 @@
             <p style="margin: 0; color: #64748b; font-size: 0.9rem; font-weight: 500;">
                 <i>⚠️</i> Harap periksa kembali semua jawaban Anda sebelum menyerahkan kuis.
             </p>
-            <button type="submit" class="btn" style="background-color: #f59e0b; color: white; padding: 0.75rem 1.75rem; font-weight: 700;" onclick="return confirm('Apakah Anda yakin ingin mengumpulkan kuis ini?')">
+            <button type="submit" class="btn" style="background-color: #f59e0b; color: white; padding: 0.75rem 1.75rem; font-weight: 700;" class="swal-confirm-btn" data-swal-msg="Apakah Anda yakin ingin mengumpulkan kuis ini?">
                 Submit Quiz Attempt
             </button>
         </div>

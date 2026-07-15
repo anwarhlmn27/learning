@@ -70,7 +70,7 @@
                                 <td>
                                     <div style="display: flex; gap: 0.5rem;">
                                         <button onclick='editKategori(@json($kat))' class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</button>
-                                        <form action="{{ route('bahan_kajian.kategori.destroy', $kat->id) }}" method="POST" onsubmit="return confirm('Delete this category? This may fail if it is being used.')">
+                                        <form action="{{ route('bahan_kajian.kategori.destroy', $kat->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="Delete this category? This may fail if it is being used.">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
                                         </form>

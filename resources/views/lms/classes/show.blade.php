@@ -307,7 +307,7 @@
             @endif
             {{-- Archive / Restore button --}}
             @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
-                <form action="{{ route('classes.archive', $class) }}" method="POST" style="margin: 0;" onsubmit="return confirm('{{ $class->status === 'active' ? 'Arsipkan kelas ini? Semua konten akan menjadi read-only.' : 'Aktifkan kembali kelas ini?' }}')">
+                <form action="{{ route('classes.archive', $class) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="{{ $class->status === 'active' ? 'Arsipkan kelas ini? Semua konten akan menjadi read-only.' : 'Aktifkan kembali kelas ini?' }}">
                     @csrf
                     @if($class->status === 'active')
                         <button type="submit" class="btn" style="background: rgba(245,158,11,0.8); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; font-size: 0.85rem;">
@@ -363,7 +363,7 @@
                 <button class="btn btn-outline" onclick="openAddClassworkModal()">
                     <i>➕</i> Add Classwork Item
                 </button>
-                <form action="{{ route('classes.generate_lms', $class) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Generate sesi otomatis berdasarkan RPS?')">
+                <form action="{{ route('classes.generate_lms', $class) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Generate sesi otomatis berdasarkan RPS?">
                     @csrf
                     <button type="submit" class="btn" style="background-color: #f59e0b; color: white;">
                         <i>⚡</i> Import from RPS Syllabus
@@ -416,7 +416,7 @@
                                                     data-links="{{ json_encode($topic->material->link_urls) }}"
                                                     onclick="openEditMaterialModal(this)">✏️</button>
                                             @endif
-                                            <form action="{{ route('classes.destroy_topic', [$class, $topic]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Yakin ingin menghapus aktivitas ini?')">
+                                            <form action="{{ route('classes.destroy_topic', [$class, $topic]) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Yakin ingin menghapus aktivitas ini?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" style="background: none; border: none; padding: 0; color: #dc2626; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;" title="Hapus Aktivitas">🗑️</button>
@@ -720,7 +720,7 @@
                                 @endif
                             </div>
                             @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-                                <form action="{{ route('classes.remove_staff', [$class, $dosenUser]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Hapus dosen ini dari kelas?')">
+                                <form action="{{ route('classes.remove_staff', [$class, $dosenUser]) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Hapus dosen ini dari kelas?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #dc2626; border-color: #fecaca;">Hapus</button>
@@ -756,7 +756,7 @@
                                 <span style="font-size: 0.8rem; color: var(--text-muted);">{{ $baakUser->email }}</span>
                             </div>
                             @if(Auth::user()->hasRole(['admin', 'kaprodi']))
-                                <form action="{{ route('classes.remove_staff', [$class, $baakUser]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Hapus BAAK ini dari kelas?')">
+                                <form action="{{ route('classes.remove_staff', [$class, $baakUser]) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Hapus BAAK ini dari kelas?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #dc2626; border-color: #fecaca;">Hapus</button>
@@ -797,6 +797,7 @@
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left; width: 50px;">No</th>
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">NIM</th>
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Nama Mahasiswa</th>
+                            <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Program Studi</th>
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Angkatan</th>
                             @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
                                 <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: right;">Action</th>
@@ -814,10 +815,11 @@
                                     <br><span style="font-size: 0.75rem; color: var(--text-muted);">{{ $enrollment->student->user->email }}</span>
                                 @endif
                             </td>
+                            <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">{{ optional($enrollment->student)->prodi->nama_prodi ?? '-' }}</td>
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">{{ optional($enrollment->student)->angkatan ?? '-' }}</td>
                             @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
                                 <td style="padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: right;">
-                                    <form action="{{ route('classes.unenroll', [$class, $enrollment]) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Apakah Anda yakin ingin mengeluarkan mahasiswa ini dari kelas?')">
+                                    <form action="{{ route('classes.unenroll', [$class, $enrollment]) }}" method="POST" style="margin: 0;" class="form-unenroll">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #dc2626; border-color: #fecaca;">
@@ -1599,6 +1601,31 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const unenrollForms = document.querySelectorAll('.form-unenroll');
+        unenrollForms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Keluarkan Mahasiswa?',
+                    html: 'Apakah Anda yakin ingin mengeluarkan mahasiswa ini dari kelas?<br><br><span style="color: #dc2626; font-size: 0.9em;"><strong>⚠️ Peringatan:</strong> Mahasiswa mungkin sudah menjalankan aktivitas perkuliahan. Jika dihapus, maka semua data aktivitas (seperti tugas yang sudah di-upload) juga akan ikut terhapus!</span>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Keluarkan!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
 <script>
     // 1. Tab Switching JavaScript
     document.querySelectorAll('.tab-trigger').forEach(btn => {
@@ -1833,29 +1860,40 @@
             linksContainer.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Tidak ada link terlampir</span>';
         }
 
-        form.action = `/classes/{{ $class->id }}/material/${materialId}`;
+        form.action = "{{ url('/classes/' . $class->id . '/material') }}/" + materialId;
         
         document.getElementById('modal-edit-material').style.display = 'flex';
     }
     
     function deleteExistingFile(button, path, name) {
-        if (!confirm(`Apakah Anda yakin ingin menghapus file "${name}"?`)) return;
-        
-        const form = document.getElementById('form-edit-materi');
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.className = 'deleted-file-input';
-        hiddenInput.name = 'deleted_files[]';
-        hiddenInput.value = path;
-        form.appendChild(hiddenInput);
+        Swal.fire({
+            title: 'Hapus File?',
+            text: `Apakah Anda yakin ingin menghapus file "${name}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('form-edit-materi');
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.className = 'deleted-file-input';
+                hiddenInput.name = 'deleted_files[]';
+                hiddenInput.value = path;
+                form.appendChild(hiddenInput);
 
-        const item = button.closest('.edit-file-item');
-        if (item) item.remove();
+                const item = button.closest('.edit-file-item');
+                if (item) item.remove();
 
-        const container = document.getElementById('edit-current-files-container');
-        if (container.children.length === 0) {
-            container.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Tidak ada file terlampir</span>';
-        }
+                const container = document.getElementById('edit-current-files-container');
+                if (container.children.length === 0) {
+                    container.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Tidak ada file terlampir</span>';
+                }
+            }
+        });
     }
 
     function addNewLinkField(containerId) {
@@ -1870,23 +1908,34 @@
     }
 
     function deleteExistingLink(button, url) {
-        if (!confirm(`Apakah Anda yakin ingin menghapus link "${url}"?`)) return;
-        
-        const form = document.getElementById('form-edit-materi');
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.className = 'deleted-link-input';
-        hiddenInput.name = 'deleted_links[]';
-        hiddenInput.value = url;
-        form.appendChild(hiddenInput);
+        Swal.fire({
+            title: 'Hapus Link?',
+            text: `Apakah Anda yakin ingin menghapus link "${url}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('form-edit-materi');
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.className = 'deleted-link-input';
+                hiddenInput.name = 'deleted_links[]';
+                hiddenInput.value = url;
+                form.appendChild(hiddenInput);
 
-        const item = button.closest('.edit-link-item');
-        if (item) item.remove();
+                const item = button.closest('.edit-link-item');
+                if (item) item.remove();
 
-        const container = document.getElementById('edit-current-links-container');
-        if (container.children.length === 0) {
-            container.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Tidak ada link terlampir</span>';
-        }
+                const container = document.getElementById('edit-current-links-container');
+                if (container.children.length === 0) {
+                    container.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Tidak ada link terlampir</span>';
+                }
+            }
+        });
     }
     
     function closeEditMaterialModal() {
@@ -1978,7 +2027,7 @@
         
         if (selectAllCheckbox) selectAllCheckbox.checked = false;
 
-        const url = `/classes/{{ $class->id }}/available-students?fakultas_id=${fakultasId}&prodi_id=${prodiId}&angkatan=${angkatan}`;
+        const url = "{{ url('/classes/' . $class->id . '/available-students') }}?fakultas_id=" + fakultasId + "&prodi_id=" + prodiId + "&angkatan=" + angkatan;
         
         fetch(url)
             .then(response => response.json())

@@ -99,7 +99,7 @@
                     </td>
                     <td style="padding: 1rem; border-bottom: 1px solid #e5e7eb;">
                         <button type="button" class="btn" style="background: #eef2ff; color: #4f46e5; border: none; padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="openEditModal('{{ route('mahasiswa.update', $student) }}', '{{ $student->nim }}', '{{ $student->nama_student }}', '{{ $student->angkatan }}', '{{ $student->user->email ?? '' }}', '{{ $student->prodi_id }}')">Edit</button>
-                        <form action="{{ route('mahasiswa.destroy', $student) }}" method="POST" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus mahasiswa ini? Akun login yang terkait juga akan dihapus.')">
+                        <form action="{{ route('mahasiswa.destroy', $student) }}" method="POST" style="display: inline;" class="swal-confirm-form" data-swal-msg="Apakah Anda yakin ingin menghapus mahasiswa ini? Akun login yang terkait juga akan dihapus.">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>

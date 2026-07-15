@@ -84,7 +84,7 @@
                     📂 {{ __('Lihat Detail') }}
                 </a>
                 @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
-                <form action="{{ route('classes.archive', $class) }}" method="POST" style="margin: 0;" onsubmit="return confirm('{{ __('Aktifkan kembali kelas ini?') }}')">
+                <form action="{{ route('classes.archive', $class) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="{{ __('Aktifkan kembali kelas ini?') }}">
                     @csrf
                     <button type="submit" class="btn" style="font-size: 0.875rem; background: #22c55e; color: white;" title="{{ __('Aktifkan Kembali') }}">
                         ✅
