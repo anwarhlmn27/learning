@@ -4,8 +4,8 @@
 
 @section('content')
 <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem;">
-    <a href="{{ route('classes.show', $assignment->classRoom) }}" class="btn btn-outline" style="padding: 0.5rem 1rem; border-radius: 9999px;">
-        ← Kembali ke Kelas
+    <a href="{{ route('classes.show', $assignment->classRoom) }}" class="btn btn-primary light btn-sm">
+        <i class="fas fa-arrow-left me-2"></i> Kembali ke Kelas
     </a>
     <div>
         <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">{{ $assignment->title }}</h2>
@@ -76,15 +76,15 @@
                         <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Unggah File (Opsional)</label>
                         @if(optional($submission)->file_path)
                             <div style="margin-bottom: 0.5rem; font-size: 0.875rem;">
-                                File terkirim: <a href="{{ Storage::url($submission->file_path) }}" target="_blank" style="color: var(--primary);">Lihat File</a>
+                                File terkirim: <a href="{{ asset('storage/' . $submission->file_path) }}" target="_blank" style="color: var(--primary);">Lihat File</a>
                             </div>
                             <span style="font-size: 0.75rem; color: var(--text-muted);">Unggah file baru untuk mengganti file lama.</span>
                         @endif
                         <input type="file" name="file" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
                     </div>
                     
-                    <button type="submit" class="btn" style="width: 100%;">
-                        {{ $submission ? 'Update Submission' : 'Submit Assignment' }}
+                    <button type="submit" class="btn btn-primary w-100 mt-3" style="font-weight: 600; padding: 0.75rem; font-size: 0.95rem;">
+                        <i class="fas {{ $submission ? 'fa-edit' : 'fa-paper-plane' }} me-2"></i> {{ $submission ? 'Update Submission' : 'Submit Assignment' }}
                     </button>
                 </form>
             @endif

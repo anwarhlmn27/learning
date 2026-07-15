@@ -459,9 +459,20 @@
                                             Deadline: {{ date('d M Y - H:i', strtotime($topic->assignment->deadline)) }}
                                         </span>
                                         @if(Auth::user()->hasRole('mahasiswa'))
-                                            <a href="{{ route('assignments.show', $topic->assignment) }}" class="btn" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
-                                                Kumpulkan Tugas
-                                            </a>
+                                            @php
+                                                $submission = \App\Models\AssignmentSubmission::where('assignment_id', $topic->assignment->id)
+                                                    ->where('student_id', optional(Auth::user()->student)->id)
+                                                    ->first();
+                                            @endphp
+                                            @if($submission)
+                                                <a href="{{ route('assignments.show', $topic->assignment) }}" class="btn btn-success" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
+                                                    <i class="fas fa-check-circle me-1"></i> Submitted
+                                                </a>
+                                            @else
+                                                <a href="{{ route('assignments.show', $topic->assignment) }}" class="btn" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
+                                                    Kumpulkan Tugas
+                                                </a>
+                                            @endif
                                         @else
                                             <a href="{{ route('assignments.show', $topic->assignment) }}" class="btn btn-outline" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">
                                                 Grading & Submissions

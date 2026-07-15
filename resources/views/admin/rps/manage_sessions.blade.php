@@ -244,7 +244,7 @@
                         </div>
                         <div style="width: 250px;">
                             <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Current File / Update</label>
-                            <a href="{{ Storage::url($resource->file_path) }}" target="_blank" style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: var(--primary);">View Current</a>
+                            <a href="{{ asset('storage/' . $resource->file_path) }}" target="_blank" style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: var(--primary);">View Current</a>
                             <input type="file" name="existing_resources[{{ $index }}][file]" style="width: 100%; padding: 0.3rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                         </div>
                         <div>

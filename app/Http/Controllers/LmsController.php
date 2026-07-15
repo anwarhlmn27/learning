@@ -58,7 +58,12 @@ class LmsController extends Controller
         } else {
             $student = \App\Models\Student::where('user_id', $user->id)->first();
             if ($student) {
-                $enrollments           = Enrollment::where('student_id', $student->id)->with(['classRoom.subject'])->get();
+                $enrollments = Enrollment::where('student_id', $student->id)
+                    ->whereHas('classRoom', function($q) {
+                        $q->where('status', 'active');
+                    })
+                    ->with(['classRoom.subject'])
+                    ->get();
                 $classIds              = $enrollments->pluck('class_room_id');
                 $data['total_classes'] = $enrollments->count();
                 $data['classes']       = $enrollments->map(fn($e) => $e->classRoom);

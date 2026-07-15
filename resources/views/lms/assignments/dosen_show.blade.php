@@ -73,7 +73,7 @@
                             </span>
                             <div style="margin-top: 0.5rem; font-size: 0.875rem;">
                                 @if($submission->file_path)
-                                    <a href="{{ Storage::url($submission->file_path) }}" target="_blank" style="color: var(--primary); text-decoration: none;">📄 View File</a><br>
+                                    <a href="{{ asset('storage/' . $submission->file_path) }}" target="_blank" style="color: var(--primary); text-decoration: none;">📄 View File</a><br>
                                 @endif
                                 @if($submission->text_answer)
                                     <button class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin-top: 0.5rem;" onclick="alert(`{{ htmlspecialchars($submission->text_answer) }}`)">Lihat Teks</button>
