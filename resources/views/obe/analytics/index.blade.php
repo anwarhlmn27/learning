@@ -95,44 +95,46 @@
             <div class="card-header">
                 <span>{{ __('Data Nilai Mentah (Grades)') }}</span>
             </div>
-            <div class="card-body" style="padding: 0;">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Mahasiswa') }}</th>
-                            <th>{{ __('Mata Kuliah') }}</th>
-                            <th>{{ __('Asesmen') }}</th>
-                            <th>{{ __('Skor Mentah') }}</th>
-                            <th>{{ __('Bobot') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($grades as $grade)
-                        <tr>
-                            <td>
-                                <strong>{{ optional($grade->enrollment->student)->nama_student }}</strong><br>
-                                <small>{{ optional($grade->enrollment->student)->nim }}</small>
-                            </td>
-                            <td>{{ optional($grade->rpsAssessment->session->rps->subject)->nama_subject }}</td>
-                            <td>
-                                {{ $grade->rpsAssessment->assessment_type ?? __('Asesmen') }}
-                                <br><small class="text-muted">CPMK: {{ optional($grade->rpsAssessment->clo)->kode_clo }}</small>
-                            </td>
-                            <td>{{ $grade->score }}</td>
-                            <td>
-                                @php
-                                    $weight = $grade->rpsAssessment->weight ?? 0;
-                                @endphp
-                                <span style="font-weight: 600; color: var(--primary);">{{ $weight }}%</span>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">{{ __('Belum ada data nilai yang masuk untuk pilihan ini.') }}</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div class="card-body" style="padding: 1rem;">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped" id="gradesTable">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Mahasiswa') }}</th>
+                                <th>{{ __('Mata Kuliah') }}</th>
+                                <th>{{ __('Asesmen') }}</th>
+                                <th>{{ __('Skor Mentah') }}</th>
+                                <th>{{ __('Bobot') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($grades as $grade)
+                            <tr>
+                                <td>
+                                    <strong>{{ optional($grade->enrollment->student)->nama_student }}</strong><br>
+                                    <small>{{ optional($grade->enrollment->student)->nim }}</small>
+                                </td>
+                                <td>{{ optional($grade->rpsAssessment->session->rps->subject)->nama_subject }}</td>
+                                <td>
+                                    {{ $grade->rpsAssessment->assessment_type ?? __('Asesmen') }}
+                                    <br><small class="text-muted">CPMK: {{ optional($grade->rpsAssessment->clo)->kode_clo }}</small>
+                                </td>
+                                <td>{{ $grade->score }}</td>
+                                <td>
+                                    @php
+                                        $weight = $grade->rpsAssessment->weight ?? 0;
+                                    @endphp
+                                    <span style="font-weight: 600; color: var(--primary);">{{ $weight }}%</span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">{{ __('Belum ada data nilai yang masuk untuk pilihan ini.') }}</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -140,7 +142,7 @@
     <!-- Sidebar Analytics Info -->
     <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         
-        @if(isset($gps) && count($gps) > 0)
+        @if(isset($gpAttainments) && count($gpAttainments) > 0)
         <!-- Recommendation Card -->
         <div class="card" style="border-top: 4px solid var(--success);">
             <div class="card-header">
@@ -151,10 +153,19 @@
                     {{ __('Berdasarkan ambang batas CPL yang dicapai:') }}
                 </p>
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    @foreach($gps as $gp)
-                    <div style="padding: 0.75rem; background: #f8fafc; border-radius: 0.5rem; border-left: 3px solid #cbd5e1;">
-                        <strong style="display: block; font-size: 0.9rem;">{{ $gp->nm_profil }}</strong>
-                        <small style="color: #64748b;">{{ __('Target kompetensi sedang dievaluasi') }}</small>
+                    @foreach($gpAttainments as $ga)
+                    @php
+                        $isDominant = ($highestGpScore > 0 && $ga['attainment'] == $highestGpScore);
+                        $bgCard = $isDominant ? '#f0fdf4' : '#f8fafc';
+                        $borderCard = $isDominant ? '3px solid #22c55e' : '3px solid #cbd5e1';
+                        $icon = $isDominant ? '⭐' : '';
+                    @endphp
+                    <div style="padding: 0.75rem; background: {{ $bgCard }}; border-radius: 0.5rem; border-left: {{ $borderCard }};">
+                        <strong style="display: block; font-size: 0.9rem;">{{ $icon }} {{ $ga['gp']->nm_profil }}</strong>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
+                            <small style="color: #64748b;">{{ __('Kecocokan Profil:') }}</small>
+                            <span style="font-weight: 600; font-size: 0.85rem; color: {{ $isDominant ? '#15803d' : '#475569' }}">{{ number_format($ga['attainment'], 1) }}%</span>
+                        </div>
                     </div>
                     @endforeach
                 </div>
@@ -200,6 +211,12 @@
 @endsection
 
 @section('scripts')
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
 <!-- Load Select2 CSS and JS if not included in layout -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -213,6 +230,26 @@
             width: '100%',
             placeholder: function(){
                 $(this).data('placeholder');
+            }
+        });
+
+        // Initialize DataTable for grades
+        if ($.fn.DataTable.isDataTable('#gradesTable')) {
+            $('#gradesTable').DataTable().destroy();
+        }
+        $('#gradesTable').DataTable({
+            pageLength: 10,
+            responsive: true,
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ baris",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                paginate: {
+                    first: "Awal",
+                    last: "Akhir",
+                    next: "Selanjutnya",
+                    previous: "Sebelumnya"
+                }
             }
         });
 

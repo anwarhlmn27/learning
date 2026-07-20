@@ -57,11 +57,13 @@ class AnalyticsController extends Controller
         $radarLabels = [];
         $radarData = [];
         $ploAttainments = [];
+        $gpAttainments = [];
+        $highestGpScore = -1;
 
         if ($selectedProdiId) {
             $prodi = Prodi::find($selectedProdiId);
             $plos = Plo::where('id_prodi', $selectedProdiId)->orderBy('kode_plo')->get();
-            $gps = Gp::where('id_prodi', $selectedProdiId)->get();
+            $gps = Gp::with('plos')->where('id_prodi', $selectedProdiId)->get();
 
             if ($selectedStudentId) {
                 $student = Student::find($selectedStudentId);
@@ -144,6 +146,32 @@ class AnalyticsController extends Controller
                     ];
                 }
             }
+
+            // GP Attainment Calculation
+            $ploAttainmentLookup = [];
+            foreach ($ploAttainments as $pa) {
+                $ploAttainmentLookup[$pa['plo']->id] = $pa['attainment'];
+            }
+
+            foreach ($gps as $gp) {
+                $gpPloScores = [];
+                foreach ($gp->plos as $gpPlo) {
+                    if (isset($ploAttainmentLookup[$gpPlo->id])) {
+                        $gpPloScores[] = $ploAttainmentLookup[$gpPlo->id];
+                    }
+                }
+                
+                $gpAttainment = count($gpPloScores) > 0 ? (array_sum($gpPloScores) / count($gpPloScores)) : 0;
+                
+                $gpAttainments[] = [
+                    'gp' => $gp,
+                    'attainment' => $gpAttainment
+                ];
+
+                if ($gpAttainment > $highestGpScore) {
+                    $highestGpScore = $gpAttainment;
+                }
+            }
         }
 
         return view('obe.analytics.index', compact(
@@ -162,7 +190,9 @@ class AnalyticsController extends Controller
             'grades', 
             'radarLabels', 
             'radarData',
-            'ploAttainments'
+            'ploAttainments',
+            'gpAttainments',
+            'highestGpScore'
         ));
     }
 
