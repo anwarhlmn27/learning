@@ -204,14 +204,14 @@
         
     </div>
 </div>
+@section('styles')
+<!-- DataTables CSS -->
+<link href="{{ asset('vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
 @endsection
 
 @section('scripts')
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
 <!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+<script src="{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
 
 <!-- Load Select2 CSS and JS if not included in layout -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
