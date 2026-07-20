@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<div class="card" style="max-width: 900px; margin: 0 auto;">
+<div class="card">
     <div class="card-header">
         <h4 class="card-title">{{ __('Edit Vision & Mission Form') }}</h4>
         <a href="{{ route('visi.index') }}" class="btn btn-warning btn-sm">{{ __('Back') }}</a>

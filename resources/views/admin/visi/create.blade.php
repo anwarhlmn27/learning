@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<div class="card" style="max-width: 900px; margin: 0 auto;">
+<div class="card">
     <div class="card-header">
         <h4 class="card-title">{{ __('Vision & Mission Form') }}</h4>
         <a href="{{ route('visi.index') }}" class="btn btn-warning btn-sm">{{ __('Back') }}</a>
@@ -151,9 +151,9 @@
 @section('scripts')
 <script>
     const data = {
-        Univ: @json($univs->map(fn($u) => ['id' => $u->id, 'name' => $u->nama_univ])),
-        Fakultas: @json($fakultas->map(fn($f) => ['id' => $f->id, 'name' => $f->nama_fakultas . ' (' . ($f->univ->nama_univ ?? '-') . ')'])),
-        Prodi: @json($prodis->map(fn($p) => ['id' => $p->id, 'name' => $p->nama_prodi . ' (' . ($p->fakultas->nama_fakultas ?? '-') . ')']))
+        Univ: @json($univs->map(fn($u) => ['id' => $u->id, 'name' => $u->nama_univ])->values()->toArray()),
+        Fakultas: @json($fakultas->map(fn($f) => ['id' => $f->id, 'name' => $f->nama_fakultas])->values()->toArray()),
+        Prodi: @json($prodis->map(fn($p) => ['id' => $p->id, 'name' => $p->nama_prodi])->values()->toArray())
     };
 
     function toggleEntities() {
@@ -168,6 +168,10 @@
                 option.textContent = item.name;
                 select.appendChild(option);
             });
+        }
+
+        if (window.jQuery && typeof jQuery.fn.selectpicker === 'function') {
+            $('#entity_id').selectpicker('refresh');
         }
     }
 
@@ -188,6 +192,10 @@
     @if(old('entity_type'))
         toggleEntities();
         document.getElementById('entity_id').value = "{{ old('entity_id') }}";
+        if (window.jQuery && typeof jQuery.fn.selectpicker === 'function') {
+            $('#entity_id').selectpicker('val', "{{ old('entity_id') }}");
+            $('#entity_id').selectpicker('refresh');
+        }
     @endif
 </script>
 @endsection
