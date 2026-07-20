@@ -81,8 +81,8 @@
                                 <strong>{{ optional($grade->enrollment->student)->nama_student }}</strong><br>
                                 <small>{{ optional($grade->enrollment->student)->nim }}</small>
                             </td>
-                            <td>{{ optional($grade->rpsAssessment->rpsSession->rps->subject)->nama_subject }}</td>
-                            <td>{{ optional($grade->rpsAssessment->assessmentType)->name ?? __('Asesmen') }}</td>
+                            <td>{{ optional($grade->rpsAssessment->session->rps->subject)->nama_subject }}</td>
+                            <td>{{ $grade->rpsAssessment->assessment_type ?? __('Asesmen') }}</td>
                             <td>{{ $grade->score }}</td>
                             <td>
                                 @php

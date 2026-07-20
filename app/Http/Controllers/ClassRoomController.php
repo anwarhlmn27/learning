@@ -26,8 +26,8 @@ class ClassRoomController extends Controller
         $user  = Auth::user();
         $query = ClassRoom::with(['subject'])->visible();
 
-        // Non-admin / non-kaprodi only see their own classes
-        if (!$user->hasRole(['admin', 'kaprodi'])) {
+        // Non-admin / non-kaprodi / non-rektor / non-dekan only see their own classes
+        if (!$user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan'])) {
             $query->where(function($q) use ($user) {
                 $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
                 if ($user->student) {
@@ -62,9 +62,7 @@ class ClassRoomController extends Controller
             ? Subject::where('id_prodi', $prodiId)->orderBy('nama_subject')->get()
             : Subject::orderBy('nama_subject')->get();
 
-        $dosens = $selectedProdi
-            ? Dosen::where('prodi_id', $prodiId)->orderBy('nama_dosen')->get()
-            : Dosen::orderBy('nama_dosen')->get();
+        $dosens = Dosen::with(['prodi.fakultas'])->orderBy('nama_dosen')->get();
 
         $classPrimaryDosenMap = [];
         foreach ($classRooms as $cr) {
@@ -76,7 +74,10 @@ class ClassRoomController extends Controller
             }
         }
 
-        return view('lms.classes.index', compact('classRooms', 'subjects', 'dosens', 'classPrimaryDosenMap', 'selectedProdi'));
+        $allFakultas = \App\Models\Fakultas::orderBy('nama_fakultas')->get();
+        $allProdis = \App\Models\Prodi::orderBy('nama_prodi')->get();
+
+        return view('lms.classes.index', compact('classRooms', 'subjects', 'dosens', 'classPrimaryDosenMap', 'selectedProdi', 'allFakultas', 'allProdis'));
     }
 
     public function store(Request $request)
@@ -141,11 +142,11 @@ class ClassRoomController extends Controller
             // Replace primary dosen: detach ALL existing dosens, then attach the chosen one.
             $newDosen = Dosen::find($request->dosen_id);
             if ($newDosen && $newDosen->user_id) {
-                $dosenRole = \App\Models\Role::where('name', 'dosen')->first();
-                if ($dosenRole) {
+                $dosenRoles = \App\Models\Role::whereIn('name', ['dosen', 'rektor', 'dekan', 'kaprodi'])->pluck('id')->toArray();
+                if (!empty($dosenRoles)) {
                     $dosenUserIds = $class->users()
-                        ->whereHas('roles', function($q) use ($dosenRole) {
-                            $q->where('role_id', $dosenRole->id);
+                        ->whereHas('roles', function($q) use ($dosenRoles) {
+                            $q->whereIn('role_id', $dosenRoles);
                         })
                         ->pluck('users.id')
                         ->toArray();
@@ -254,8 +255,8 @@ class ClassRoomController extends Controller
     {
         $user = Auth::user();
         
-        // Authorization check: non-admin / non-kaprodi must be enrolled in class_users or enrollments
-        if (!$user->hasRole(['admin', 'kaprodi'])) {
+        // Authorization check: non-admin / non-kaprodi / non-rektor / non-dekan must be enrolled in class_users or enrollments
+        if (!$user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan'])) {
             $isStaff = $class->users()->where('user_id', $user->id)->exists();
             $isStudent = $user->student && $class->enrollments()->where('student_id', $user->student->id)->exists();
             
@@ -325,7 +326,7 @@ class ClassRoomController extends Controller
         $enrolledBaakUserIds = $baakStaff->pluck('id')->toArray();
 
         // Available dosens to add (not already in this class)
-        $availableDosens = Dosen::whereHas('user', function($q) use ($enrolledDosenUserIds) {
+        $availableDosens = Dosen::with(['prodi.fakultas'])->whereHas('user', function($q) use ($enrolledDosenUserIds) {
             $q->whereNotIn('id', $enrolledDosenUserIds);
         })->orderBy('nama_dosen')->get();
 
@@ -1010,7 +1011,7 @@ class ClassRoomController extends Controller
         $user = Auth::user();
 
         // 1. Authorization Check: Ensure user has right to download this file
-        if (!$user->hasRole(['admin', 'kaprodi', 'dosen'])) {
+        if (!$user->hasRole(['admin', 'kaprodi', 'dosen', 'rektor', 'dekan'])) {
             // For students, verify they are actually enrolled in this class
             $isEnrolled = $class->enrollments()->where('student_id', $user->student->id ?? null)->exists();
             if (!$isEnrolled) {

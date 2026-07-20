@@ -1278,6 +1278,33 @@
             <form action="{{ route('classes.add_staff', $class) }}" method="POST">
                 @csrf
                 <input type="hidden" name="staff_type" value="dosen">
+                
+                {{-- Filter Lintas Prodi Dinamis (Fakultas, Prodi) untuk Dosen --}}
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem;">
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Fakultas:</label>
+                        <select id="dosen-filter-fakultas" onchange="onDosenFakultasChange()" style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; background: white; outline: none; font-weight: 500; color: var(--text-primary);">
+                            <option value="">-- Semua Fakultas --</option>
+                            @foreach($allFakultas as $fak)
+                                <option value="{{ $fak->id }}" {{ (isset($selectedEnrollFakultasId) && $selectedEnrollFakultasId == $fak->id) ? 'selected' : '' }}>
+                                    {{ $fak->nama_fakultas }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Program Studi:</label>
+                        <select id="dosen-filter-prodi" onchange="filterDosenOptions()" style="width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; background: white; outline: none; font-weight: 500; color: var(--text-primary);">
+                            <option value="">-- Semua Prodi --</option>
+                            @foreach($allProdis as $prod)
+                                <option value="{{ $prod->id }}" data-fakultas="{{ $prod->id_fakultas }}" {{ (isset($selectedEnrollProdiId) && $selectedEnrollProdiId == $prod->id) ? 'selected' : '' }}>
+                                    {{ $prod->nama_prodi }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
                 {{-- Live Search --}}
                 <div style="position: relative; margin-bottom: 1rem;">
                     <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;">🔍</span>
@@ -1285,7 +1312,7 @@
                         type="text"
                         id="search-dosen"
                         placeholder="Cari nama atau NIDN dosen..."
-                        oninput="filterDosenOptions(this.value)"
+                        oninput="filterDosenOptions()"
                         style="width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem; box-sizing: border-box;"
                         autocomplete="off"
                     >
@@ -1293,7 +1320,7 @@
                 {{-- Dosen List --}}
                 <div id="dosen-list" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.25rem;">
                     @foreach($availableDosens as $avDosen)
-                    <label class="dosen-option" data-search="{{ strtolower($avDosen->nama_dosen . ' ' . $avDosen->nidn) }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                    <label class="dosen-option" data-search="{{ strtolower($avDosen->nama_dosen . ' ' . $avDosen->nidn) }}" data-fakultas="{{ optional(optional($avDosen->prodi)->fakultas)->id }}" data-prodi="{{ $avDosen->prodi_id }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
                         <input type="radio" name="dosen_id" value="{{ $avDosen->id }}" required style="accent-color: var(--primary); width: 16px; height: 16px; flex-shrink: 0;">
                         <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0;">
                             {{ strtoupper(substr($avDosen->nama_dosen, 0, 1)) }}
@@ -1759,13 +1786,26 @@
     }
 
     // 5. Live search: Dosen
-    function filterDosenOptions(query) {
-        const q = query.toLowerCase().trim();
+    function filterDosenOptions() {
+        const queryInput = document.getElementById('search-dosen');
+        const q = queryInput ? queryInput.value.toLowerCase().trim() : '';
+        const fakultasSelect = document.getElementById('dosen-filter-fakultas');
+        const prodiSelect = document.getElementById('dosen-filter-prodi');
+        const fakultasId = fakultasSelect ? fakultasSelect.value : '';
+        const prodiId = prodiSelect ? prodiSelect.value : '';
+
         const items = document.querySelectorAll('.dosen-option');
         let visibleCount = 0;
         items.forEach(item => {
             const text = item.getAttribute('data-search') || '';
-            const match = !q || text.includes(q);
+            const itemFakultas = item.getAttribute('data-fakultas') || '';
+            const itemProdi = item.getAttribute('data-prodi') || '';
+            
+            const matchSearch = !q || text.includes(q);
+            const matchFakultas = !fakultasId || itemFakultas === fakultasId;
+            const matchProdi = !prodiId || itemProdi === prodiId;
+
+            const match = matchSearch && matchFakultas && matchProdi;
             item.style.display = match ? 'flex' : 'none';
             if (match) visibleCount++;
         });
@@ -1787,7 +1827,7 @@
                     if (searchStudent) { searchStudent.value = ''; }
                     if (filterAngkatan) { filterAngkatan.value = ''; }
                     if (searchStudent || filterAngkatan) { filterStudentOptions(); }
-                    if (searchDosen) { searchDosen.value = ''; filterDosenOptions(''); }
+                    if (searchDosen) { searchDosen.value = ''; filterDosenOptions(); }
                 }
             });
         }
@@ -1954,6 +1994,7 @@
     }
 
     let allProdiOptions = [];
+    let allDosenProdiOptions = [];
     
     document.addEventListener('DOMContentLoaded', function() {
         const prodiSelect = document.getElementById('enroll-filter-prodi');
@@ -1978,7 +2019,44 @@
             const peopleTabContent = document.getElementById('tab-people');
             if (peopleTabContent) peopleTabContent.classList.add('active');
         }
+
+        // Initialize Dosen Filters
+        const dosenProdiSelect = document.getElementById('dosen-filter-prodi');
+        if (dosenProdiSelect) {
+            allDosenProdiOptions = Array.from(dosenProdiSelect.querySelectorAll('option'));
+            filterDosenProdis();
+            // Call filterDosenOptions to apply initial filters (default active prodi)
+            filterDosenOptions();
+        }
     });
+
+    function filterDosenProdis() {
+        const fakultasId = document.getElementById('dosen-filter-fakultas').value;
+        const prodiSelect = document.getElementById('dosen-filter-prodi');
+        if (!prodiSelect) return;
+        
+        const currentValue = prodiSelect.value;
+        prodiSelect.innerHTML = '';
+        
+        allDosenProdiOptions.forEach(opt => {
+            const optFakultasId = opt.dataset.fakultas;
+            if (opt.value === "" || !fakultasId || optFakultasId === fakultasId) {
+                prodiSelect.appendChild(opt.cloneNode(true));
+            }
+        });
+        
+        const optionExists = Array.from(prodiSelect.options).some(opt => opt.value === currentValue);
+        if (optionExists) {
+            prodiSelect.value = currentValue;
+        } else {
+            prodiSelect.value = "";
+        }
+    }
+
+    function onDosenFakultasChange() {
+        filterDosenProdis();
+        filterDosenOptions();
+    }
 
     function filterProdis() {
         const fakultasId = document.getElementById('enroll-filter-fakultas').value;

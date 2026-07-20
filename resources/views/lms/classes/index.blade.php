@@ -135,12 +135,44 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-dark font-w600">{{ __('Dosen Pengampu') }} <span class="text-danger">*</span></label>
-                        <select name="dosen_id" id="add-dosen" class="default-select form-control wide" data-live-search="true" required>
-                            <option value="">-- {{ __('Pilih Dosen') }} --</option>
-                            @foreach($dosens as $dosen)
-                                <option value="{{ $dosen->id }}" {{ old('dosen_id') == $dosen->id ? 'selected' : '' }}>{{ $dosen->nama_dosen }} ({{ $dosen->nidn }})</option>
-                            @endforeach
-                        </select>
+                        <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; background: #f8fafc;">
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.85rem; color: var(--text-muted);">{{ __('Filter Fakultas') }}</label>
+                                <select id="add-dosen-fakultas" class="default-select form-control wide" data-live-search="true">
+                                    <option value="">-- {{ __('Semua Fakultas') }} --</option>
+                                    @foreach($allFakultas as $fakultas)
+                                        <option value="{{ $fakultas->id }}">{{ $fakultas->nama_fakultas }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.85rem; color: var(--text-muted);">{{ __('Filter Prodi') }}</label>
+                                <select id="add-dosen-prodi" class="default-select form-control wide" data-live-search="true">
+                                    <option value="">-- {{ __('Semua Prodi') }} --</option>
+                                </select>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label" style="font-size: 0.85rem; font-weight: 600;">{{ __('Pilih Dosen') }} <span class="text-danger">*</span></label>
+                                <select name="dosen_id" id="add-dosen" class="default-select form-control wide" data-live-search="true" required>
+                                    <option value="">-- {{ __('Pilih Dosen') }} --</option>
+                                    @foreach($dosens as $dosen)
+                                        @php
+                                            $prodiName = $dosen->prodi ? $dosen->prodi->nama_prodi : __('Tanpa Prodi');
+                                            $fakultasName = ($dosen->prodi && $dosen->prodi->fakultas) ? $dosen->prodi->fakultas->nama_fakultas : '';
+                                            $location = $fakultasName ? "{$fakultasName} - {$prodiName}" : $prodiName;
+                                            
+                                            $prefix = '';
+                                            if (isset($selectedProdi) && $selectedProdi) {
+                                                $prefix = ($dosen->prodi_id == $selectedProdi->id) ? '[' . __('Internal') . '] ' : '[' . __('Eksternal') . '] ';
+                                            }
+                                        @endphp
+                                        <option value="{{ $dosen->id }}" {{ old('dosen_id') == $dosen->id ? 'selected' : '' }}>
+                                            {{ $prefix }}{{ $dosen->nama_dosen }} ({{ $dosen->nidn }}) @if($dosen->prodi_id != ($selectedProdi->id ?? '')) - {{ $location }} @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-dark font-w600">{{ __('Nama Kelas (e.g. Kelas A)') }} <span class="text-danger">*</span></label>
@@ -192,11 +224,44 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-dark font-w600">{{ __('Dosen Pengampu') }} <span class="text-danger">*</span></label>
-                        <select name="dosen_id" id="edit-dosen" class="default-select form-control wide" data-live-search="true" required>
-                            @foreach($dosens as $dosen)
-                                <option value="{{ $dosen->id }}">{{ $dosen->nama_dosen }} ({{ $dosen->nidn }})</option>
-                            @endforeach
-                        </select>
+                        <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; background: #f8fafc;">
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.85rem; color: var(--text-muted);">{{ __('Filter Fakultas') }}</label>
+                                <select id="edit-dosen-fakultas" class="default-select form-control wide" data-live-search="true">
+                                    <option value="">-- {{ __('Semua Fakultas') }} --</option>
+                                    @foreach($allFakultas as $fakultas)
+                                        <option value="{{ $fakultas->id }}">{{ $fakultas->nama_fakultas }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.85rem; color: var(--text-muted);">{{ __('Filter Prodi') }}</label>
+                                <select id="edit-dosen-prodi" class="default-select form-control wide" data-live-search="true">
+                                    <option value="">-- {{ __('Semua Prodi') }} --</option>
+                                </select>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label" style="font-size: 0.85rem; font-weight: 600;">{{ __('Pilih Dosen') }} <span class="text-danger">*</span></label>
+                                <select name="dosen_id" id="edit-dosen" class="default-select form-control wide" data-live-search="true" required>
+                                    <option value="">-- {{ __('Pilih Dosen') }} --</option>
+                                    @foreach($dosens as $dosen)
+                                        @php
+                                            $prodiName = $dosen->prodi ? $dosen->prodi->nama_prodi : __('Tanpa Prodi');
+                                            $fakultasName = ($dosen->prodi && $dosen->prodi->fakultas) ? $dosen->prodi->fakultas->nama_fakultas : '';
+                                            $location = $fakultasName ? "{$fakultasName} - {$prodiName}" : $prodiName;
+                                            
+                                            $prefix = '';
+                                            if (isset($selectedProdi) && $selectedProdi) {
+                                                $prefix = ($dosen->prodi_id == $selectedProdi->id) ? '[' . __('Internal') . '] ' : '[' . __('Eksternal') . '] ';
+                                            }
+                                        @endphp
+                                        <option value="{{ $dosen->id }}">
+                                            {{ $prefix }}{{ $dosen->nama_dosen }} ({{ $dosen->nidn }}) @if($dosen->prodi_id != ($selectedProdi->id ?? '')) - {{ $location }} @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-dark font-w600">{{ __('Nama Kelas (e.g. Kelas A)') }} <span class="text-danger">*</span></label>
@@ -239,11 +304,81 @@
 
 
 <script>
+    const allProdis = @json($allProdis);
+    const allDosens = @json($dosens);
+
+    function setupFacultyProdiDosenChain(fakultasSelectId, prodiSelectId, dosenSelectId) {
+        const $fakultas = $(`#${fakultasSelectId}`);
+        const $prodi = $(`#${prodiSelectId}`);
+        const $dosen = $(`#${dosenSelectId}`);
+
+        // When Fakultas changes
+        $fakultas.on('change', function() {
+            const fakultasId = $(this).val();
+            $prodi.empty().append('<option value="">-- ' + "{{ __('Semua Prodi') }}" + ' --</option>');
+            $dosen.empty().append('<option value="">-- ' + "{{ __('Pilih Dosen') }}" + ' --</option>');
+
+            if (fakultasId) {
+                const filteredProdis = allProdis.filter(p => p.id_fakultas == fakultasId);
+                filteredProdis.forEach(p => {
+                    $prodi.append(`<option value="${p.id}">${p.nama_prodi}</option>`);
+                });
+            }
+            $prodi.selectpicker('refresh');
+            $dosen.selectpicker('refresh');
+        });
+
+        // When Prodi changes
+        $prodi.on('change', function() {
+            const prodiId = $(this).val();
+            $dosen.empty().append('<option value="">-- ' + "{{ __('Pilih Dosen') }}" + ' --</option>');
+
+            if (prodiId) {
+                const filteredDosens = allDosens.filter(d => d.prodi_id == prodiId);
+                filteredDosens.forEach(d => {
+                    $dosen.append(`<option value="${d.id}">${d.nama_dosen} (${d.nidn || '-'})</option>`);
+                });
+            }
+            $dosen.selectpicker('refresh');
+        });
+    }
+
+    // Initialize document events
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup chains for both Add and Edit modals
+        setupFacultyProdiDosenChain('add-dosen-fakultas', 'add-dosen-prodi', 'add-dosen');
+        setupFacultyProdiDosenChain('edit-dosen-fakultas', 'edit-dosen-prodi', 'edit-dosen');
+
+        // Pre-fill Add Modal if selectedProdi exists
+        @if(isset($selectedProdi) && $selectedProdi)
+            const initialProdiId = "{{ $selectedProdi->id }}";
+            const initialFakultasId = "{{ $selectedProdi->id_fakultas }}";
+
+            $('#add-dosen-fakultas').val(initialFakultasId).selectpicker('refresh').trigger('change');
+            $('#add-dosen-prodi').val(initialProdiId).selectpicker('refresh').trigger('change');
+        @endif
+    });
 
     function openEditModal(id, subject_id, dosen_id, nama_kelas, tahun_akademik, semester, status) {
         document.getElementById('edit-form').action = '/classes/' + id;
         $('#edit-subject').val(subject_id).trigger('change');
-        $('#edit-dosen').val(dosen_id).trigger('change');
+
+        // Populate Faculty and Prodi filters dynamically for the chosen lecturer
+        const chosenDosen = allDosens.find(d => d.id === dosen_id);
+        if (chosenDosen) {
+            const prodiId = chosenDosen.prodi_id;
+            const chosenProdi = allProdis.find(p => p.id === prodiId);
+            if (chosenProdi) {
+                const fakultasId = chosenProdi.id_fakultas;
+
+                $('#edit-dosen-fakultas').val(fakultasId).trigger('change');
+                $('#edit-dosen-prodi').val(prodiId).trigger('change');
+                $('#edit-dosen').val(dosen_id);
+            }
+        } else {
+            $('#edit-dosen-fakultas').val('').trigger('change');
+        }
+
         document.getElementById('edit-nama').value = nama_kelas;
         document.getElementById('edit-tahun').value = tahun_akademik;
         

@@ -64,6 +64,7 @@ class UserController extends Controller
             ]);
 
             $user->roles()->attach($request->role_id, ['id' => (string) Str::uuid()]);
+            $this->syncDosenRecord($user, $request->role_id);
         });
 
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
@@ -108,6 +109,7 @@ class UserController extends Controller
             // Using detach and attach ensures we always have a UUID.
             $user->roles()->detach();
             $user->roles()->attach($request->role_id, ['id' => (string) Str::uuid()]);
+            $this->syncDosenRecord($user, $request->role_id);
         });
 
         return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
@@ -177,6 +179,7 @@ class UserController extends Controller
                         $role = Role::where('name', $roleName)->first();
                         if ($role) {
                             $user->roles()->attach($role->id, ['id' => (string) Str::uuid()]);
+                            $this->syncDosenRecord($user, $role->id);
                         }
                         $successCount++;
                     } else {
@@ -239,6 +242,30 @@ class UserController extends Controller
             return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->route('users.index')->withErrors(['error' => $this->handleException($e, 'Gagal menghapus user.')]);
+        }
+    }
+
+    private function syncDosenRecord(User $user, $roleIdOrName)
+    {
+        $role = Role::where('id', $roleIdOrName)->orWhere('name', $roleIdOrName)->first();
+        if ($role && in_array($role->name, ['dosen', 'rektor', 'dekan', 'kaprodi'])) {
+            if (!$user->dosen) {
+                $defaultProdi = \App\Models\Prodi::first();
+                $prodiId = $defaultProdi ? $defaultProdi->id : null;
+                if ($prodiId) {
+                    \App\Models\Dosen::create([
+                        'user_id' => $user->id,
+                        'prodi_id' => $prodiId,
+                        'nidn' => 'TEMP-' . rand(10000000, 99999999),
+                        'nama_dosen' => $user->name,
+                        'gelar' => null,
+                    ]);
+                }
+            } else {
+                $user->dosen->update([
+                    'nama_dosen' => $user->name
+                ]);
+            }
         }
     }
 }

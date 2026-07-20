@@ -41,8 +41,11 @@
 </div>
 
 <div class="card">
-    <div class="card-header" style="background: white; border-bottom: 1px solid var(--border);">
+    <div class="card-header" style="background: white; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem;">
         <h3 style="margin: 0; font-size: 1.25rem;">Daftar Pengumpulan & Penilaian</h3>
+        <button type="button" id="btn-bulk-save" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;">
+            💾 Simpan Semua Nilai
+        </button>
     </div>
     <div class="card-body" style="padding: 0;">
         <table style="width: 100%; border-collapse: collapse;">
@@ -92,7 +95,7 @@
                                 Mahasiswa harus menyelesaikan administrasi ke Bagian Finance.
                             </div>
                         @else
-                            <form action="{{ route('assignments.grade', [$assignment, $enrollment]) }}" method="POST">
+                            <form action="{{ route('assignments.grade', [$assignment, $enrollment]) }}" method="POST" class="grade-form" data-enrollment-id="{{ $enrollment->id }}">
                                 @csrf
                                 <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
                                     <input type="number" name="score" value="{{ optional($grade)->score ?? '' }}" placeholder="Skor (0-100) *" required min="0" max="100" style="width: 100px; padding: 0.25rem; border: 1px solid var(--border); border-radius: 4px;">
@@ -109,4 +112,79 @@
         </table>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btnBulkSave = document.getElementById('btn-bulk-save');
+    if (btnBulkSave) {
+        btnBulkSave.addEventListener('click', function () {
+            // Create a dynamic form to submit bulk grades
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{{ route('assignments.bulk_grade', $assignment) }}";
+
+            // Add CSRF Token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = "{{ csrf_token() }}";
+            form.appendChild(csrfInput);
+
+            // Find all individual grade forms
+            const gradeForms = document.querySelectorAll('.grade-form');
+            let hasData = false;
+
+            gradeForms.forEach((individualForm) => {
+                const scoreInput = individualForm.querySelector('input[name="score"]');
+                const feedbackTextarea = individualForm.querySelector('textarea[name="feedback"]');
+                const enrollmentId = individualForm.dataset.enrollmentId;
+
+                // We only include rows that have a score filled in
+                if (scoreInput && scoreInput.value !== '') {
+                    hasData = true;
+
+                    // Add score input
+                    const scoreHidden = document.createElement('input');
+                    scoreHidden.type = 'hidden';
+                    scoreHidden.name = `grades[${enrollmentId}][score]`;
+                    scoreHidden.value = scoreInput.value;
+                    form.appendChild(scoreHidden);
+
+                    // Add feedback input
+                    const feedbackHidden = document.createElement('input');
+                    feedbackHidden.type = 'hidden';
+                    feedbackHidden.name = `grades[${enrollmentId}][feedback]`;
+                    feedbackHidden.value = feedbackTextarea ? feedbackTextarea.value : '';
+                    form.appendChild(feedbackHidden);
+                }
+            });
+
+            if (!hasData) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Harap isi setidaknya satu nilai mahasiswa sebelum menyimpan secara bulk.'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Simpan Semua Nilai?',
+                text: "Semua nilai yang telah diisi akan disimpan secara massal.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        });
+    }
+});
+</script>
 @endsection

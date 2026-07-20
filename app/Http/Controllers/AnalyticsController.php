@@ -24,7 +24,7 @@ class AnalyticsController extends Controller
             $prodi = Prodi::find($selectedProdiId);
             $plos = Plo::where('id_prodi', $selectedProdiId)->orderBy('kode_plo')->get();
             $gps = Gp::where('id_prodi', $selectedProdiId)->get();
-            $grades = StudentGrade::with(['enrollment.student', 'rpsAssessment.rpsSession.rps.subject'])->latest()->take(20)->get();
+            $grades = StudentGrade::with(['enrollment.student', 'rpsAssessment.session.rps.subject'])->latest()->take(20)->get();
         } else {
             // Default fallback if no prodi selected, load something to show
             $prodi = $prodis->first();
@@ -33,7 +33,7 @@ class AnalyticsController extends Controller
                 $plos = Plo::where('id_prodi', $selectedProdiId)->orderBy('kode_plo')->get();
                 $gps = Gp::where('id_prodi', $selectedProdiId)->get();
             }
-            $grades = StudentGrade::with(['enrollment.student', 'rpsAssessment.rpsSession.rps.subject'])->latest()->take(10)->get();
+            $grades = StudentGrade::with(['enrollment.student', 'rpsAssessment.session.rps.subject'])->latest()->take(10)->get();
         }
 
         // Mocking Attainment Data (To be replaced with actual complex queries CLO->PLO)

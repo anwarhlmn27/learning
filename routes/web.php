@@ -182,6 +182,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/assignments/{assignment}/publish', [\App\Http\Controllers\AssignmentController::class, 'publish'])->name('assignments.publish');
     Route::post('/assignments/{assignment}/submit', [\App\Http\Controllers\AssignmentController::class, 'submit'])->name('assignments.submit');
     Route::post('/assignments/{assignment}/grade/{enrollment}', [\App\Http\Controllers\AssignmentController::class, 'grade'])->name('assignments.grade');
+    Route::post('/assignments/{assignment}/bulk-grade', [\App\Http\Controllers\AssignmentController::class, 'bulkGrade'])->name('assignments.bulk_grade');
 
     // Quizzes Management (Teacher)
     Route::get('/quizzes/{quiz}', [\App\Http\Controllers\QuizController::class, 'show'])->name('quizzes.show');
