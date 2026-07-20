@@ -63,6 +63,19 @@ class AuthController extends Controller
             }
             $request->session()->regenerate();
 
+            $intendedUrl = session('url.intended');
+            $isAdmin = Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi']);
+
+            // Jika user bukan admin tapi intended url mengarah ke halaman admin (/obe/),
+            // hapus intended url tersebut agar diarahkan ke default lms dashboard
+            if (!$isAdmin && $intendedUrl && str_contains($intendedUrl, '/obe/')) {
+                session()->forget('url.intended');
+            }
+
+            if ($isAdmin) {
+                return redirect()->intended(route('admin.dashboard'));
+            }
+
             return redirect()->intended(route('dashboard'));
         }
 
