@@ -108,7 +108,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($grades as $grade)
+                            @foreach($grades as $grade)
                             <tr>
                                 <td>
                                     <strong>{{ optional($grade->enrollment->student)->nama_student }}</strong><br>
@@ -127,11 +127,7 @@
                                     <span style="font-weight: 600; color: var(--primary);">{{ $weight }}%</span>
                                 </td>
                             </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">{{ __('Belum ada data nilai yang masuk untuk pilihan ini.') }}</td>
-                            </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
