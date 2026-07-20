@@ -116,6 +116,10 @@ Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
 
     // OBE Analytics
     Route::get('/obe/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
+    Route::get('/obe/analytics/api/prodis', [\App\Http\Controllers\AnalyticsController::class, 'getProdis'])->name('analytics.api.prodis');
+    Route::get('/obe/analytics/api/angkatans', [\App\Http\Controllers\AnalyticsController::class, 'getAngkatans'])->name('analytics.api.angkatans');
+    Route::get('/obe/analytics/api/students', [\App\Http\Controllers\AnalyticsController::class, 'getStudents'])->name('analytics.api.students');
+
 
 
     // User Management

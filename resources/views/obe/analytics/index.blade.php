@@ -2,8 +2,6 @@
 
 @section('title', __('OBE Analytics Dashboard'))
 
-
-
 @section('content')
 <div class="row page-titles mx-0">
     <div class="col-sm-6 p-md-0">
@@ -26,15 +24,49 @@
         <!-- Filter Card -->
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('analytics.index') }}" method="GET" style="display: flex; gap: 1rem; align-items: flex-end;">
-                    <div class="form-group" style="margin: 0; flex: 1;">
-                        <label class="form-label">{{ __('Program Studi') }}</label>
-                        <select name="prodi_id" class="form-control" onchange="this.form.submit()">
-                            <option value="">-- {{ __('Pilih Prodi') }} --</option>
-                            @foreach($prodis as $p)
-                                <option value="{{ $p->id }}" {{ $selectedProdiId == $p->id ? 'selected' : '' }}>{{ $p->nama_prodi }}</option>
-                            @endforeach
-                        </select>
+                <form action="{{ route('analytics.index') }}" method="GET" id="filterForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Fakultas') }}</label>
+                            <select name="fakultas_id" id="fakultas_id" class="form-control select2">
+                                <option value="">-- {{ __('Pilih Fakultas') }} --</option>
+                                @foreach($fakultas as $f)
+                                    <option value="{{ $f->id }}" {{ $selectedFakultasId == $f->id ? 'selected' : '' }}>{{ $f->nama_fakultas }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Program Studi') }}</label>
+                            <select name="prodi_id" id="prodi_id" class="form-control select2">
+                                <option value="">-- {{ __('Pilih Prodi') }} --</option>
+                                @foreach($prodis as $p)
+                                    <option value="{{ $p->id }}" {{ $selectedProdiId == $p->id ? 'selected' : '' }}>{{ $p->nama_prodi }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Angkatan') }}</label>
+                            <select name="angkatan" id="angkatan" class="form-control select2">
+                                <option value="">-- {{ __('Pilih Angkatan') }} --</option>
+                                @foreach($angkatans as $a)
+                                    <option value="{{ $a }}" {{ $selectedAngkatan == $a ? 'selected' : '' }}>{{ $a }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Mahasiswa') }}</label>
+                            <select name="student_id" id="student_id" class="form-control select2">
+                                <option value="">-- {{ __('Pilih Mahasiswa') }} --</option>
+                                @foreach($students as $s)
+                                    <option value="{{ $s->id }}" {{ $selectedStudentId == $s->id ? 'selected' : '' }}>{{ $s->nim }} - {{ $s->nama_student }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 text-right">
+                            <button type="submit" class="btn btn-primary">{{ __('Tampilkan Analitik') }}</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -44,7 +76,7 @@
         <!-- Radar Chart Card -->
         <div class="card">
             <div class="card-header">
-                <span>{{ __('Capaian CPL (PLO Attainment)') }} - {{ $prodi->nama_prodi }}</span>
+                <span>{{ __('Capaian CPL (PLO Attainment)') }} - {{ $student ? $student->nama_student : 'Rata-rata Cohort' }}</span>
             </div>
             <div class="card-body" style="height: 400px; display: flex; justify-content: center; align-items: center;">
                 @if(count($radarLabels) > 0)
@@ -55,7 +87,7 @@
             </div>
         </div>
         @else
-        <div class="alert alert-info">{{ __('Silakan pilih Program Studi terlebih dahulu.') }}</div>
+        <div class="alert alert-info">{{ __('Silakan filter Fakultas dan Program Studi terlebih dahulu.') }}</div>
         @endif
 
         <!-- Raw Grades Table -->
@@ -70,8 +102,8 @@
                             <th>{{ __('Mahasiswa') }}</th>
                             <th>{{ __('Mata Kuliah') }}</th>
                             <th>{{ __('Asesmen') }}</th>
-                            <th>{{ __('Skor') }}</th>
-                            <th>{{ __('Kontribusi OBE') }}</th>
+                            <th>{{ __('Skor Mentah') }}</th>
+                            <th>{{ __('Bobot') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -82,19 +114,21 @@
                                 <small>{{ optional($grade->enrollment->student)->nim }}</small>
                             </td>
                             <td>{{ optional($grade->rpsAssessment->session->rps->subject)->nama_subject }}</td>
-                            <td>{{ $grade->rpsAssessment->assessment_type ?? __('Asesmen') }}</td>
+                            <td>
+                                {{ $grade->rpsAssessment->assessment_type ?? __('Asesmen') }}
+                                <br><small class="text-muted">CPMK: {{ optional($grade->rpsAssessment->clo)->kode_clo }}</small>
+                            </td>
                             <td>{{ $grade->score }}</td>
                             <td>
                                 @php
                                     $weight = $grade->rpsAssessment->weight ?? 0;
-                                    $contribution = ($grade->score / 100) * $weight;
                                 @endphp
-                                <span style="font-weight: 600; color: var(--primary);">{{ number_format($contribution, 2) }}%</span>
+                                <span style="font-weight: 600; color: var(--primary);">{{ $weight }}%</span>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">{{ __('Belum ada data nilai yang masuk.') }}</td>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">{{ __('Belum ada data nilai yang masuk untuk pilihan ini.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -166,9 +200,86 @@
 @endsection
 
 @section('scripts')
+<!-- Load Select2 CSS and JS if not included in layout -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        
+        // Initialize Select2
+        $('.select2').select2({
+            width: '100%',
+            placeholder: function(){
+                $(this).data('placeholder');
+            }
+        });
+
+        // Cascading Dropdown Logic
+        $('#fakultas_id').on('change', function() {
+            let fakultasId = $(this).val();
+            let $prodiSelect = $('#prodi_id');
+            $prodiSelect.empty().append('<option value="">-- Pilih Prodi --</option>');
+            $('#angkatan').empty().append('<option value="">-- Pilih Angkatan --</option>');
+            $('#student_id').empty().append('<option value="">-- Pilih Mahasiswa --</option>');
+            
+            if (fakultasId) {
+                $.ajax({
+                    url: "{{ route('analytics.api.prodis') }}",
+                    type: "GET",
+                    data: { fakultas_id: fakultasId },
+                    success: function(data) {
+                        $.each(data, function(key, prodi) {
+                            $prodiSelect.append('<option value="'+ prodi.id +'">'+ prodi.nama_prodi +'</option>');
+                        });
+                        $prodiSelect.trigger('change');
+                    }
+                });
+            }
+        });
+
+        $('#prodi_id').on('change', function() {
+            let prodiId = $(this).val();
+            let $angkatanSelect = $('#angkatan');
+            $angkatanSelect.empty().append('<option value="">-- Pilih Angkatan --</option>');
+            $('#student_id').empty().append('<option value="">-- Pilih Mahasiswa --</option>');
+            
+            if (prodiId) {
+                $.ajax({
+                    url: "{{ route('analytics.api.angkatans') }}",
+                    type: "GET",
+                    data: { prodi_id: prodiId },
+                    success: function(data) {
+                        $.each(data, function(key, angkatan) {
+                            $angkatanSelect.append('<option value="'+ angkatan +'">'+ angkatan +'</option>');
+                        });
+                    }
+                });
+            }
+        });
+
+        $('#angkatan').on('change', function() {
+            let prodiId = $('#prodi_id').val();
+            let angkatan = $(this).val();
+            let $studentSelect = $('#student_id');
+            $studentSelect.empty().append('<option value="">-- Pilih Mahasiswa --</option>');
+            
+            if (prodiId && angkatan) {
+                $.ajax({
+                    url: "{{ route('analytics.api.students') }}",
+                    type: "GET",
+                    data: { prodi_id: prodiId, angkatan: angkatan },
+                    success: function(data) {
+                        $.each(data, function(key, student) {
+                            $studentSelect.append('<option value="'+ student.id +'">'+ student.nim + ' - ' + student.nama_student +'</option>');
+                        });
+                    }
+                });
+            }
+        });
+
+        // Initialize Radar Chart
         @if(isset($radarLabels) && count($radarLabels) > 0)
         const ctx = document.getElementById('ploRadarChart').getContext('2d');
         new Chart(ctx, {
@@ -176,7 +287,7 @@
             data: {
                 labels: {!! json_encode($radarLabels) !!},
                 datasets: [{
-                    label: 'Capaian Rata-rata Cohort',
+                    label: '{{ $student ? "Capaian Mahasiswa" : "Capaian Cohort" }}',
                     data: {!! json_encode($radarData) !!},
                     fill: true,
                     backgroundColor: 'rgba(79, 70, 229, 0.2)',
