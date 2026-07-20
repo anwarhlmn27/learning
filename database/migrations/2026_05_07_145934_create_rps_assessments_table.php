@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('rps_assessments', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('rps_session_id'); // Relasi ke Pertemuan 1-14
-            $table->uuid('clo_id');        // Langsung tunjuk ke CLO mana
+            $table->uuid('clo_id')->nullable();        // Langsung tunjuk ke CLO mana
             // $table->uuid('assessment_type_id'); // Relasi ke master data assessment_types
             $table->text('assessment_type'); // Teks: Lisan, Tertulis, Kinerja, Portofolio, Proyek
             

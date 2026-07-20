@@ -52,8 +52,9 @@ class RpsController extends Controller
         
         $subjects = Subject::where('id_prodi', $prodi->id)->get();
         $kurikulums = Kurikulum::orderBy('tahun_akademik', 'desc')->get();
+        $allProdis = Prodi::with(['subjects.rps', 'kurikulums'])->get();
         
-        return view('admin.rps.prodi_rps', compact('rps', 'subjects', 'kurikulums', 'prodi'));
+        return view('admin.rps.prodi_rps', compact('rps', 'subjects', 'kurikulums', 'prodi', 'allProdis'));
     }
 
     public function store(Request $request)
@@ -149,8 +150,10 @@ class RpsController extends Controller
             }
             $newRp->save();
 
-            // Duplicate Sessions & Activities
-            $oldRp->load(['sessions.activities', 'sessions.clos']);
+            $isSameSubject = ($oldRp->subject_id == $newRp->subject_id);
+
+            // Duplicate Sessions, Activities, Assessments, Resources, and CLOs
+            $oldRp->load(['sessions.activities', 'sessions.clos', 'sessions.assessments', 'sessions.resources']);
             foreach ($oldRp->sessions as $oldSession) {
                 $newSession = $oldSession->replicate();
                 $newSession->rps_id = $newRp->id;
@@ -163,8 +166,29 @@ class RpsController extends Controller
                     $newActivity->save();
                 }
 
-                // Clone CLO associations
-                $newSession->clos()->sync($oldSession->clos->pluck('id'));
+                // Clone assessments (Reset clo_id to null if cloning to a different subject/prodi)
+                foreach ($oldSession->assessments as $oldAssessment) {
+                    $newAssessment = $oldAssessment->replicate();
+                    $newAssessment->rps_session_id = $newSession->id;
+                    if (!$isSameSubject) {
+                        $newAssessment->clo_id = null;
+                    }
+                    $newAssessment->save();
+                }
+
+                // Clone resources
+                foreach ($oldSession->resources as $oldResource) {
+                    $newResource = $oldResource->replicate();
+                    $newResource->rps_session_id = $newSession->id;
+                    $newResource->save();
+                }
+
+                // Clone CLO associations (Leave empty if cloning to a different subject/prodi for remapping)
+                if ($isSameSubject) {
+                    $newSession->clos()->sync($oldSession->clos->pluck('id'));
+                } else {
+                    $newSession->clos()->sync([]);
+                }
             }
 
             DB::commit();
@@ -203,6 +227,30 @@ class RpsController extends Controller
         ]);
 
         return redirect()->route('admin.rps.index')->with('success', 'RPS berhasil dicopy ke Kurikulum baru.');
+    }
+
+    public function cloneToProdi(Request $request, Rps $rp)
+    {
+        $request->validate([
+            'target_prodi_id' => 'required|exists:prodis,id',
+            'target_subject_id' => 'required|exists:subjects,id',
+            'target_kurikulum_id' => 'required|exists:kurikulums,id',
+        ]);
+
+        $targetSubject = Subject::with('prodi')->findOrFail($request->target_subject_id);
+
+        if (Rps::where('subject_id', $targetSubject->id)->exists()) {
+            return redirect()->back()->withErrors(['error' => 'Mata kuliah ' . $targetSubject->nama_subject . ' sudah memiliki RPS. Silakan pilih mata kuliah lain.'])->withInput();
+        }
+
+        $newRp = $this->duplicateRps($rp, [
+            'subject_id' => $targetSubject->id,
+            'kurikulum_id' => $request->target_kurikulum_id,
+            'versi' => 1,
+            'status' => 'Draft'
+        ]);
+
+        return redirect()->route('admin.rps.prodi', $request->target_prodi_id)->with('success', 'RPS berhasil di-clone ke Prodi ' . optional($targetSubject->prodi)->nama_prodi);
     }
 
     public function manageSessions(Rps $rp)
@@ -247,7 +295,7 @@ class RpsController extends Controller
             'activities.*.duration' => 'required_with:activities|integer|min:1',
             'activities.*.content' => 'required_with:activities|string',
             'assessments' => 'nullable|array',
-            'assessments.*.clo_id' => 'required_with:assessments|exists:clos,id',
+            'assessments.*.clo_id' => 'nullable|exists:clos,id',
             'assessments.*.assessment_type' => 'required_with:assessments|string',
             'assessments.*.assignment_activities' => 'nullable|string',
             'assessments.*.assessment_scope' => 'nullable|string',
@@ -281,7 +329,7 @@ class RpsController extends Controller
             if ($request->has('assessments') && is_array($request->assessments)) {
                 foreach ($request->assessments as $assess) {
                     $session->assessments()->create([
-                        'clo_id' => $assess['clo_id'],
+                        'clo_id' => !empty($assess['clo_id']) ? $assess['clo_id'] : null,
                         'assessment_type' => $assess['assessment_type'],
                         'assignment_activities' => $assess['assignment_activities'] ?? null,
                         'assessment_scope' => $assess['assessment_scope'] ?? null,

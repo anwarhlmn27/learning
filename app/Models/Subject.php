@@ -86,4 +86,11 @@ class Subject extends Model
                     ->withTimestamps();
     }
 
+    /**
+     * Get the RPS for this subject.
+     */
+    public function rps()
+    {
+        return $this->hasMany(Rps::class, 'subject_id');
+    }
 }

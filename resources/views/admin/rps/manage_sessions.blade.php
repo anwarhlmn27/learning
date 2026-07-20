@@ -99,6 +99,8 @@
                         @foreach($clos as $clo)
                             <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">
                                 <input type="checkbox" name="clos[]" value="{{ $clo->id }}" 
+                                    class="session-clo-checkbox-{{ $session->id }}"
+                                    onchange="updateAssessmentCloOptions('{{ $session->id }}')"
                                     {{ $session->clos->contains($clo->id) ? 'checked' : '' }}>
                                 {{ $clo->kode_clo }} - {{ \Illuminate\Support\Str::limit($clo->deskripsi, 50) }}
                             </label>
@@ -172,7 +174,8 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
                             <div>
                                 <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Target CLO') }} <span style="color: red;">*</span></label>
-                                <select name="assessments[{{ $index }}][clo_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                                <select name="assessments[{{ $index }}][clo_id]" class="assessment-clo-select-{{ $session->id }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                                    <option value="" {{ is_null($assessment->clo_id) ? 'selected' : '' }}>-- Pilih Target CPMK --</option>
                                     @foreach($clos as $clo)
                                         <option value="{{ $clo->id }}" {{ $assessment->clo_id == $clo->id ? 'selected' : '' }}>{{ $clo->kode_clo }}</option>
                                     @endforeach
@@ -298,18 +301,64 @@
         }
     }
 
+    const allClosData = @json($clos);
+
+    function updateAssessmentCloOptions(sessionId) {
+        const checkedBoxes = document.querySelectorAll('.session-clo-checkbox-' + sessionId + ':checked');
+        const checkedCloIds = Array.from(checkedBoxes).map(cb => cb.value);
+        const selects = document.querySelectorAll('.assessment-clo-select-' + sessionId);
+
+        selects.forEach(select => {
+            const currentVal = select.value;
+            let hasSelectedVal = false;
+
+            Array.from(select.options).forEach(opt => {
+                if (!opt.value) return;
+                
+                if (checkedCloIds.length === 0 || checkedCloIds.includes(opt.value)) {
+                    opt.disabled = false;
+                    opt.hidden = false;
+                    opt.style.display = '';
+                    if (opt.value === currentVal) {
+                        hasSelectedVal = true;
+                    }
+                } else {
+                    opt.disabled = true;
+                    opt.hidden = true;
+                    opt.style.display = 'none';
+                }
+            });
+
+            if (!hasSelectedVal && checkedCloIds.length > 0) {
+                const firstEnabled = Array.from(select.options).find(opt => !opt.disabled && opt.value);
+                if (firstEnabled) {
+                    select.value = firstEnabled.value;
+                }
+            }
+        });
+    }
+
     function addAssessmentRow(sessionId) {
         const container = document.getElementById('assessments_container_' + sessionId);
         const index = Date.now();
-        const cloOptions = document.getElementById('clo_options').innerHTML;
+        
+        const checkedBoxes = document.querySelectorAll('.session-clo-checkbox-' + sessionId + ':checked');
+        const checkedCloIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+        let cloOptions = '';
+        allClosData.forEach(clo => {
+            const isEnabled = checkedCloIds.length === 0 || checkedCloIds.includes(clo.id);
+            const styleAttr = isEnabled ? '' : 'disabled style="display:none;"';
+            cloOptions += `<option value="${clo.id}" ${styleAttr}>${clo.kode_clo}</option>`;
+        });
 
         const row = document.createElement('div');
         row.className = 'assessment-row';
         row.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Target CLO') }} </label>
-                    <select name="assessments[${index}][clo_id]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Target CLO') }} <span style="color: red;">*</span></label>
+                    <select name="assessments[${index}][clo_id]" required class="assessment-clo-select-${sessionId}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                         ${cloOptions}
                     </select>
                 </div>
@@ -352,6 +401,7 @@
             </div>
         `;
         container.appendChild(row);
+        updateAssessmentCloOptions(sessionId);
     }
 
     function addActivityRow(sessionId) {
@@ -437,8 +487,11 @@
         }
     }
 
-    // Initial calculation
+    // Initial calculation and session CLO auto-filtering
     updateGlobalWeight();
+    @foreach($rp->sessions as $session)
+        updateAssessmentCloOptions('{{ $session->id }}');
+    @endforeach
 </script>
 @endsection
 @endsection

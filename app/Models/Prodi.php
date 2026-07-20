@@ -68,6 +68,11 @@ class Prodi extends Model
         return $this->hasMany(Subject::class, 'id_prodi');
     }
 
+    public function kurikulums()
+    {
+        return $this->hasMany(Kurikulum::class, 'id_prodi');
+    }
+
     public function rps()
     {
         return $this->hasManyThrough(Rps::class, Subject::class, 'id_prodi', 'subject_id');

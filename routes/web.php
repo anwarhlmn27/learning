@@ -98,6 +98,7 @@ Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
     Route::resource('/obe/rps', \App\Http\Controllers\RpsController::class)->names('admin.rps')->except(['show', 'create']);
     Route::post('/obe/rps/{rp}/new-version', [\App\Http\Controllers\RpsController::class, 'createNewVersion'])->name('admin.rps.new_version');
     Route::post('/obe/rps/{rp}/copy', [\App\Http\Controllers\RpsController::class, 'copyToKurikulum'])->name('admin.rps.copy');
+    Route::post('/obe/rps/{rp}/clone-to-prodi', [\App\Http\Controllers\RpsController::class, 'cloneToProdi'])->name('admin.rps.clone_to_prodi');
     Route::get('/obe/rps/{rp}/sessions', [\App\Http\Controllers\RpsController::class, 'manageSessions'])->name('admin.rps.sessions');
     Route::put('/obe/rps/sessions/{session}', [\App\Http\Controllers\RpsController::class, 'updateSession'])->name('admin.rps.sessions.update');
     Route::post('/obe/rps/sessions/{session}/activity', [\App\Http\Controllers\RpsController::class, 'storeActivity'])->name('admin.rps.activity.store');

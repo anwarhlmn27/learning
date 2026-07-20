@@ -128,15 +128,42 @@
                             </td>
                             <td>{{ $rp->created_at->format('d M Y') }}</td>
                             <td>
-                                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                    <a href="{{ route('admin.rps.sessions', $rp->id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #f3f4f6; color: #1f2937;">Manage Sessions</a>
-                                    <button onclick="openEditModal('{{ $rp->id }}')" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Edit</button>
-                                    <a href="{{ route('admin.rps.export_pdf', $rp->id) }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: #e5e7eb; color: #1f2937;">PDF</a>
-                                    <form action="{{ route('admin.rps.destroy', $rp->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="Are you sure?">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
-                                    </form>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0.35rem 0.75rem; font-size: 0.8125rem;">
+                                        Aksi <i class="fa fa-chevron-down ms-1" style="font-size: 0.7rem;"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" style="box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-radius: 8px; border: 1px solid #f0f0f0;">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('admin.rps.sessions', $rp->id) }}" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                                <i class="la la-tasks" style="font-size: 1.1rem; color: var(--primary);"></i> Manage Sessions
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);" onclick="openCloneModal('{{ $rp->id }}')" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                                <i class="la la-copy" style="font-size: 1.1rem; color: #0284c7;"></i> Clone ke Prodi
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);" onclick="openEditModal('{{ $rp->id }}')" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                                <i class="la la-edit" style="font-size: 1.1rem; color: #f59e0b;"></i> Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('admin.rps.export_pdf', $rp->id) }}" target="_blank" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                                <i class="la la-file-pdf" style="font-size: 1.1rem; color: #6b7280;"></i> Export PDF
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" style="margin: 0.25rem 0;"></li>
+                                        <li>
+                                            <form action="{{ route('admin.rps.destroy', $rp->id) }}" method="POST" class="swal-confirm-form" data-swal-msg="Are you sure you want to delete this RPS?">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1rem; width: 100%; text-align: left; background: none; border: none;">
+                                                    <i class="la la-trash" style="font-size: 1.1rem; color: #ef4444;"></i> Delete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
                                 </div>
                             </td>
                         </tr>
@@ -234,9 +261,111 @@
     </div>
 </div>
 
+<!-- Modal Clone to Prodi -->
+<div id="cloneProdiModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 500px; margin: 1rem; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10; border-bottom: 1px solid #eee; padding: 1.25rem 1.5rem;">
+            <h3 style="margin: 0; font-size: 1.125rem; font-weight: 700; color: #111827;">Clone RPS ke Prodi Lain</h3>
+            <button onclick="closeCloneModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        <div class="card-body" style="padding: 1.5rem;">
+            <form id="cloneProdiForm" method="POST" action="">
+                @csrf
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem;">Prodi Tujuan <span style="color: red;">*</span></label>
+                    <select name="target_prodi_id" id="target_prodi_id" required onchange="onTargetProdiChange()" class="form-control" style="width: 100%;">
+                        <option value="">-- Pilih Prodi Tujuan --</option>
+                        @foreach($allProdis as $p)
+                            <option value="{{ $p->id }}">{{ $p->nama_prodi }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem;">Mata Kuliah Tujuan <span style="color: red;">*</span></label>
+                    <select name="target_subject_id" id="target_subject_id" required class="form-control" style="width: 100%;">
+                        <option value="">-- Pilih Mata Kuliah --</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1.75rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem;">Kurikulum Tujuan <span style="color: red;">*</span></label>
+                    <select name="target_kurikulum_id" id="target_kurikulum_id" required class="form-control" style="width: 100%;">
+                        <option value="">-- Pilih Kurikulum --</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" onclick="closeCloneModal()" class="btn btn-secondary" style="padding: 0.5rem 1.25rem;">Batal</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1.25rem;">Clone RPS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    const allProdisData = @json($allProdis);
+    const allKurikulumsData = @json($kurikulums);
+
+    function openCloneModal(rpsId) {
+        let cloneUrl = "{{ route('admin.rps.clone_to_prodi', ':id') }}";
+        document.getElementById('cloneProdiForm').action = cloneUrl.replace(':id', rpsId);
+        
+        $('#target_prodi_id').val('').trigger('change.select2');
+        $('#target_subject_id').html('<option value="">-- Pilih Mata Kuliah --</option>').trigger('change.select2');
+        $('#target_kurikulum_id').html('<option value="">-- Pilih Kurikulum --</option>').trigger('change.select2');
+        
+        document.getElementById('cloneProdiModal').style.display = 'flex';
+    }
+
+    function closeCloneModal() {
+        document.getElementById('cloneProdiModal').style.display = 'none';
+    }
+
+    function onTargetProdiChange() {
+        const prodiId = $('#target_prodi_id').val();
+        const subjectSelect = $('#target_subject_id');
+        const kurikulumSelect = $('#target_kurikulum_id');
+
+        subjectSelect.html('<option value="">-- Pilih Mata Kuliah --</option>');
+        kurikulumSelect.html('<option value="">-- Pilih Kurikulum --</option>');
+
+        if (prodiId) {
+            const selectedProdi = allProdisData.find(p => p.id === prodiId);
+            if (selectedProdi) {
+                // Populate Subjects (Filter out subjects that ALREADY have an RPS)
+                if (selectedProdi.subjects && selectedProdi.subjects.length > 0) {
+                    const availableSubjects = selectedProdi.subjects.filter(subj => !subj.rps || subj.rps.length === 0);
+
+                    if (availableSubjects.length > 0) {
+                        availableSubjects.forEach(subj => {
+                            subjectSelect.append(new Option(`${subj.kode_subject} - ${subj.nama_subject}`, subj.id));
+                        });
+                    } else {
+                        subjectSelect.append(new Option('-- Semua Mata Kuliah di Prodi ini sudah memiliki RPS --', '', false, false));
+                    }
+                } else {
+                    subjectSelect.append(new Option('-- Belum ada Mata Kuliah di Prodi ini --', '', false, false));
+                }
+
+                // Populate Kurikulums
+                const kurList = (selectedProdi.kurikulums && selectedProdi.kurikulums.length > 0) 
+                    ? selectedProdi.kurikulums 
+                    : allKurikulumsData;
+
+                kurList.forEach(kur => {
+                    kurikulumSelect.append(new Option(`${kur.nm_kurikulum} (${kur.tahun_akademik})`, kur.id));
+                });
+            }
+        }
+
+        subjectSelect.trigger('change.select2');
+        kurikulumSelect.trigger('change.select2');
+    }
+
     const existingRpsSubjects = {};
     @foreach($rps as $rp)
         if ("{{ $rp->subject_id }}" && !existingRpsSubjects["{{ $rp->subject_id }}"]) {
@@ -249,12 +378,30 @@
 
     $(document).ready(function() {
         if (typeof $.fn.selectpicker === 'function') {
-            $('#subject_id').selectpicker('destroy');
+            $('#subject_id, #target_prodi_id, #target_subject_id, #target_kurikulum_id').selectpicker('destroy');
         }
         $('#subject_id').select2({
             dropdownParent: $('#rpsModal'),
             width: '100%',
             placeholder: 'Select Subject'
+        });
+
+        $('#target_prodi_id').select2({
+            dropdownParent: $('#cloneProdiModal'),
+            width: '100%',
+            placeholder: '-- Pilih Prodi Tujuan --'
+        });
+
+        $('#target_subject_id').select2({
+            dropdownParent: $('#cloneProdiModal'),
+            width: '100%',
+            placeholder: '-- Pilih Mata Kuliah --'
+        });
+
+        $('#target_kurikulum_id').select2({
+            dropdownParent: $('#cloneProdiModal'),
+            width: '100%',
+            placeholder: '-- Pilih Kurikulum --'
         });
 
         let skipRpsCheck = false;
