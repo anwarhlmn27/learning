@@ -204,6 +204,8 @@
         
     </div>
 </div>
+@endsection
+
 @section('styles')
 <!-- DataTables CSS -->
 <link href="{{ asset('vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
