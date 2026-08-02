@@ -124,7 +124,8 @@ class AssignmentController extends Controller
             $filePath = $request->file('file')->store('submissions', 'public');
         }
 
-        $isLate = now()->gt($assignment->deadline);
+        $now = now();
+        $isLate = $now->gt($assignment->deadline);
 
         AssignmentSubmission::updateOrCreate(
             [
@@ -135,6 +136,7 @@ class AssignmentController extends Controller
                 'text_answer' => $request->text_answer,
                 'file_path' => $filePath,
                 'status' => $isLate ? 'Late' : 'Submitted',
+                'submitted_at' => $now,
             ]
         );
 
@@ -163,6 +165,7 @@ class AssignmentController extends Controller
             if ($submission) {
                 $submission->update([
                     'status' => 'Graded',
+                    'score' => $request->score,
                     'feedback' => $request->feedback,
                 ]);
             }
@@ -215,6 +218,7 @@ class AssignmentController extends Controller
                 if ($submission) {
                     $submission->update([
                         'status' => 'Graded',
+                        'score' => $data['score'],
                         'feedback' => $data['feedback'],
                     ]);
                 }

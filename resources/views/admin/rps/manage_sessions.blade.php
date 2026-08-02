@@ -65,7 +65,7 @@
 
 @section('content')
 <div style="margin-bottom: 1rem;">
-    <a href="{{ route('admin.rps.index') }}" class="btn btn-secondary">Back to RPS List</a>
+    <a href="{{ $rp->subject ? route('admin.rps.prodi', $rp->subject->id_prodi) : route('admin.rps.index') }}" class="btn btn-secondary">Back to RPS List</a>
 </div>
 
 <div class="sticky-counter">
@@ -96,7 +96,7 @@
                 <div>
                     <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">{{ __('Mapped CLOs (CPMK) for Topic') }} <span style="color: red;">*</span></label>
                     <div class="clo-container" style="max-height: 100px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 0.375rem; background: #fff;">
-                        @foreach($clos as $clo)
+                        @forelse($clos as $clo)
                             <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem;">
                                 <input type="checkbox" name="clos[]" value="{{ $clo->id }}" 
                                     class="session-clo-checkbox-{{ $session->id }}"
@@ -104,7 +104,9 @@
                                     {{ $session->clos->contains($clo->id) ? 'checked' : '' }}>
                                 {{ $clo->kode_clo }} - {{ \Illuminate\Support\Str::limit($clo->deskripsi, 50) }}
                             </label>
-                        @endforeach
+                        @empty
+                            <span style="font-size: 0.875rem; color: #ef4444; font-style: italic;">CLO doesn't exist</span>
+                        @endforelse
                     </div>
                 </div>
             </div>

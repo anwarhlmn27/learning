@@ -50,8 +50,12 @@ class RpsController extends Controller
 
         $rps = $query->with(['subject', 'kurikulum'])->latest()->get();
         
-        $subjects = Subject::where('id_prodi', $prodi->id)->get();
-        $kurikulums = Kurikulum::orderBy('tahun_akademik', 'desc')->get();
+        $subjects = Subject::where('id_prodi', $prodi->id)
+            ->whereDoesntHave('rps')
+            ->get();
+        $kurikulums = Kurikulum::where('id_prodi', $prodi->id)
+            ->orderBy('tahun_akademik', 'desc')
+            ->get();
         $allProdis = Prodi::with(['subjects.rps', 'kurikulums'])->get();
         
         return view('admin.rps.prodi_rps', compact('rps', 'subjects', 'kurikulums', 'prodi', 'allProdis'));
@@ -130,6 +134,18 @@ class RpsController extends Controller
         
         if ($rp->isSyncedWithLms()) {
             return redirect()->back()->withErrors(['error' => 'RPS tidak dapat dihapus karena sudah disinkronisasikan dan digunakan di kelas LMS.']);
+        }
+
+        $hasActivities = \App\Models\RpsActivity::whereIn('rps_session_id', $rp->sessions->pluck('id'))->exists();
+        $hasAssessments = \App\Models\RpsAssessment::whereIn('rps_session_id', $rp->sessions->pluck('id'))->exists();
+        $hasFilledSessions = $rp->sessions()->where(function($q) {
+            $q->whereNotNull('sub_clo')->where('sub_clo', '!=', '')
+              ->orWhereNotNull('learning_materials')->where('learning_materials', '!=', '')
+              ->orWhereNotNull('assessment_indicators')->where('assessment_indicators', '!=', '');
+        })->exists();
+
+        if ($hasActivities || $hasAssessments || $hasFilledSessions) {
+            return redirect()->back()->withErrors(['error' => 'RPS tidak dapat dihapus karena sudah memiliki konten (Sesi Pembelajaran, Aktivitas, atau Assessment).']);
         }
 
         $rp->delete();

@@ -8,7 +8,7 @@
 
 @section('content')
 <div style="margin-bottom: 1.5rem;">
-    <a href="{{ route('clo.index') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem;">← Back to Prodi List</a>
+    <a href="{{ route('clo.index') }}" class="btn btn-warning btn-sm">← Back to Prodi List</a>
 </div>
 
 {{-- Filter Bar --}}
@@ -86,7 +86,7 @@
                             <td>{{ $s->sks_t }} / {{ $s->sks_p }} / {{ $s->total_sks }}</td>
                             <td>{{ $s->semester }}</td>
                             <td>
-                                <span class="badge" style="background: {{ $s->clos_count > 0 ? 'var(--primary-light, #ede9fe)' : '#f3f4f6' }}; color: {{ $s->clos_count > 0 ? 'var(--primary)' : 'var(--text-muted)' }}; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                <span class="badge" style="background: {{ $s->clos_count > 0 ? 'var(--primary, #4338ca)' : '#f3f4f6' }}; color: {{ $s->clos_count > 0 ? '#ffffff' : 'var(--text-muted)' }}; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; box-shadow: {{ $s->clos_count > 0 ? '0 2px 4px rgba(67, 56, 202, 0.3)' : 'none' }};">
                                     {{ $s->clos_count }} CLO{{ $s->clos_count != 1 ? 's' : '' }}
                                 </span>
                             </td>

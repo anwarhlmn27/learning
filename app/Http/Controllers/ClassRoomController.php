@@ -358,6 +358,68 @@ class ClassRoomController extends Controller
             $allRatings = $queryRatings->get()->groupBy('session_number');
         }
 
+        // 4. Leaderboard Calculation with Multi-Column Tie-Breaker
+        $leaderboard = $enrollments->map(function ($enrollment) use ($submissions, $quizAttempts) {
+            $student = $enrollment->student;
+            $user = $student->user ?? null;
+            $userId = $user->id ?? null;
+            $studentId = $student->id;
+
+            // Assignment score & submit timestamp
+            $studentSubmissions = $submissions->get($studentId, collect());
+            $assignmentScoreSum = (float) $studentSubmissions->sum('score');
+            $assignmentCount = $studentSubmissions->whereNotNull('score')->count();
+            $lastAssignmentSubmittedAt = $studentSubmissions->max('submitted_at') ?? $studentSubmissions->max('created_at');
+
+            // Quiz score, duration, & submit timestamp
+            $userAttempts = $userId ? $quizAttempts->get($userId, collect()) : collect();
+            $quizScoreSum = (float) $userAttempts->sum('score');
+            $quizCount = $userAttempts->whereNotNull('score')->count();
+            $totalQuizDurationInSeconds = (int) $userAttempts->sum('duration_in_seconds');
+            $lastQuizSubmittedAt = $userAttempts->max('submitted_at') ?? $userAttempts->max('created_at');
+
+            $totalScore = $assignmentScoreSum + $quizScoreSum;
+
+            $lastSubmitOverall = null;
+            if ($lastAssignmentSubmittedAt && $lastQuizSubmittedAt) {
+                $lastSubmitOverall = $lastAssignmentSubmittedAt > $lastQuizSubmittedAt ? $lastAssignmentSubmittedAt : $lastQuizSubmittedAt;
+            } else {
+                $lastSubmitOverall = $lastAssignmentSubmittedAt ?? $lastQuizSubmittedAt;
+            }
+
+            return [
+                'student_id' => $studentId,
+                'user_id' => $userId,
+                'name' => $student->nama_student ?? ($user->name ?? 'Mahasiswa'),
+                'nim' => $student->nim ?? '-',
+                'avatar' => $user->avatar ?? null,
+                'assignment_score' => $assignmentScoreSum,
+                'quiz_score' => $quizScoreSum,
+                'total_score' => $totalScore,
+                'total_quiz_duration' => $totalQuizDurationInSeconds,
+                'last_submitted_at' => $lastSubmitOverall,
+                'completed_tasks_count' => $assignmentCount + $quizCount,
+            ];
+        })
+        ->sort(function ($a, $b) {
+            // 1. Primary Sort: Total Score DESC
+            if ($a['total_score'] != $b['total_score']) {
+                return $b['total_score'] <=> $a['total_score'];
+            }
+            // 2. Secondary Sort (Tie-Breaker 1): Quiz Duration ASC
+            if ($a['total_quiz_duration'] != $b['total_quiz_duration']) {
+                return $a['total_quiz_duration'] <=> $b['total_quiz_duration'];
+            }
+            // 3. Tertiary Sort (Tie-Breaker 2): Last Submit Timestamp ASC
+            if ($a['last_submitted_at'] != $b['last_submitted_at']) {
+                if (!$a['last_submitted_at']) return 1;
+                if (!$b['last_submitted_at']) return -1;
+                return strcmp((string)$a['last_submitted_at'], (string)$b['last_submitted_at']);
+            }
+            return 0;
+        })
+        ->values();
+
         return view('lms.classes.show', compact(
             'class', 
             'enrollments', 
@@ -379,7 +441,8 @@ class ClassRoomController extends Controller
             'selectedEnrollFakultasId',
             'allFakultas',
             'allProdis',
-            'allAngkatans'
+            'allAngkatans',
+            'leaderboard'
         ));
     }
 

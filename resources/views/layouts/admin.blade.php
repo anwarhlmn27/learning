@@ -638,9 +638,12 @@
                 if (e.target && e.target.classList.contains('swal-confirm-form')) {
                     e.preventDefault();
                     const msg = e.target.getAttribute('data-swal-msg') || 'Apakah Anda yakin ingin melanjutkan?';
+                    const isDelete = e.target.querySelector('input[name="_method"][value="DELETE"]') !== null;
+                    const extraWarning = isDelete ? '<br><br><span style="color: #d33; font-size: 0.9em;"><strong>Perhatian:</strong> Data ini mungkin terhubung dengan data lain (seperti sesi, nilai, atau LMS). Menghapusnya bisa menghilangkan data terkait.</span>' : '';
+                    
                     Swal.fire({
                         title: 'Konfirmasi',
-                        text: msg,
+                        html: msg + extraWarning,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#3085d6',

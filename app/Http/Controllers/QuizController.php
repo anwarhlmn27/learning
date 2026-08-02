@@ -103,11 +103,16 @@ class QuizController extends Controller
         $user = Auth::user();
         
         // Cek apakah sudah pernah submit
-        $attempt = StudentQuizAttempt::where('quiz_id', $quiz->id)
-            ->where('user_id', $user->id)
-            ->first();
+        $attempt = StudentQuizAttempt::firstOrCreate(
+            ['quiz_id' => $quiz->id, 'user_id' => $user->id],
+            ['is_submitted' => false, 'score' => null, 'started_at' => now()]
+        );
 
-        if ($attempt && $attempt->is_submitted) {
+        if (!$attempt->started_at) {
+            $attempt->update(['started_at' => now()]);
+        }
+
+        if ($attempt->is_submitted) {
             return redirect()->route('classes.show', $class)->with('error', 'Anda sudah mengerjakan kuis ini.');
         }
 
@@ -123,15 +128,19 @@ class QuizController extends Controller
 
         DB::beginTransaction();
         try {
+            $now = now();
             $attempt = StudentQuizAttempt::firstOrCreate(
                 ['quiz_id' => $quiz->id, 'user_id' => $user->id],
-                ['is_submitted' => false, 'score' => null]
+                ['is_submitted' => false, 'score' => null, 'started_at' => $now]
             );
 
             if ($attempt->is_submitted) {
                 DB::rollBack();
                 return redirect()->route('classes.show', $class)->with('error', 'Kuis sudah dikumpulkan sebelumnya.');
             }
+
+            $startedAt = $attempt->started_at ?? $now;
+            $durationInSeconds = (int) $startedAt->diffInSeconds($now);
 
             $totalScore = 0;
             $hasEssay = false;
@@ -161,6 +170,8 @@ class QuizController extends Controller
 
             $attempt->update([
                 'is_submitted' => true,
+                'submitted_at' => $now,
+                'duration_in_seconds' => $durationInSeconds,
                 'score' => $hasEssay ? null : $totalScore // Jika ada essay, nilai total menunggu dosen
             ]);
 

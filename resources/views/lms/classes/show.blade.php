@@ -347,6 +347,9 @@
     <button class="tab-trigger" data-tab="tab-grades">
         📝 Penugasan & Nilai (Grades)
     </button>
+    <button class="tab-trigger" data-tab="tab-leaderboard">
+        🏆 Leaderboard
+    </button>
     <button class="tab-trigger" data-tab="tab-settings">
         ⚙️ Settings
     </button>
@@ -1055,7 +1058,205 @@
 </div>
 
 <!-- ============================================ -->
-<!-- TAB 4: SETTINGS                              -->
+<!-- TAB 4: LEADERBOARD                           -->
+<!-- ============================================ -->
+<div id="tab-leaderboard" class="tab-content">
+    <!-- Header Banner -->
+    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%); color: white; border-radius: var(--radius-lg); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-md); position: relative; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: relative; z-index: 1;">
+            <div>
+                <span style="background: rgba(255,255,255,0.15); color: #fbbf24; font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
+                    ⚡ Live Gamification Ranking
+                </span>
+                <h2 style="margin: 0.5rem 0 0.25rem 0; font-size: 1.85rem; font-weight: 800; color: white;">Leaderboard Kelas</h2>
+                <p style="margin: 0; opacity: 0.85; font-size: 0.95rem;">
+                    Peringkat mahasiswa berdasarkan akumulasi Nilai Tugas, Kuis & Kecepatan Pengumpulan (Tie-Breaker).
+                </p>
+            </div>
+            <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); padding: 0.85rem 1.25rem; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.15); text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: #fbbf24;">{{ count($leaderboard) }}</div>
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">Total Peserta</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tie-breaker Information Alert -->
+    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;">
+        <span style="font-size: 1.5rem;">ℹ️</span>
+        <div style="font-size: 0.85rem; color: #1e40af; line-height: 1.5;">
+            <strong>Ketentuan Penentuan Peringkat:</strong>
+            <ol style="margin: 0.25rem 0 0 1.25rem; padding: 0;">
+                <li><strong>Prioritas Utama:</strong> Total Akumulasi Nilai (Tugas + Kuis).</li>
+                <li><strong>Tie-Breaker 1 (Kecepatan Kuis):</strong> Jika total nilai sama, mahasiswa dengan total durasi pengerjaan kuis tercepat akan lebih unggul.</li>
+                <li><strong>Tie-Breaker 2 (Waktu Kumpul):</strong> Jika durasi kuis juga sama, mahasiswa dengan timestamp pengumpulan tugas terawal menempati peringkat lebih tinggi.</li>
+            </ol>
+        </div>
+    </div>
+
+    @if(count($leaderboard) > 0)
+        <!-- Podium Top 3 -->
+        @php
+            $top1 = $leaderboard->get(0);
+            $top2 = $leaderboard->get(1);
+            $top3 = $leaderboard->get(2);
+        @endphp
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; align-items: end;">
+            
+            <!-- Rank 2: Silver -->
+            @if($top2)
+            <div class="card" style="border: 2px solid #cbd5e1; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); text-align: center; padding: 1.5rem; position: relative; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+                <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #94a3b8; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; border: 3px solid white; box-shadow: var(--shadow-sm);">
+                    2
+                </div>
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #94a3b8, #64748b); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.5rem; margin: 0.75rem auto 0.75rem auto; border: 3px solid #e2e8f0;">
+                    {{ strtoupper(substr($top2['name'], 0, 1)) }}
+                </div>
+                <h4 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">{{ $top2['name'] }}</h4>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">NIM: {{ $top2['nim'] }}</div>
+                <div style="background: #f1f5f9; padding: 0.5rem; border-radius: var(--radius-md);">
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #475569;">{{ number_format($top2['total_score'], 1) }} <span style="font-size: 0.75rem; font-weight: 600;">pts</span></div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">⏱️ Durasi Quiz: {{ floor($top2['total_quiz_duration'] / 60) }}m {{ $top2['total_quiz_duration'] % 60 }}s</div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Rank 1: Gold (Center & Bigger) -->
+            @if($top1)
+            <div class="card" style="border: 2px solid #f59e0b; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); text-align: center; padding: 1.75rem 1.5rem; position: relative; border-radius: var(--radius-lg); box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.25); transform: translateY(-8px);">
+                <div style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #f59e0b, #d97706); color: white; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.25rem; border: 3px solid white; box-shadow: var(--shadow-md);">
+                    👑
+                </div>
+                <div style="width: 76px; height: 76px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #d97706); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.85rem; margin: 0.75rem auto 0.75rem auto; border: 4px solid #fef3c7; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);">
+                    {{ strtoupper(substr($top1['name'], 0, 1)) }}
+                </div>
+                <span style="background: #fef3c7; color: #b45309; font-size: 0.75rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 9999px; text-transform: uppercase;">🥇 Juara 1</span>
+                <h4 style="margin: 0.5rem 0 0 0; font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">{{ $top1['name'] }}</h4>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">NIM: {{ $top1['nim'] }}</div>
+                <div style="background: #fef3c7; padding: 0.6rem; border-radius: var(--radius-md); border: 1px solid #fde68a;">
+                    <div style="font-size: 1.6rem; font-weight: 900; color: #b45309;">{{ number_format($top1['total_score'], 1) }} <span style="font-size: 0.8rem; font-weight: 700;">pts</span></div>
+                    <div style="font-size: 0.75rem; color: #92400e; font-weight: 600;">⏱️ Durasi Quiz: {{ floor($top1['total_quiz_duration'] / 60) }}m {{ $top1['total_quiz_duration'] % 60 }}s</div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Rank 3: Bronze -->
+            @if($top3)
+            <div class="card" style="border: 2px solid #d97706; background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%); text-align: center; padding: 1.5rem; position: relative; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+                <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #b45309; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; border: 3px solid white; box-shadow: var(--shadow-sm);">
+                    3
+                </div>
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #d97706, #b45309); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.5rem; margin: 0.75rem auto 0.75rem auto; border: 3px solid #ffedd5;">
+                    {{ strtoupper(substr($top3['name'], 0, 1)) }}
+                </div>
+                <h4 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">{{ $top3['name'] }}</h4>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">NIM: {{ $top3['nim'] }}</div>
+                <div style="background: #ffedd5; padding: 0.5rem; border-radius: var(--radius-md);">
+                    <div style="font-size: 1.35rem; font-weight: 800; color: #9a3412;">{{ number_format($top3['total_score'], 1) }} <span style="font-size: 0.75rem; font-weight: 600;">pts</span></div>
+                    <div style="font-size: 0.75rem; color: #9a3412;">⏱️ Durasi Quiz: {{ floor($top3['total_quiz_duration'] / 60) }}m {{ $top3['total_quiz_duration'] % 60 }}s</div>
+                </div>
+            </div>
+            @endif
+
+        </div>
+
+        <!-- Leaderboard Full Table -->
+        <div class="card">
+            <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Daftar Peringkat Lengkap</h3>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Diperbarui secara real-time saat tugas/quiz dinilai</span>
+            </div>
+            <div class="table-responsive">
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px; text-align: center;">Rank</th>
+                            <th>Mahasiswa</th>
+                            <th style="text-align: right;">Nilai Tugas</th>
+                            <th style="text-align: right;">Nilai Kuis</th>
+                            <th style="text-align: right;">Total Skor</th>
+                            <th style="text-align: center;">Durasi Kuis</th>
+                            <th style="text-align: center;">Submit Terakhir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($leaderboard as $index => $row)
+                        @php
+                            $rank = $index + 1;
+                            $isTop1 = $rank === 1;
+                            $isTop2 = $rank === 2;
+                            $isTop3 = $rank === 3;
+                            $isCurrentUser = (Auth::user()->student && Auth::user()->student->id === $row['student_id']);
+                        @endphp
+                        <tr style="{{ $isCurrentUser ? 'background-color: #eff6ff; font-weight: 600;' : '' }}">
+                            <td style="text-align: center;">
+                                @if($isTop1)
+                                    <span style="font-size: 1.25rem;">🥇</span>
+                                @elseif($isTop2)
+                                    <span style="font-size: 1.25rem;">🥈</span>
+                                @elseif($isTop3)
+                                    <span style="font-size: 1.25rem;">🥉</span>
+                                @else
+                                    <span style="font-weight: 700; color: var(--text-muted); font-size: 0.9rem;">#{{ $rank }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;">
+                                        {{ strtoupper(substr($row['name'], 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: var(--text-primary); font-size: 0.9rem;">
+                                            {{ $row['name'] }}
+                                            @if($isCurrentUser)
+                                                <span style="background: #3b82f6; color: white; font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 9999px; margin-left: 0.3rem;">Anda</span>
+                                            @endif
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">NIM: {{ $row['nim'] }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align: right; font-weight: 600; color: #10b981;">
+                                {{ number_format($row['assignment_score'], 1) }}
+                            </td>
+                            <td style="text-align: right; font-weight: 600; color: #f59e0b;">
+                                {{ number_format($row['quiz_score'], 1) }}
+                            </td>
+                            <td style="text-align: right;">
+                                <span style="font-size: 1rem; font-weight: 800; color: #4f46e5; background: #eff6ff; padding: 0.25rem 0.6rem; border-radius: var(--radius-md);">
+                                    {{ number_format($row['total_score'], 1) }}
+                                </span>
+                            </td>
+                            <td style="text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+                                @if($row['total_quiz_duration'] > 0)
+                                    ⏱️ {{ floor($row['total_quiz_duration'] / 60) }}m {{ $row['total_quiz_duration'] % 60 }}s
+                                @else
+                                    <span style="color: #cbd5e1;">-</span>
+                                @endif
+                            </td>
+                            <td style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+                                @if($row['last_submitted_at'])
+                                    📅 {{ \Carbon\Carbon::parse($row['last_submitted_at'])->format('d M Y, H:i') }}
+                                @else
+                                    <span style="color: #cbd5e1;">Belum submit</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @else
+        <div class="card" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🏆</div>
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">Leaderboard Belum Tersedia</h3>
+            <p style="margin: 0; font-size: 0.9rem;">Belum ada mahasiswa yang terdaftar di kelas ini.</p>
+        </div>
+    @endif
+</div>
+
+<!-- ============================================ -->
+<!-- TAB 5: SETTINGS                              -->
 <!-- ============================================ -->
 <div id="tab-settings" class="tab-content">
     <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">

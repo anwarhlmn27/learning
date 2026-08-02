@@ -8,7 +8,7 @@
 
 @section('content')
 <div style="margin-bottom: 2rem;">
-    <a href="{{ route('clo.index') }}" class="btn btn-warning btn-sm">Back to Subject List</a>
+    <a href="{{ route('clo.prodi', $subject->id_prodi) }}" class="btn btn-warning btn-sm">Back to Subject List</a>
 </div>
 
 {{-- Subject Info Card --}}

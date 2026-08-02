@@ -96,7 +96,7 @@
         <button onclick="openCreateModal()" class="btn btn-primary">Add RPS</button>
     </div>
     <div class="card-body" style="padding: 0;">
-        <div style="overflow-x: auto;">
+        <div style="overflow-x: auto; min-height: 280px;">
             <table id="rpsTable" class="table table-responsive-md">
                 <thead>
                     <tr>
