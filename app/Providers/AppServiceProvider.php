@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Use Bootstrap 5 pagination layout across the application
+        \Illuminate\Pagination\Paginator::useBootstrapFive();
+
         // Super Admin bypass: Admin automatically has all permissions
         Gate::before(function (User $user, $ability) {
             if ($user->hasRole('admin')) {

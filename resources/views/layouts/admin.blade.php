@@ -54,6 +54,16 @@
         /* Quiz Mode */
         .quiz-mode-active .dlabnav, .quiz-mode-active .header, .quiz-mode-active .nav-header { display: none !important; }
         .quiz-mode-active .content-body { margin-left: 0 !important; padding-top: 0 !important; }
+
+        /* Pagination & Nav SVG safeguards */
+        nav svg, .pagination svg, svg.w-5, svg.h-5 {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            max-width: 1.25rem !important;
+            max-height: 1.25rem !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+        }
     </style>
     @yield('styles')
     @stack('styles')
