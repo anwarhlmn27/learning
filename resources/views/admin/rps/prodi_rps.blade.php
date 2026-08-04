@@ -60,19 +60,7 @@
     <a href="{{ route('admin.rps.index') }}" class="btn btn-warning btn-sm">← Back to Prodi List</a>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-        {{ session('success') }}
-    </div>
-@endif
 
-@if($errors->any())
-    <div class="alert alert-danger" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-        @foreach($errors->all() as $error)
-            <div>{{ $error }}</div>
-        @endforeach
-    </div>
-@endif
 
 <!-- Filter Form -->
 <div class="card" style="margin-bottom: 1.5rem;">

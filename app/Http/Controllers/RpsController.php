@@ -50,9 +50,7 @@ class RpsController extends Controller
 
         $rps = $query->with(['subject', 'kurikulum'])->latest()->get();
         
-        $subjects = Subject::where('id_prodi', $prodi->id)
-            ->whereDoesntHave('rps')
-            ->get();
+        $subjects = Subject::where('id_prodi', $prodi->id)->get();
         $kurikulums = Kurikulum::where('id_prodi', $prodi->id)
             ->orderBy('tahun_akademik', 'desc')
             ->get();

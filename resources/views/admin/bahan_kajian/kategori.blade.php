@@ -11,15 +11,7 @@
     <a href="{{ route('bahan_kajian.manage', $prodi->id) }}" style="color: var(--text-muted); font-size: 0.875rem;">← Back to Bahan Kajian</a>
 </div>
 
-@if($errors->any())
-    <div class="alert alert-danger" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-        <ul style="margin: 0; padding-left: 1.5rem;">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+
 
 
 

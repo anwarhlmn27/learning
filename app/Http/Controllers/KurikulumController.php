@@ -99,7 +99,9 @@ class KurikulumController extends Controller
     public function manage(Kurikulum $kurikulum)
     {
         $kurikulum->load('subjects.subject');
-        $availableSubjects = Subject::whereNotIn('id', $kurikulum->subjects->pluck('id_subject'))->get();
+        $availableSubjects = Subject::where('id_prodi', $kurikulum->id_prodi)
+                                    ->whereNotIn('id', $kurikulum->subjects->pluck('id_subject'))
+                                    ->get();
         return view('admin.kurikulum.manage', compact('kurikulum', 'availableSubjects'));
     }
 

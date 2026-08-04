@@ -125,6 +125,9 @@ class UserController extends Controller
 
     public function import(Request $request)
     {
+        set_time_limit(300);
+        ini_set('memory_limit', '512M');
+
         $request->validate([
             'file' => 'required|mimes:csv,txt|max:2048',
         ]);
@@ -143,6 +146,10 @@ class UserController extends Controller
         $skippedCount = 0;
         $errorRows = [];
         
+        $defaultPassword = Hash::make('LmsHorizon$01');
+        $roleMap = Role::all()->keyBy(fn($r) => strtolower($r->name));
+        $existingEmails = User::pluck('email')->flip()->toArray();
+
         DB::beginTransaction();
         try {
             $rowCount = 0;
@@ -167,20 +174,21 @@ class UserController extends Controller
                         continue;
                     }
 
-                    $existingUser = User::where('email', $email)->first();
-                    if (!$existingUser) {
+                    if (!isset($existingEmails[$email])) {
                         $user = User::create([
                             'name' => $name,
                             'email' => $email,
-                            'password' => Hash::make('LmsHorizon$01'),
+                            'password' => $defaultPassword,
                             'status' => 'active',
                         ]);
 
-                        $role = Role::where('name', $roleName)->first();
-                        if ($role) {
+                        if (isset($roleMap[$roleName])) {
+                            $role = $roleMap[$roleName];
                             $user->roles()->attach($role->id, ['id' => (string) Str::uuid()]);
                             $this->syncDosenRecord($user, $role->id);
                         }
+
+                        $existingEmails[$email] = true;
                         $successCount++;
                     } else {
                         $skippedCount++;

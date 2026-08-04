@@ -139,6 +139,9 @@ class StudentController extends Controller
 
     public function import(Request $request)
     {
+        set_time_limit(300);
+        ini_set('memory_limit', '512M');
+
         $request->validate([
             'file' => 'required|mimes:csv,txt|max:2048',
         ]);
@@ -157,6 +160,10 @@ class StudentController extends Controller
         $errorRows = [];
         
         $role = Role::where('name', 'mahasiswa')->first();
+        $defaultPassword = Hash::make('LmsHorizon$01');
+        $prodiMap = Prodi::pluck('id', 'kode_prodi')->toArray();
+        $existingNims = Student::pluck('nim')->flip()->toArray();
+        $existingEmails = User::pluck('email')->flip()->toArray();
 
         DB::beginTransaction();
         try {
@@ -184,21 +191,21 @@ class StudentController extends Controller
                         continue;
                     }
 
-                    $prodi = Prodi::where('kode_prodi', $kode_prodi)->first();
-                    if (!$prodi) {
+                    if (!isset($prodiMap[$kode_prodi])) {
                         $errorRows[] = "Baris $rowCount: Prodi dengan kode $kode_prodi tidak ditemukan.";
                         $skippedCount++;
                         continue;
                     }
 
-                    $existingStudent = Student::where('nim', $nim)->first();
-                    $existingUser = User::where('email', $email)->first();
+                    $prodiId = $prodiMap[$kode_prodi];
+                    $isStudentExist = isset($existingNims[$nim]);
+                    $isUserExist = isset($existingEmails[$email]);
 
-                    if (!$existingStudent && !$existingUser) {
+                    if (!$isStudentExist && !$isUserExist) {
                         $user = User::create([
                             'name' => $nama_student,
                             'email' => $email,
-                            'password' => Hash::make('LmsHorizon$01'),
+                            'password' => $defaultPassword,
                             'status' => 'active',
                         ]);
 
@@ -208,11 +215,14 @@ class StudentController extends Controller
 
                         Student::create([
                             'user_id' => $user->id,
-                            'prodi_id' => $prodi->id,
+                            'prodi_id' => $prodiId,
                             'nim' => $nim,
                             'nama_student' => $nama_student,
                             'angkatan' => (int)$angkatan,
                         ]);
+
+                        $existingNims[$nim] = true;
+                        $existingEmails[$email] = true;
                         
                         $successCount++;
                     } else {

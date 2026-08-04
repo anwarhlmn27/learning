@@ -28,15 +28,7 @@
         <a href="{{ route('subjects.index') }}" class="btn btn-warning btn-sm">{{ __('Back') }}</a>
     </div>
     <div class="card-body">
-        @if($errors->any())
-            <div class="alert alert-danger" style="background: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-                <ul style="margin: 0; padding-left: 1.25rem;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+
 
         <form action="{{ route('subjects.store') }}" method="POST">
             @csrf

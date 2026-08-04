@@ -2,6 +2,25 @@
 
 @section('title', __('Manage Curriculum Subjects'))
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        height: 2.5rem;
+        border: 1px solid #d7dae3;
+        border-radius: 0.375rem;
+        display: flex;
+        align-items: center;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: normal;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 2.3rem;
+    }
+</style>
+@endpush
+
 @section('header_left')
     <h1 style="font-size: 1.25rem; font-weight: 700; margin: 0;">{{ __('Manage Subjects:') }} {{ $kurikulum->nm_kurikulum }}</h1>
 @endsection
@@ -18,7 +37,7 @@
                 @csrf
                 <div class="form-group">
                     <label class="form-label">{{ __('Select Subject') }} </label>
-                    <select name="id_subject" class="form-control" required>
+                    <select name="id_subject" class="form-control select2" required>
                         <option value="" disabled selected>{{ __('Select Subject') }}</option>
                         @foreach($availableSubjects as $s)
                             <option value="{{ $s->id }}">[{{ $s->kode_subject }}] {{ $s->nama_subject }}</option>
@@ -95,3 +114,15 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "{{ __('Select Subject') }}",
+            width: '100%'
+        });
+    });
+</script>
+@endpush

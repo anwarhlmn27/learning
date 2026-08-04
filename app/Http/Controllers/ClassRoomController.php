@@ -749,6 +749,9 @@ class ClassRoomController extends Controller
 
     public function importStudents(Request $request, ClassRoom $class)
     {
+        set_time_limit(300);
+        ini_set('memory_limit', '512M');
+
         $request->validate([
             'file' => 'required|mimes:csv,txt|max:2048',
         ]);
@@ -765,6 +768,9 @@ class ClassRoomController extends Controller
         $successCount = 0;
         $skippedCount = 0;
         $errorRows = [];
+
+        $studentMap = Student::pluck('id', 'nim')->toArray();
+        $existingEnrollments = Enrollment::where('class_room_id', $class->id)->pluck('student_id')->flip()->toArray();
 
         DB::beginTransaction();
         try {
@@ -784,23 +790,21 @@ class ClassRoomController extends Controller
 
                     if (empty($nim)) continue;
 
-                    $student = Student::where('nim', $nim)->first();
-                    
-                    if (!$student) {
+                    if (!isset($studentMap[$nim])) {
                         $errorRows[] = "Baris $rowCount: Mahasiswa dengan NIM $nim tidak ditemukan.";
                         $skippedCount++;
                         continue;
                     }
 
-                    $exists = Enrollment::where('class_room_id', $class->id)
-                                        ->where('student_id', $student->id)
-                                        ->exists();
+                    $studentId = $studentMap[$nim];
+                    $exists = isset($existingEnrollments[$studentId]);
 
                     if (!$exists) {
                         Enrollment::create([
                             'class_room_id' => $class->id,
-                            'student_id' => $student->id,
+                            'student_id' => $studentId,
                         ]);
+                        $existingEnrollments[$studentId] = true;
                         $successCount++;
                     } else {
                         $errorRows[] = "Baris $rowCount: Mahasiswa (NIM: $nim) sudah terdaftar.";
