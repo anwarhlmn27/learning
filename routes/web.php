@@ -71,6 +71,7 @@ Route::middleware(['auth', 'admin', 'role.access'])->group(function () {
     Route::delete('/obe/bahan-kajian/kategori/{kategori}', [BahanKajianController::class, 'destroyKategori'])->name('bahan_kajian.kategori.destroy');
 
     // Subject (Course) Routes
+    Route::get('/obe/subjects/prodi-data', [\App\Http\Controllers\SubjectController::class, 'getProdiData'])->name('subjects.prodi_data');
     Route::get('/obe/subjects/prodi/{prodi}', [\App\Http\Controllers\SubjectController::class, 'prodiSubjects'])->name('subjects.prodi');
     Route::get('/obe/subjects/export-bk/{prodi}', [\App\Http\Controllers\SubjectController::class, 'exportMappingBK'])->name('subjects.export-bk');
     Route::get('/obe/subjects/export-plo/{prodi}', [\App\Http\Controllers\SubjectController::class, 'exportMappingPLO'])->name('subjects.export-plo');

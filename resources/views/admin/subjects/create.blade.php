@@ -138,14 +138,18 @@
 
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label class="form-label">{{ __('Bahan Kajian (Mapping)') }} </label>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb; max-height: 150px; overflow-y: auto;">
-                    @foreach($bks as $bk)
+                <div id="bk-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #f9fafb; max-height: 150px; overflow-y: auto;">
+                    @forelse($bks as $bk)
                         <label style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; cursor: pointer;">
                             <input type="checkbox" name="bks[]" value="{{ $bk->id }}" {{ is_array(old('bks')) && in_array($bk->id, old('bks')) ? 'checked' : '' }}
                                 style="accent-color: var(--primary); width: 16px; height: 16px; margin-top: 0.2rem;">
                             <span><strong>{{ $bk->kode_bk }}</strong><br><span style="color: var(--text-muted); font-size: 0.75rem;">{{ $bk->nm_bahan_kajian }}</span></span>
                         </label>
-                    @endforeach
+                    @empty
+                        <div style="grid-column: 1 / -1; color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 0.5rem;">
+                            {{ __('Belum ada data Bahan Kajian untuk Prodi ini.') }}
+                        </div>
+                    @endforelse
                 </div>
             </div>
 
@@ -159,8 +163,8 @@
                                 <th style="text-align: left; padding: 0.5rem; font-size: 0.75rem;">{{ __('Level Mapping') }}</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach($plos as $plo)
+                        <tbody id="plo-tbody">
+                            @forelse($plos as $plo)
                                 <tr style="border-bottom: 1px solid #f3f4f6;">
                                     <td style="padding: 0.5rem;">
                                         <label style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; cursor: pointer;">
@@ -179,7 +183,13 @@
                                         </select>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="2" style="padding: 0.75rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                                        {{ __('Belum ada data PLO (CPL) untuk Prodi ini.') }}
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -210,25 +220,26 @@
         sksPl.addEventListener('input', calculateTotal);
 
         // Handle PLO checkbox and level select
-        const ploCheckboxes = document.querySelectorAll('.plo-checkbox');
-        ploCheckboxes.forEach(cb => {
-            cb.addEventListener('change', function() {
-                const ploId = this.dataset.ploId;
-                const select = document.querySelector(`select[name="plo_levels[${ploId}]"]`);
-                if (select) {
-                    select.disabled = !this.checked;
-                }
+        function bindPloEvents() {
+            const ploCheckboxes = document.querySelectorAll('.plo-checkbox');
+            ploCheckboxes.forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const ploId = this.dataset.ploId;
+                    const select = document.querySelector(`select[name="plo_levels[${ploId}]"]`);
+                    if (select) {
+                        select.disabled = !this.checked;
+                    }
+                });
             });
-        });
+        }
+        bindPloEvents();
 
         // Custom Multi-select Combo Box logic
         const control = document.getElementById('prereq-control');
         const dropdown = document.getElementById('prereq-dropdown');
         const searchInput = document.getElementById('prereq-search');
-        const checkboxes = document.querySelectorAll('.prereq-checkbox');
         const placeholder = document.getElementById('prereq-placeholder');
         const tagsContainer = document.getElementById('prereq-tags');
-        const optionsList = document.querySelectorAll('.multiselect-option');
 
         // Toggle dropdown
         control.addEventListener('click', function(e) {
@@ -247,41 +258,33 @@
             }
         });
 
-        // Filter search
-        searchInput.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            optionsList.forEach(opt => {
-                const text = opt.dataset.searchText;
-                if (text.includes(query)) {
-                    opt.style.display = 'flex';
-                } else {
-                    opt.style.display = 'none';
-                }
-            });
-        });
+        function bindPrereqSearch() {
+            const optionsList = document.querySelectorAll('.multiselect-option');
+            searchInput.oninput = function() {
+                const query = this.value.toLowerCase().trim();
+                optionsList.forEach(opt => {
+                    const text = opt.dataset.searchText || '';
+                    opt.style.display = text.includes(query) ? 'flex' : 'none';
+                });
+            };
+        }
+        bindPrereqSearch();
 
         // Update tags and display
         function updateTags() {
             tagsContainer.innerHTML = '';
             let checkedCount = 0;
+            const checkboxes = document.querySelectorAll('.prereq-checkbox');
 
             checkboxes.forEach(cb => {
                 if (cb.checked) {
                     checkedCount++;
-                    const text = cb.nextElementSibling.textContent;
+                    const text = cb.nextElementSibling ? cb.nextElementSibling.textContent : cb.value;
                     
-                    // Create badge
                     const badge = document.createElement('span');
                     badge.style.cssText = 'background: var(--primary); color: white; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.25rem; font-weight: 500; margin: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
                     badge.innerHTML = `${text} <span class="remove-badge" data-val="${cb.value}" style="cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-left: 4px; opacity: 0.8; transition: opacity 0.15s;">&times;</span>`;
                     
-                    // Remove on click
-                    badge.querySelector('.remove-badge').addEventListener('mouseover', function() {
-                        this.style.opacity = '1';
-                    });
-                    badge.querySelector('.remove-badge').addEventListener('mouseout', function() {
-                        this.style.opacity = '0.8';
-                    });
                     badge.querySelector('.remove-badge').addEventListener('click', function(e) {
                         e.stopPropagation();
                         cb.checked = false;
@@ -292,20 +295,107 @@
                 }
             });
 
-            if (checkedCount > 0) {
-                placeholder.style.display = 'none';
-            } else {
-                placeholder.style.display = 'block';
-            }
+            placeholder.style.display = checkedCount > 0 ? 'none' : 'block';
         }
 
-        // Checkbox change event
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', updateTags);
-        });
-
-        // Initialize tags on load (for old input)
+        function bindPrereqCheckboxes() {
+            const checkboxes = document.querySelectorAll('.prereq-checkbox');
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateTags);
+            });
+        }
+        bindPrereqCheckboxes();
         updateTags();
+
+        // Dynamic prodi change handler
+        const prodiSelect = document.querySelector('select[name="id_prodi"]');
+        if (prodiSelect) {
+            prodiSelect.addEventListener('change', function() {
+                const prodiId = this.value;
+                if (!prodiId) {
+                    renderBks([]);
+                    renderPlos([]);
+                    renderPrereqs([]);
+                    return;
+                }
+
+                let url = `{{ route('subjects.prodi_data') }}?prodi_id=${prodiId}`;
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        renderBks(data.bks || []);
+                        renderPlos(data.plos || []);
+                        renderPrereqs(data.subjects || []);
+                    })
+                    .catch(err => console.error('Error fetching prodi data:', err));
+            });
+        }
+
+        function renderBks(bks) {
+            const container = document.getElementById('bk-container');
+            if (!container) return;
+            if (bks.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1 / -1; color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 0.5rem;">Belum ada data Bahan Kajian untuk Prodi ini.</div>`;
+                return;
+            }
+            container.innerHTML = bks.map(bk => `
+                <label style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; cursor: pointer;">
+                    <input type="checkbox" name="bks[]" value="${bk.id}" style="accent-color: var(--primary); width: 16px; height: 16px; margin-top: 0.2rem;">
+                    <span><strong>${escapeHtml(bk.kode_bk)}</strong><br><span style="color: var(--text-muted); font-size: 0.75rem;">${escapeHtml(bk.nm_bahan_kajian)}</span></span>
+                </label>
+            `).join('');
+        }
+
+        function renderPlos(plos) {
+            const tbody = document.getElementById('plo-tbody');
+            if (!tbody) return;
+            if (plos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" style="padding: 0.75rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Belum ada data PLO (CPL) untuk Prodi ini.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = plos.map(plo => `
+                <tr style="border-bottom: 1px solid #f3f4f6;">
+                    <td style="padding: 0.5rem;">
+                        <label style="display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.85rem; cursor: pointer;">
+                            <input type="checkbox" name="plos[]" value="${plo.id}" class="plo-checkbox" data-plo-id="${plo.id}" style="accent-color: var(--primary); width: 16px; height: 16px; margin-top: 0.2rem;">
+                            <span><strong>${escapeHtml(plo.kode_plo)}</strong><br><span style="color: var(--text-muted); font-size: 0.75rem;">${escapeHtml(plo.plo_title)}</span></span>
+                        </label>
+                    </td>
+                    <td style="padding: 0.5rem;">
+                        <select name="plo_levels[${plo.id}]" class="form-control plo-level-select" style="padding: 0.25rem; font-size: 0.75rem; width: auto;" disabled>
+                            <option value="I">I - Introduced</option>
+                            <option value="R">R - Reinforced</option>
+                            <option value="M">M - Mastered</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join('');
+
+            bindPloEvents();
+        }
+
+        function renderPrereqs(subjects) {
+            const list = document.getElementById('prereq-options-list');
+            if (!list) return;
+            if (subjects.length === 0) {
+                list.innerHTML = `<div style="padding: 0.5rem; color: var(--text-muted); font-size: 0.85rem; text-align: center;">Belum ada mata kuliah lain di prodi ini</div>`;
+            } else {
+                list.innerHTML = subjects.map(s => `
+                    <label class="multiselect-option" data-search-text="${escapeHtml((s.kode_subject + ' ' + s.nama_subject).toLowerCase())}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; cursor: pointer; user-select: none; transition: background 0.15s; margin-bottom: 2px;">
+                        <input type="checkbox" name="prerequisite_ids[]" value="${s.id}" class="prereq-checkbox" style="width: 16px; height: 16px; accent-color: var(--primary);">
+                        <span>[${escapeHtml(s.kode_subject)}] ${escapeHtml(s.nama_subject)}</span>
+                    </label>
+                `).join('');
+            }
+
+            bindPrereqSearch();
+            bindPrereqCheckboxes();
+            updateTags();
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
     });
 </script>
 @endsection

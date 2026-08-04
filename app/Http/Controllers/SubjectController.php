@@ -34,13 +34,45 @@ class SubjectController extends Controller
         return view('admin.subjects.prodi_subjects', compact('subjects', 'prodi', 'plos'));
     }
 
+    public function getProdiData(Request $request)
+    {
+        $prodiId = $request->query('prodi_id');
+        $excludeSubjectId = $request->query('exclude_subject_id');
+
+        if (!$prodiId) {
+            return response()->json(['bks' => [], 'plos' => [], 'subjects' => []]);
+        }
+
+        $bks = BahanKajian::where('id_prodi', $prodiId)->orderBy('kode_bk')->get(['id', 'kode_bk', 'nm_bahan_kajian']);
+        $plos = Plo::where('id_prodi', $prodiId)->orderBy('kode_plo')->get(['id', 'kode_plo', 'plo_title']);
+
+        $subjectQuery = Subject::where('id_prodi', $prodiId);
+        if ($excludeSubjectId) {
+            $subjectQuery->where('id', '!=', $excludeSubjectId);
+        }
+        $subjects = $subjectQuery->orderBy('kode_subject')->get(['id', 'kode_subject', 'nama_subject']);
+
+        return response()->json([
+            'bks' => $bks,
+            'plos' => $plos,
+            'subjects' => $subjects,
+        ]);
+    }
+
     public function create(Request $request)
     {
-        $subjects = Subject::all();
         $prodis = Prodi::orderBy('nama_prodi')->get();
-        $bks = BahanKajian::orderBy('kode_bk')->get();
-        $plos = Plo::orderBy('kode_plo')->get();
-        $selected_prodi_id = $request->query('prodi_id');
+        $selected_prodi_id = $request->query('prodi_id') ?? old('id_prodi') ?? ($prodis->first()?->id);
+
+        if ($selected_prodi_id) {
+            $subjects = Subject::where('id_prodi', $selected_prodi_id)->orderBy('kode_subject')->get();
+            $bks = BahanKajian::where('id_prodi', $selected_prodi_id)->orderBy('kode_bk')->get();
+            $plos = Plo::where('id_prodi', $selected_prodi_id)->orderBy('kode_plo')->get();
+        } else {
+            $subjects = collect();
+            $bks = collect();
+            $plos = collect();
+        }
         
         return view('admin.subjects.create', compact('subjects', 'prodis', 'bks', 'plos', 'selected_prodi_id'));
     }
@@ -109,13 +141,16 @@ class SubjectController extends Controller
 
     public function edit(Subject $subject)
     {
-        $subjects = Subject::where('id', '!=', $subject->id)->get();
         $prodis = Prodi::orderBy('nama_prodi')->get();
-        $bks = BahanKajian::orderBy('kode_bk')->get();
-        $plos = Plo::orderBy('kode_plo')->get();
+        $selected_prodi_id = old('id_prodi', $subject->id_prodi);
+
+        $subjects = Subject::where('id_prodi', $selected_prodi_id)->where('id', '!=', $subject->id)->orderBy('kode_subject')->get();
+        $bks = BahanKajian::where('id_prodi', $selected_prodi_id)->orderBy('kode_bk')->get();
+        $plos = Plo::where('id_prodi', $selected_prodi_id)->orderBy('kode_plo')->get();
+
         $subject->load(['bks', 'plos', 'clos', 'prerequisites']);
 
-        return view('admin.subjects.edit', compact('subject', 'subjects', 'prodis', 'bks', 'plos'));
+        return view('admin.subjects.edit', compact('subject', 'subjects', 'prodis', 'bks', 'plos', 'selected_prodi_id'));
     }
 
     public function update(Request $request, Subject $subject)
