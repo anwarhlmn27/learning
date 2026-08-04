@@ -430,6 +430,25 @@
         document.getElementById('rpsForm').action = "{{ route('admin.rps.store') }}";
         document.getElementById('formMethod').value = 'POST';
         
+        // Populate subject_id dropdown with ONLY subjects without RPS
+        const subjectSelect = $('#subject_id');
+        subjectSelect.empty();
+        subjectSelect.append('<option value="">Select Subject</option>');
+        const allSubjects = @json($subjects);
+        let hasAvailableSubject = false;
+        allSubjects.forEach(subj => {
+            if (!existingRpsSubjects[subj.id]) {
+                subjectSelect.append(new Option(`${subj.kode_subject} - ${subj.nama_subject}`, subj.id));
+                hasAvailableSubject = true;
+            }
+        });
+        
+        if (!hasAvailableSubject && allSubjects.length > 0) {
+            subjectSelect.append(new Option('-- Semua Mata Kuliah sudah memiliki RPS --', '', false, false));
+        } else if (allSubjects.length === 0) {
+            subjectSelect.append(new Option('-- Belum ada Mata Kuliah di Prodi ini --', '', false, false));
+        }
+
         $('#subject_id').val('').trigger('change');
         document.getElementById('kurikulum_id').value = '';
         document.getElementById('nomor_rps').value = '';
@@ -454,6 +473,15 @@
         document.getElementById('rpsForm').action = updateUrl.replace(':id', id);
         document.getElementById('formMethod').value = 'PUT';
         document.getElementById('statusGroup').style.display = 'block'; // Tampilkan status di Edit
+        
+        // Populate subject_id dropdown with ALL subjects
+        const subjectSelect = $('#subject_id');
+        subjectSelect.empty();
+        subjectSelect.append('<option value="">Select Subject</option>');
+        const allSubjects = @json($subjects);
+        allSubjects.forEach(subj => {
+            subjectSelect.append(new Option(`${subj.kode_subject} - ${subj.nama_subject}`, subj.id));
+        });
         
         let editUrl = "{{ route('admin.rps.edit', ':id') }}";
         fetch(editUrl.replace(':id', id))
