@@ -430,6 +430,13 @@
         document.getElementById('rpsForm').action = "{{ route('admin.rps.store') }}";
         document.getElementById('formMethod').value = 'POST';
         
+        // Enable subject select for Create
+        $('#subject_id').prop('disabled', false);
+        let hiddenSubject = document.getElementById('hidden_subject_id');
+        if (hiddenSubject) {
+            hiddenSubject.remove();
+        }
+        
         // Populate subject_id dropdown with ONLY subjects without RPS
         const subjectSelect = $('#subject_id');
         subjectSelect.empty();
@@ -488,6 +495,21 @@
             .then(response => response.json())
             .then(data => {
                 $('#subject_id').val(data.rps.subject_id).trigger('change');
+                
+                // Disable subject select for Edit so it can't be changed
+                $('#subject_id').prop('disabled', true);
+                
+                // Add hidden input to submit the subject_id
+                let hiddenSubject = document.getElementById('hidden_subject_id');
+                if (!hiddenSubject) {
+                    hiddenSubject = document.createElement('input');
+                    hiddenSubject.type = 'hidden';
+                    hiddenSubject.name = 'subject_id';
+                    hiddenSubject.id = 'hidden_subject_id';
+                    document.getElementById('rpsForm').appendChild(hiddenSubject);
+                }
+                hiddenSubject.value = data.rps.subject_id;
+                
                 document.getElementById('kurikulum_id').value = data.rps.kurikulum_id;
                 document.getElementById('nomor_rps').value = data.rps.nomor_rps || '';
                 
