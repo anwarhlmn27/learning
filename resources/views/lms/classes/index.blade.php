@@ -7,7 +7,7 @@
 @if(isset($selectedProdi) && $selectedProdi)
 <div style="background:#eff6ff; border-left:4px solid #3b82f6; border-radius:6px; padding:0.6rem 1rem; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; font-size:0.85rem;">
     <span>📚 <strong>{{ $selectedProdi->nama_prodi }}</strong> — {{ __('Kelas Aktif') }}</span>
-    @if(Auth::user()->hasRole(['admin','rektor','dekan']))
+    @if(Auth::user()->hasRole(['admin','rektor','dekan','baak','finance','kemahasiswaan']) || Auth::user()->can('view-institusi'))
     <a href="{{ route('dashboard') }}" style="color:#3b82f6; font-weight:600; text-decoration:none;">← {{ __('Ganti Prodi') }}</a>
     @endif
 </div>
@@ -15,7 +15,7 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">{{ __('Kelas Aktif') }}</h2>
-    @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+    @if(Auth::user()->can('create-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddClass">
         <i>➕</i> {{ __('Tambah Kelas') }}
     </button>
@@ -84,7 +84,7 @@
                     {{ __('Manage Enrollment') }}
                 </a>
                 
-                @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+                @if(Auth::user()->can('edit-classes') || Auth::user()->can('delete-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
                 <button class="btn btn-outline-secondary" style="padding: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px;" onclick="openEditModal('{{ $class->id }}', '{{ $class->subject_id }}', '{{ $classPrimaryDosenMap[$class->id] ?? '' }}', '{{ addslashes($class->nama_kelas) }}', '{{ $class->tahun_akademik }}', '{{ $class->semester }}', '{{ $class->status }}')" title="{{ __('Edit Class') }}">
                     ✏️
                 </button>
@@ -112,7 +112,7 @@
     {{ $classRooms->links() }}
 </div>
 
-@if(Auth::user()->hasRole(['admin', 'kaprodi']))
+@if(Auth::user()->can('create-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
 <!-- Modal Add Class -->
 <div class="modal fade" id="modalAddClass" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">

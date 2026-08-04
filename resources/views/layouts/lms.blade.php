@@ -204,7 +204,7 @@
                         </a>
                     </li>
 
-                    @if($sidebarUser->hasRole(['admin', 'kaprodi']))
+                    @if($sidebarUser->can('manage-users') || $sidebarUser->hasRole(['admin', 'kaprodi', 'baak']))
                         <li class="nav-label">Data Master</li>
                         <li>
                             <a href="{{ route('dosen.index', $prodiParam) }}" class="{{ request()->routeIs('dosen.*') ? 'mm-active' : '' }}">
@@ -220,7 +220,7 @@
                         </li>
                     @endif
 
-                    @if($sidebarUser->hasRole(['admin', 'kaprodi', 'rektor', 'dekan']))
+                    @if($sidebarUser->can('view-institusi') || $sidebarUser->can('manage-obe-curriculum') || $sidebarUser->can('manage-users') || $sidebarUser->can('manage-rbac') || $sidebarUser->hasRole(['admin', 'kaprodi', 'rektor', 'dekan', 'baak', 'finance', 'kemahasiswaan']))
                         <li class="nav-label">Administration</li>
                         <li>
                             <a href="{{ route('admin.dashboard') }}">

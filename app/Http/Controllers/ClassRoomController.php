@@ -26,8 +26,8 @@ class ClassRoomController extends Controller
         $user  = Auth::user();
         $query = ClassRoom::with(['subject'])->visible();
 
-        // Non-admin / non-kaprodi / non-rektor / non-dekan only see their own classes
-        if (!$user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan'])) {
+        // Administrative staff & roles with view-classes permission see all active classes for the selected prodi
+        if (!$user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan', 'baak', 'finance', 'kemahasiswaan']) && !$user->can('view-classes')) {
             $query->where(function($q) use ($user) {
                 $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
                 if ($user->student) {
@@ -83,7 +83,7 @@ class ClassRoomController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if (!$user->hasRole(['admin', 'kaprodi'])) {
+        if (!$user->hasRole(['admin', 'kaprodi', 'baak']) && !$user->can('create-classes')) {
             return back()->with('error', 'Anda tidak memiliki akses untuk membuat kelas.');
         }
 
@@ -117,7 +117,7 @@ class ClassRoomController extends Controller
     public function update(Request $request, ClassRoom $class)
     {
         $user = Auth::user();
-        if (!$user->hasRole(['admin', 'kaprodi'])) {
+        if (!$user->hasRole(['admin', 'kaprodi', 'baak']) && !$user->can('edit-classes')) {
             return back()->with('error', 'Anda tidak memiliki akses untuk mengubah kelas.');
         }
 
@@ -168,7 +168,7 @@ class ClassRoomController extends Controller
     public function destroy(ClassRoom $class)
     {
         $user = Auth::user();
-        if (!$user->hasRole(['admin', 'kaprodi'])) {
+        if (!$user->hasRole(['admin', 'kaprodi', 'baak']) && !$user->can('delete-classes')) {
             return back()->with('error', 'Anda tidak memiliki akses untuk menghapus kelas.');
         }
 
@@ -482,7 +482,7 @@ class ClassRoomController extends Controller
     public function addStaff(Request $request, ClassRoom $class)
     {
         $user = Auth::user();
-        if (!$user->hasRole(['admin', 'kaprodi'])) {
+        if (!$user->hasRole(['admin', 'kaprodi', 'baak']) && !$user->can('edit-classes') && !$user->can('enroll-students')) {
             return back()->with('error', 'Anda tidak memiliki akses untuk mengelola staff kelas.');
         }
 
@@ -517,7 +517,7 @@ class ClassRoomController extends Controller
     public function removeStaff(ClassRoom $class, User $user)
     {
         $authUser = Auth::user();
-        if (!$authUser->hasRole(['admin', 'kaprodi'])) {
+        if (!$authUser->hasRole(['admin', 'kaprodi', 'baak']) && !$authUser->can('edit-classes') && !$authUser->can('enroll-students')) {
             return back()->with('error', 'Anda tidak memiliki akses.');
         }
 

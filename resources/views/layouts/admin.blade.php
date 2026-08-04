@@ -162,6 +162,7 @@
                 <ul class="metismenu" id="menu">
                     <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'mm-active' : '' }}"><i class="la la-home"></i><span class="nav-text">{{ __('Dashboard') }}</span></a></li>
                     
+                    @if(Auth::user()->can('view-institusi') || Auth::user()->can('manage-institusi') || Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak', 'finance']))
                     <li class="nav-label">{{ __('Institution') }}</li>
                     <li><a class="has-arrow" href="javascript:void(0)" aria-expanded="false"><i class="la la-building"></i><span class="nav-text">{{ __('Institution') }}</span></a>
                         <ul aria-expanded="false">
@@ -170,7 +171,9 @@
                             <li><a href="{{ route('prodi.index') }}" class="{{ request()->routeIs('prodi.*') ? 'mm-active' : '' }}">{{ __('Study Program') }}</a></li>
                         </ul>
                     </li>
+                    @endif
 
+                    @if(Auth::user()->can('manage-obe-curriculum') || Auth::user()->can('manage-obe-plo') || Auth::user()->can('manage-obe-visi') || Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi']))
                     <li class="nav-label">{{ __('Academic & OBE') }}</li>
                     <li><a class="has-arrow" href="javascript:void(0)" aria-expanded="false"><i class="la la-graduation-cap"></i><span class="nav-text">{{ __('Academic & OBE') }}</span></a>
                         <ul aria-expanded="false">
@@ -185,14 +188,17 @@
                             <li><a href="{{ route('analytics.index') }}" class="{{ request()->routeIs('analytics.*') ? 'mm-active' : '' }}">{{ __('OBE Analytics') }}</a></li>
                         </ul>
                     </li>
+                    @endif
 
                     <li class="nav-label">{{ __('Settings') }}</li>
                     <li><a class="has-arrow" href="javascript:void(0)" aria-expanded="false"><i class="la la-cog"></i><span class="nav-text">{{ __('Settings') }}</span></a>
                         <ul aria-expanded="false">
-                            @if(!Auth::user()->hasRole('kaprodi'))
+                            @can('manage-users')
                                 <li><a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'mm-active' : '' }}">{{ __('User Management') }}</a></li>
+                            @endcan
+                            @can('manage-rbac')
                                 <li><a href="{{ route('rbac.index') }}" class="{{ request()->routeIs('rbac.*') ? 'mm-active' : '' }}">{{ __('Hak Akses (RBAC)') }}</a></li>
-                            @endif
+                            @endcan
                             <!-- <li><a href="{{ route('assessment_types.index') }}" class="{{ request()->routeIs('assessment_types.*') ? 'mm-active' : '' }}">{{ __('Assessment Types') }}</a></li> -->
                             <li><a href="{{ route('logs.index') }}" class="{{ request()->routeIs('logs.*') ? 'mm-active' : '' }}">{{ __('System Logs') }}</a></li>
                             <li><a href="{{ route('settings.index') }}" class="{{ request()->routeIs('settings.*') ? 'mm-active' : '' }}">{{ __('Settings') }}</a></li>

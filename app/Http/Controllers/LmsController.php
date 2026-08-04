@@ -24,8 +24,14 @@ class LmsController extends Controller
             }
         }
 
-        // ── Admin / Rektor / Dekan: show prodi picker ────────────────────────
-        if ($user->hasRole(['admin', 'rektor', 'dekan'])) {
+        // ── Administrative & Staff Roles (Admin / Rektor / Dekan / BAAK / Finance / Kemahasiswaan / Users with Staff Permissions): show prodi picker ──
+        $isStaffOrAdmin = $user->hasRole(['admin', 'rektor', 'dekan', 'baak', 'finance', 'kemahasiswaan']) 
+            || $user->can('view-classes') 
+            || $user->can('view-institusi') 
+            || $user->can('manage-users')
+            || (!$user->hasRole('dosen') && !$user->hasRole(['mahasiswa', 'student']) && !$user->student);
+
+        if ($isStaffOrAdmin && !$user->hasRole('dosen') && !$user->hasRole(['mahasiswa', 'student'])) {
             $prodis = Prodi::with(['fakultas', 'kaprodi'])->orderBy('nama_prodi')->get();
             return view('lms.dashboard', compact('user', 'prodis'));
         }

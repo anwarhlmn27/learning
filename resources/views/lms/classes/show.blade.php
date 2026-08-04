@@ -708,7 +708,7 @@
         <div class="card">
             <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Dosen Pengampu / Lecturer</h3>
-                @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+                @if(Auth::user()->can('edit-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
                     <button class="btn btn-primary btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add-dosen').style.display = 'flex'">
                         ➕ Tambah Dosen
                     </button>
@@ -733,7 +733,7 @@
                                     </span>
                                 @endif
                             </div>
-                            @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+                            @if(Auth::user()->can('edit-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
                                 <form action="{{ route('classes.remove_staff', [$class, $dosenUser]) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Hapus dosen ini dari kelas?">
                                     @csrf
                                     @method('DELETE')
@@ -752,7 +752,7 @@
         <div class="card">
             <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">BAAK Staff</h3>
-                @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+                @if(Auth::user()->can('edit-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
                     <button class="btn btn-primary btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="document.getElementById('modal-add-baak').style.display = 'flex'">
                         ➕ Tambah BAAK
                     </button>
@@ -769,7 +769,7 @@
                                 <strong style="display: block; color: var(--text-primary);">{{ $baakUser->name }}</strong>
                                 <span style="font-size: 0.8rem; color: var(--text-muted);">{{ $baakUser->email }}</span>
                             </div>
-                            @if(Auth::user()->hasRole(['admin', 'kaprodi']))
+                            @if(Auth::user()->can('edit-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
                                 <form action="{{ route('classes.remove_staff', [$class, $baakUser]) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Hapus BAAK ini dari kelas?">
                                     @csrf
                                     @method('DELETE')
@@ -790,7 +790,7 @@
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">
                     Enrolled Students <span style="background: #e0e7ff; color: var(--primary); padding: 0.15rem 0.6rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700;">{{ $enrollments->count() }}</span>
                 </h3>
-                @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+                @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
                     <div style="display: flex; gap: 0.5rem;">
                         <a href="{{ route('classes.template') }}" class="btn btn-outline btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
                             <i>📥</i> Template
@@ -813,7 +813,7 @@
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Nama Mahasiswa</th>
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Program Studi</th>
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Angkatan</th>
-                            @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+                            @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
                                 <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: right;">Action</th>
                             @endif
                         </tr>
@@ -831,7 +831,7 @@
                             </td>
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">{{ optional($enrollment->student)->prodi->nama_prodi ?? '-' }}</td>
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">{{ optional($enrollment->student)->angkatan ?? '-' }}</td>
-                            @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+                            @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
                                 <td style="padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: right;">
                                     <form action="{{ route('classes.unenroll', [$class, $enrollment]) }}" method="POST" style="margin: 0;" class="form-unenroll">
                                         @csrf

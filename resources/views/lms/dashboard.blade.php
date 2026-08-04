@@ -1,13 +1,13 @@
 @extends('layouts.lms')
 
-@section('header_title', Auth::user()->hasRole(['admin','rektor','dekan']) ? __('Pilih Program Studi') : (__('Dashboard') . ' - ' . ucfirst($data['view_type'] ?? 'user')))
+@section('header_title', Auth::user()->hasRole(['admin','rektor','dekan','baak','finance','kemahasiswaan']) || (!Auth::user()->hasRole('dosen') && !Auth::user()->hasRole(['mahasiswa','student'])) ? __('Pilih Program Studi') : (__('Dashboard') . ' - ' . ucfirst($data['view_type'] ?? 'user')))
 
 @section('content')
 
 {{-- ═══════════════════════════════════════════════════════════════════════════
-     ADMIN / REKTOR / DEKAN → Prodi Picker
+     ADMIN / REKTOR / DEKAN / BAAK / FINANCE / STAFF → Prodi Picker
 ═══════════════════════════════════════════════════════════════════════════════ --}}
-@if(Auth::user()->hasRole(['admin', 'rektor', 'dekan']))
+@if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'baak', 'finance', 'kemahasiswaan']) || (!Auth::user()->hasRole('dosen') && !Auth::user()->hasRole(['mahasiswa', 'student'])))
 
 <div class="row page-titles mx-0">
     <div class="col-sm-12 p-md-0">
