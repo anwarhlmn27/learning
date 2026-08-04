@@ -22,7 +22,7 @@
 <div class="card">
     <div class="card-header">
         <span>{{ __('Select Study Program (Prodi) to View Subjects') }}</span>
-        <a href="{{ route('subjects.create') }}" class="btn btn-primary">{{ __('Add New Subject') }}</a>
+        <!-- <a href="{{ route('subjects.create') }}" class="btn btn-primary">{{ __('Add New Subject') }}</a> -->
     </div>
     <div class="card-body" style="padding: 0;">
         <div style="overflow-x: auto;">
