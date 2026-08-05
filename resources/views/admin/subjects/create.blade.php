@@ -35,7 +35,7 @@
             
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label class="form-label">{{ __('Program Studi') }} <span style="color: red;">*</span></label>
-                <select name="id_prodi" class="form-control" readonly>
+                <select name="id_prodi" class="form-control" disabled>
                     <option value="">-- {{ __('Select Program Studi') }} --</option>
                     @foreach($prodis as $prodi)
                         <option value="{{ $prodi->id }}" {{ old('id_prodi', $selected_prodi_id) == $prodi->id ? 'selected' : '' }}>
