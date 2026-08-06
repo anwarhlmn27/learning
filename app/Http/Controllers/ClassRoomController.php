@@ -95,6 +95,16 @@ class ClassRoomController extends Controller
             'semester' => 'required|in:Ganjil,Genap,Antara',
         ]);
 
+        $activeRps = Rps::where('subject_id', $request->subject_id)
+            ->whereIn('status', ['active', 'Active', 'aktif', 'Aktif'])
+            ->first();
+
+        if (!$activeRps) {
+            $subject = Subject::find($request->subject_id);
+            $subjectName = $subject ? $subject->nama_subject : 'Mata kuliah';
+            return back()->with('error', 'Gagal membuat kelas! Mata kuliah "' . $subjectName . '" belum memiliki RPS berstatus Aktif. Silakan buat atau aktifkan RPS mata kuliah terlebih dahulu.');
+        }
+
         DB::transaction(function() use ($request) {
             $class = ClassRoom::create([
                 'subject_id'    => $request->subject_id,
@@ -129,6 +139,16 @@ class ClassRoomController extends Controller
             'semester'       => 'required|in:Ganjil,Genap,Antara',
             'status'         => 'required|in:active,archived',
         ]);
+
+        $activeRps = Rps::where('subject_id', $request->subject_id)
+            ->whereIn('status', ['active', 'Active', 'aktif', 'Aktif'])
+            ->first();
+
+        if (!$activeRps) {
+            $subject = Subject::find($request->subject_id);
+            $subjectName = $subject ? $subject->nama_subject : 'Mata kuliah';
+            return back()->with('error', 'Gagal memperbarui kelas! Mata kuliah "' . $subjectName . '" belum memiliki RPS berstatus Aktif.');
+        }
 
         DB::transaction(function() use ($request, $class) {
             $class->update([
@@ -291,7 +311,13 @@ class ClassRoomController extends Controller
         $allProdis = \App\Models\Prodi::orderBy('nama_prodi')->get();
         $allAngkatans = \App\Models\Student::select('angkatan')->distinct()->orderBy('angkatan', 'desc')->pluck('angkatan')->filter()->values();
 
+        // 2. AUTO-SYNC: Sinkronisasi sesi & modul dari RPS secara otomatis
+        // Hanya berjalan jika kelas memiliki RPS dan tidak memperlambat halaman
+        // karena menggunakan firstOrCreate (tidak duplikat).
+        $this->autoSyncRpsToClass($class);
+
         // 2. Classwork / Sesi Tab data (timeline of 14 sessions)
+        // Reload topics SETELAH auto-sync agar modul RPS langsung tampil
         $topics = $class->topics()->with(['material', 'assignment', 'forum', 'quiz'])->get();
         
         $sessions = [];
@@ -558,6 +584,82 @@ class ClassRoomController extends Controller
         $class->users()->detach($user->id);
 
         return back()->with('success', 'Staff berhasil dihapus dari kelas.');
+    }
+
+    /**
+     * Auto-sync RPS sessions & materials ke LMS class.
+     * Dipanggil otomatis saat show() — menggunakan firstOrCreate agar tidak duplikat.
+     * Menggantikan tombol "Import from RPS Syllabus" yang sudah dihapus dari UI.
+     */
+    private function autoSyncRpsToClass(ClassRoom $class): void
+    {
+        try {
+            // Cari RPS aktif untuk subject kelas ini
+            $rps = Rps::where('subject_id', $class->subject_id)
+                ->whereIn('status', ['active', 'Active', 'aktif', 'Aktif'])
+                ->latest()->first()
+                ?? Rps::where('subject_id', $class->subject_id)->latest()->first();
+
+            if (!$rps || strtolower($rps->status) === 'draft') {
+                return; // Tidak ada RPS atau masih draft, skip
+            }
+
+            $rpsSessions = RpsSession::where('rps_id', $rps->id)
+                ->with('resources')
+                ->orderBy('session_number')
+                ->get();
+
+            foreach ($rpsSessions as $session) {
+                // 1. Buat ClassSession record (untuk tracking absensi/status sesi)
+                ClassSession::firstOrCreate(
+                    [
+                        'class_room_id'  => $class->id,
+                        'rps_session_id' => $session->id,
+                    ],
+                    [
+                        'title'  => $session->topic_name,
+                        'status' => 'Draft',
+                    ]
+                );
+
+                // 2. Sync modul/resource dari RPS ke ClassTopic + Material
+                foreach ($session->resources as $resource) {
+                    // Skip jika resource tidak punya file path
+                    if (empty($resource->file_path)) {
+                        continue;
+                    }
+
+                    // Cek apakah Material ini sudah ada (by rps_resource_id)
+                    $material = \App\Models\Material::where('rps_resource_id', $resource->id)->first();
+
+                    if (!$material) {
+                        // Buat Material baru dari RPS resource
+                        $material = \App\Models\Material::create([
+                            'rps_resource_id'   => $resource->id,
+                            'title'             => $resource->nm_resource ?? 'Modul Sesi ' . $session->session_number,
+                            'file_path'         => json_encode([$resource->file_path]),
+                            'original_filename' => json_encode([$resource->nm_resource ?? basename($resource->file_path)]),
+                        ]);
+
+                        // Buat ClassTopic jika belum ada untuk material ini
+                        \App\Models\ClassTopic::firstOrCreate(
+                            [
+                                'class_room_id' => $class->id,
+                                'session_number'=> $session->session_number,
+                                'type'          => 'materi',
+                                'content_id'    => $material->id,
+                            ],
+                            [
+                                'title' => $material->title,
+                            ]
+                        );
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Gagal sync tidak boleh crash halaman — hanya log warning
+            \Illuminate\Support\Facades\Log::warning('[AutoSync RPS] Gagal sync untuk kelas ' . $class->id . ': ' . $e->getMessage());
+        }
     }
 
     public function generateLmsFromRps(ClassRoom $class)
@@ -1096,7 +1198,10 @@ class ClassRoomController extends Controller
             'title'             => 'required|string|max:255',
             'instruction'       => 'required|string',
             'deadline'          => 'required|date',
-            'rps_assessment_id' => 'nullable|exists:rps_assessments,id',
+            'rps_assessment_id' => 'required|exists:rps_assessments,id',
+        ], [
+            'rps_assessment_id.required' => 'Penilaian OBE (RPS) wajib dipilih agar CLO dapat terlacak.',
+            'rps_assessment_id.exists'   => 'Penilaian OBE yang dipilih tidak valid.',
         ]);
 
         // Resolve the ClassSession for the chosen session number (if one exists from RPS sync)

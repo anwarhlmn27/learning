@@ -360,18 +360,18 @@
 <!-- ============================================ -->
 <div id="tab-classwork" class="tab-content active">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">Timeline 14 Sesi Dinamis</h2>
+        <div>
+            <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">Timeline 14 Sesi Dinamis</h2>
+            @if($rpsSessionsWithAssessments->isNotEmpty())
+            <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--text-muted);"
+            >📋 Sesi &amp; modul disinkronkan otomatis dari RPS — {{ optional($rpsSessionsWithAssessments->first())['topic_name'] ? 'RPS aktif terhubung' : '' }}</p>
+            @endif
+        </div>
         @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
             <div style="display: flex; gap: 0.5rem;">
                 <button class="btn btn-outline" onclick="openAddClassworkModal()">
                     <i>➕</i> Add Classwork Item
                 </button>
-                <form action="{{ route('classes.generate_lms', $class) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Generate sesi otomatis berdasarkan RPS?">
-                    @csrf
-                    <button type="submit" class="btn" style="background-color: #f59e0b; color: white;">
-                        <i>⚡</i> Import from RPS Syllabus
-                    </button>
-                </form>
             </div>
         @endif
     </div>
@@ -1745,14 +1745,16 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">
-                            Sangkutkan Penilaian OBE (RPS)
-                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;"> — sesuai sesi</span>
+                            Penilaian OBE (RPS) <span style="color: red;">*</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;"> — wajib, sesuai sesi</span>
                         </label>
                         <select name="rps_assessment_id" id="assignment-obe-select"
                             style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"
+                            required
                             onchange="onAssessmentChange(this.value)">
                             <option value="">-- Pilih Sesi terlebih dahulu --</option>
                         </select>
+                        <p style="margin: 0.35rem 0 0; font-size: 0.75rem; color: #dc2626; display: none;" id="obe-required-hint">⚠️ Pilih Sesi dulu agar daftar penilaian OBE muncul.</p>
                     </div>
                 </div>
 
@@ -2052,10 +2054,12 @@
     // ─── Session-based OBE filtering for Assignment form ─────────────────────────
     function onAssignmentSessionChange(sessionNumber) {
         const obeSelect = document.getElementById('assignment-obe-select');
+        const obeHint = document.getElementById('obe-required-hint');
         if (!obeSelect) return;
 
         if (!sessionNumber) {
             obeSelect.innerHTML = '<option value="">-- Pilih Sesi terlebih dahulu --</option>';
+            if (obeHint) obeHint.style.display = 'block';
             _refreshSelectpicker(obeSelect);
             return;
         }
@@ -2064,18 +2068,33 @@
         const key = String(sessionNumber);
         const sessionData = data[key];
 
-        // Reset dengan opsi "tidak terhubung RPS"
-        obeSelect.innerHTML = '<option value="">-- Tidak terhubung RPS (Bebas) --</option>';
+        if (!sessionData || !sessionData.assessments || sessionData.assessments.length === 0) {
+            // Sesi ini tidak punya assessment di RPS
+            obeSelect.innerHTML = '<option value="">-- Tidak ada penilaian OBE di sesi ini --</option>';
+            if (obeHint) { obeHint.textContent = '⚠️ Sesi ' + sessionNumber + ' belum memiliki rencana penilaian di RPS. Hubungi Kaprodi.'; obeHint.style.display = 'block'; }
+            _refreshSelectpicker(obeSelect);
+            return;
+        }
 
-        if (sessionData && sessionData.assessments && sessionData.assessments.length > 0) {
-            sessionData.assessments.forEach(function(assessment) {
-                const opt = document.createElement('option');
-                opt.value = assessment.id;
-                opt.textContent = assessment.label;
-                opt.dataset.instruction = assessment.instruction || '';
-                opt.dataset.assessmentType = assessment.assessment_type || '';
-                obeSelect.appendChild(opt);
-            });
+        // Ada assessment — sembunyikan hint
+        if (obeHint) obeHint.style.display = 'none';
+
+        // Reset lalu isi opsi
+        obeSelect.innerHTML = '<option value="">-- Pilih Penilaian OBE --</option>';
+
+        sessionData.assessments.forEach(function(assessment) {
+            const opt = document.createElement('option');
+            opt.value = assessment.id;
+            opt.textContent = assessment.label;
+            opt.dataset.instruction = assessment.instruction || '';
+            opt.dataset.assessmentType = assessment.assessment_type || '';
+            obeSelect.appendChild(opt);
+        });
+
+        // Auto-select jika hanya 1 assessment
+        if (sessionData.assessments.length === 1) {
+            obeSelect.value = sessionData.assessments[0].id;
+            onAssessmentChange(sessionData.assessments[0].id);
         }
 
         // Refresh selectpicker jika masih aktif (fallback safety)
