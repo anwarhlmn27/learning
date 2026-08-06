@@ -420,6 +420,39 @@ class ClassRoomController extends Controller
         })
         ->values();
 
+        // Build per-session assessment map for JS-driven filtering in the classwork form
+        $rpsSessionsWithAssessments = collect();
+        $rpsForClass = Rps::where('subject_id', $class->subject_id)
+                ->whereIn('status', ['active', 'Active', 'aktif', 'Aktif'])
+                ->latest()->first()
+            ?? Rps::where('subject_id', $class->subject_id)->latest()->first();
+        if ($rpsForClass) {
+            $rpsSessionsWithAssessments = RpsSession::where('rps_id', $rpsForClass->id)
+                ->with(['assessments.clo'])
+                ->orderBy('session_number')
+                ->get()
+                ->map(function ($s) {
+                    return [
+                        'session_number' => $s->session_number,
+                        'topic_name'     => $s->topic_name,
+                        'assessments'    => $s->assessments->map(function ($a) {
+                            // Label: field "Tugas" (assessment_type) is the main visible name
+                            $mainLabel = $a->assessment_type
+                                ? $a->assessment_type
+                                : ($a->assignment_activities
+                                    ? \Illuminate\Support\Str::limit($a->assignment_activities, 60)
+                                    : ('Assessment #' . $a->id));
+                            return [
+                                'id'              => $a->id,
+                                'label'           => $mainLabel . ' (Bobot: ' . $a->weight . '%)',
+                                'assessment_type' => $a->assessment_type ?? '',
+                                'instruction'     => $a->assignment_activities ?? '',
+                            ];
+                        })->values(),
+                    ];
+                });
+        }
+
         return view('lms.classes.show', compact(
             'class', 
             'enrollments', 
@@ -442,7 +475,8 @@ class ClassRoomController extends Controller
             'allFakultas',
             'allProdis',
             'allAngkatans',
-            'leaderboard'
+            'leaderboard',
+            'rpsSessionsWithAssessments'
         ));
     }
 
@@ -560,89 +594,22 @@ class ClassRoomController extends Controller
             $rpsSessions = RpsSession::where('rps_id', $rps->id)->get();
 
             foreach ($rpsSessions as $session) {
-                $classSession = ClassSession::firstOrCreate(
+                // Only create ClassSession — do NOT auto-create assignments.
+                // Dosen will manually create classwork and choose which RPS assessment it refers to.
+                ClassSession::firstOrCreate(
                     [
                         'class_room_id' => $class->id,
                         'rps_session_id' => $session->id,
                     ],
                     [
-                        'title' => $session->topic_name,
+                        'title'  => $session->topic_name,
                         'status' => 'Draft',
                     ]
                 );
 
-                // Fetch existing assignments for this session via ClassTopic
-                $existingAssignmentTopics = \App\Models\ClassTopic::where('class_room_id', $class->id)
-                    ->where('session_number', $session->session_number)
-                    ->where('type', 'assignment')
-                    ->orderBy('created_at')
-                    ->get();
-
-                $assessments = RpsAssessment::where('rps_session_id', $session->id)->get();
-                foreach ($assessments as $index => $assessment) {
-                    $title = 'Tugas Sesi ' . $session->session_number . ': ' . $session->topic_name;
-                    $instruction = $assessment->assignment_activities ?? 'Silakan kerjakan tugas sesuai arahan dosen.';
-
-                    if (isset($existingAssignmentTopics[$index])) {
-                        // Update existing assignment if it exists, otherwise create new (might be orphaned due to cascade delete)
-                        $assignment = Assignment::find($existingAssignmentTopics[$index]->content_id);
-                        if ($assignment) {
-                            $assignment->update([
-                                'rps_assessment_id' => $assessment->id,
-                                'class_session_id' => $classSession->id,
-                                'title' => $title,
-                                'instruction' => $instruction,
-                            ]);
-                            $existingAssignmentTopics[$index]->update(['title' => $title]);
-                        } else {
-                            $assignment = Assignment::create([
-                                'class_room_id' => $class->id,
-                                'rps_assessment_id' => $assessment->id,
-                                'class_session_id' => $classSession->id,
-                                'title' => $title,
-                                'instruction' => $instruction,
-                                'deadline' => now()->addDays(7),
-                                'status' => 'Draft',
-                            ]);
-                            $existingAssignmentTopics[$index]->update([
-                                'content_id' => $assignment->id,
-                                'title' => $title
-                            ]);
-                        }
-                    } else {
-                        // Create Assignment
-                        $assignment = Assignment::firstOrCreate(
-                            [
-                                'class_room_id' => $class->id,
-                                'rps_assessment_id' => $assessment->id,
-                            ],
-                            [
-                                'class_session_id' => $classSession->id,
-                                'title' => $title,
-                                'instruction' => $instruction,
-                                'deadline' => now()->addDays(7),
-                                'status' => 'Draft',
-                            ]
-                        );
-
-                        // Sync dynamic classwork timeline (class_topics)
-                        \App\Models\ClassTopic::firstOrCreate(
-                            [
-                                'class_room_id' => $class->id,
-                                'session_number' => $session->session_number,
-                                'type' => 'assignment',
-                                'content_id' => $assignment->id,
-                            ],
-                            [
-                                'title' => $assignment->title,
-                            ]
-                        );
-                    }
-                }
-
-                // Copy Resources
+                // Sync materials (SessionResource → Material) — still runs as before
                 $resources = \App\Models\SessionResource::where('rps_session_id', $session->id)->get();
-                
+
                 $existingMaterialTopics = \App\Models\ClassTopic::where('class_room_id', $class->id)
                     ->where('session_number', $session->session_number)
                     ->where('type', 'materi')
@@ -651,46 +618,45 @@ class ClassRoomController extends Controller
 
                 foreach ($resources as $index => $res) {
                     $material = \App\Models\Material::where('rps_resource_id', $res->id)->first();
-                    
+
                     if (!$material && isset($existingMaterialTopics[$index])) {
-                        // Try to update existing material in the same slot
                         $material = \App\Models\Material::find($existingMaterialTopics[$index]->content_id);
                         if ($material) {
                             $material->update([
-                                'rps_resource_id' => $res->id,
-                                'title' => $res->nm_resource,
-                                'file_path' => json_encode([$res->file_path]),
+                                'rps_resource_id'   => $res->id,
+                                'title'             => $res->nm_resource,
+                                'file_path'         => json_encode([$res->file_path]),
                                 'original_filename' => json_encode([$res->nm_resource]),
                             ]);
                             $existingMaterialTopics[$index]->update(['title' => $material->title]);
                         } else {
                             $material = \App\Models\Material::create([
-                                'rps_resource_id' => $res->id,
-                                'title' => $res->nm_resource,
-                                'file_path' => json_encode([$res->file_path]),
+                                'rps_resource_id'   => $res->id,
+                                'title'             => $res->nm_resource,
+                                'file_path'         => json_encode([$res->file_path]),
                                 'original_filename' => json_encode([$res->nm_resource]),
                             ]);
                             $existingMaterialTopics[$index]->update([
                                 'content_id' => $material->id,
-                                'title' => $material->title
+                                'title'      => $material->title,
                             ]);
                         }
                     }
-                    
+
                     if (!$material) {
                         $material = \App\Models\Material::create([
-                            'rps_resource_id' => $res->id,
-                            'title' => $res->nm_resource,
-                            'file_path' => json_encode([$res->file_path]),
+                            'rps_resource_id'   => $res->id,
+                            'title'             => $res->nm_resource,
+                            'file_path'         => json_encode([$res->file_path]),
                             'original_filename' => json_encode([$res->nm_resource]),
                         ]);
 
                         \App\Models\ClassTopic::firstOrCreate(
                             [
-                                'class_room_id' => $class->id,
+                                'class_room_id'  => $class->id,
                                 'session_number' => $session->session_number,
-                                'type' => 'materi',
-                                'content_id' => $material->id,
+                                'type'           => 'materi',
+                                'content_id'     => $material->id,
                             ],
                             [
                                 'title' => $material->title,
@@ -701,7 +667,7 @@ class ClassRoomController extends Controller
             }
 
             DB::commit();
-            return back()->with('success', 'Struktur LMS, Tugas, dan Timeline berhasil digenerate dari RPS.');
+            return back()->with('success', 'Sesi dan Materi LMS berhasil disinkronkan dari RPS. Silakan buat Classwork secara manual pada setiap sesi.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
@@ -1126,31 +1092,69 @@ class ClassRoomController extends Controller
     public function storeAssignment(Request $request, ClassRoom $class)
     {
         $request->validate([
-            'session_number' => 'required|integer|min:1|max:14',
-            'title' => 'required|string|max:255',
-            'instruction' => 'required|string',
-            'deadline' => 'required|date',
+            'session_number'    => 'required|integer|min:1|max:14',
+            'title'             => 'required|string|max:255',
+            'instruction'       => 'required|string',
+            'deadline'          => 'required|date',
             'rps_assessment_id' => 'nullable|exists:rps_assessments,id',
         ]);
 
+        // Resolve the ClassSession for the chosen session number (if one exists from RPS sync)
+        $classSession = ClassSession::where('class_room_id', $class->id)
+            ->whereHas('rpsSession', fn ($q) => $q->where('session_number', $request->session_number))
+            ->first();
+
         $assignment = Assignment::create([
-            'class_room_id' => $class->id,
-            'title' => $request->title,
-            'instruction' => $request->instruction,
-            'deadline' => $request->deadline,
+            'class_room_id'     => $class->id,
+            'class_session_id'  => $classSession?->id,
+            'title'             => $request->title,
+            'instruction'       => $request->instruction,
+            'deadline'          => $request->deadline,
             'rps_assessment_id' => $request->rps_assessment_id,
-            'status' => 'Published',
+            'status'            => 'Published',
         ]);
 
         \App\Models\ClassTopic::create([
-            'class_room_id' => $class->id,
+            'class_room_id'  => $class->id,
             'session_number' => $request->session_number,
-            'type' => 'assignment',
-            'content_id' => $assignment->id,
-            'title' => $assignment->title,
+            'type'           => 'assignment',
+            'content_id'     => $assignment->id,
+            'title'          => $assignment->title,
         ]);
 
         return back()->with('success', 'Tugas berhasil ditambahkan pada Sesi ' . $request->session_number);
+    }
+
+    public function updateAssignment(Request $request, ClassRoom $class, Assignment $assignment)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole(['admin', 'kaprodi', 'dosen', 'rektor', 'dekan'])) {
+            return back()->with('error', 'Akses ditolak.');
+        }
+
+        // Ensure assignment belongs to this class
+        if ($assignment->class_room_id !== $class->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'title'       => 'required|string|max:255',
+            'instruction' => 'required|string',
+            'deadline'    => 'required|date',
+        ]);
+
+        $assignment->update([
+            'title'       => $request->title,
+            'instruction' => $request->instruction,
+            'deadline'    => $request->deadline,
+        ]);
+
+        // Keep ClassTopic title in sync
+        \App\Models\ClassTopic::where('content_id', $assignment->id)
+            ->where('type', 'assignment')
+            ->update(['title' => $request->title]);
+
+        return back()->with('success', 'Tugas berhasil diperbarui.');
     }
 
     public function storeForum(Request $request, ClassRoom $class)

@@ -388,7 +388,14 @@
                         @if($sessionData['topics']->count() > 0)
                             <span style="font-weight: 500; font-size: 1rem; color: var(--text-primary);">{{ $sessionData['topics']->first()->title }}</span>
                         @else
-                            <span style="font-weight: 400; font-size: 1rem; color: var(--text-muted); font-style: italic;">Topik Belum Diisi</span>
+                            @php
+                                $fallbackTopic = isset($rpsSessionsWithAssessments) ? $rpsSessionsWithAssessments->where('session_number', $number)->first() : null;
+                            @endphp
+                            @if($fallbackTopic)
+                                <span style="font-weight: 500; font-size: 1rem; color: var(--text-primary);">{{ $fallbackTopic['topic_name'] }}</span>
+                            @else
+                                <span style="font-weight: 400; font-size: 1rem; color: var(--text-muted); font-style: italic;">Topik Belum Diisi</span>
+                            @endif
                         @endif
                     </span>
                     <span id="icon-session-{{ $number }}" style="font-size: 1.25rem; color: var(--text-muted); transition: var(--transition);">▼</span>
@@ -457,10 +464,20 @@
                                     </div>
                                 @elseif($topic->type == 'assignment' && $topic->assignment)
                                     <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-muted);">{{ Str::limit($topic->assignment->instruction, 150) }}</p>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
-                                        <span style="font-size: 0.8rem; color: #dc2626; font-weight: 600;">
-                                            Deadline: {{ date('d M Y - H:i', strtotime($topic->assignment->deadline)) }}
-                                        </span>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; gap: 0.5rem; flex-wrap: wrap;">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="font-size: 0.8rem; color: #dc2626; font-weight: 600;">
+                                                Deadline: {{ date('d M Y - H:i', strtotime($topic->assignment->deadline)) }}
+                                            </span>
+                                            @if(!Auth::user()->hasRole('mahasiswa'))
+                                                <button type="button"
+                                                    onclick="openEditAssignmentModal('{{ $topic->assignment->id }}', '{{ addslashes($topic->assignment->title) }}', '{{ addslashes($topic->assignment->instruction) }}', '{{ \Carbon\Carbon::parse($topic->assignment->deadline)->format('Y-m-d\TH:i') }}')"
+                                                    title="Edit Tugas"
+                                                    style="background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.3); color: #4f46e5; border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;">
+                                                    ✏️ Edit
+                                                </button>
+                                            @endif
+                                        </div>
                                         @if(Auth::user()->hasRole('mahasiswa'))
                                             @php
                                                 $submission = \App\Models\AssignmentSubmission::where('assignment_id', $topic->assignment->id)
@@ -1593,6 +1610,44 @@
 </div>
 
 <!-- Modal Add Classwork Item -->
+<!-- RPS Session Assessments data for JS OBE filtering -->
+<script>
+    // Mapping OBE assessments per sesi dari RPS
+    (function() {
+        var rawData = {!! json_encode($rpsSessionsWithAssessments->keyBy('session_number'), JSON_UNESCAPED_UNICODE) !!};
+        // Normalize keys to string for consistent JS lookup
+        var normalized = {};
+        Object.keys(rawData).forEach(function(k) {
+            normalized[String(k)] = rawData[k];
+        });
+        window._rpsSessionAssessments = normalized;
+        @if($rpsSessionsWithAssessments->isEmpty())
+        console.warn('[OBE] Tidak ada data RPS assessments ditemukan untuk kelas ini. Pastikan RPS sudah memiliki sesi dan penilaian.');
+        @else
+        console.info('[OBE] Data assessments dimuat: {{ $rpsSessionsWithAssessments->count() }} sesi dari RPS.');
+        @endif
+    })();
+
+    // ── PENTING: Destroy bootstrap-select pada OBE selects ──────────────────────
+    // Bootstrap-select mengkonversi <select> ke custom UI, sehingga update
+    // innerHTML via JS tidak tercermin di UI-nya. Solusi: destroy selectpicker
+    // pada elemen OBE agar tetap jadi native select yang bisa dikontrol JS.
+    document.addEventListener('DOMContentLoaded', function() {
+        var obeIds = ['assignment-obe-select', 'quiz-obe-select'];
+        obeIds.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            // Destroy bootstrap-select instance jika ada
+            if (window.jQuery && typeof jQuery.fn.selectpicker === 'function') {
+                try { $(el).selectpicker('destroy'); } catch(e) {}
+            }
+            // Pastikan elemen tidak memiliki class selectpicker agar tidak re-init
+            el.classList.remove('selectpicker');
+            // Reset style agar tampil normal
+            el.style.display = '';
+        });
+    });
+</script>
 <div id="modal-classwork" class="modal-backdrop">
     <div class="modal-box" style="max-width: 600px;">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
@@ -1660,20 +1715,29 @@
             <!-- Form Assignment -->
             <form id="form-assignment" action="{{ route('classes.store_assignment', $class) }}" method="POST" class="classwork-form" style="display: none;">
                 @csrf
+
                 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
-                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Sesi (1-14) <span style="color: red;">*</span></label>
-                        <input type="number" name="session_number" min="1" max="14" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Sesi <span style="color: red;">*</span></label>
+                        <select name="session_number" id="assignment-session-select" required onchange="onAssignmentSessionChange(this.value)"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                            <option value="">-- Pilih Sesi --</option>
+                            @for($s = 1; $s <= 14; $s++)
+                                <option value="{{ $s }}">Sesi {{ $s }}</option>
+                            @endfor
+                        </select>
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Judul Tugas <span style="color: red;">*</span></label>
-                        <input type="text" name="title" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        <input type="text" name="title" id="assignment-title-input" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
                     </div>
                 </div>
+
                 <div style="margin-bottom: 1rem;">
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Instruksi Tugas <span style="color: red;">*</span></label>
-                    <textarea name="instruction" rows="3" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"></textarea>
+                    <textarea name="instruction" id="assignment-instruction-input" rows="3" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"></textarea>
                 </div>
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Batas Pengumpulan <span style="color: red;">*</span></label>
@@ -1681,31 +1745,17 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">
-                            Sangkutkan Penilaian OBE
+                            Sangkutkan Penilaian OBE (RPS)
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;"> — sesuai sesi</span>
                         </label>
-                        <select name="rps_assessment_id" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                            <option value="">-- Pilih Indikator Capaian OBE --</option>
-                            @php
-                                $prodiId = $class->subject->id_prodi ?? null;
-                                $rpsAssessments = [];
-                                if ($prodiId) {
-                                    $rps = \App\Models\Rps::where('subject_id', $class->subject_id)->latest()->first();
-                                    if ($rps) {
-                                        $rpsSessions = \App\Models\RpsSession::where('rps_id', $rps->id)->pluck('id');
-                                        $rpsAssessments = \App\Models\RpsAssessment::whereIn('rps_session_id', $rpsSessions)->get();
-                                    }
-                                }
-                            @endphp
-                            @foreach($rpsAssessments as $assessment)
-                                @php
-                                    $assessmentName = $assessment->assessment_name ?: ($assessment->type->name ?? 'Tugas');
-                                    $sessionNum = $assessment->session->session_number ?? '?';
-                                @endphp
-                                <option value="{{ $assessment->id }}">Sesi {{ $sessionNum }} - {{ $assessmentName }} (Bobot: {{ $assessment->weight }}%)</option>
-                            @endforeach
+                        <select name="rps_assessment_id" id="assignment-obe-select"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"
+                            onchange="onAssessmentChange(this.value)">
+                            <option value="">-- Pilih Sesi terlebih dahulu --</option>
                         </select>
                     </div>
                 </div>
+
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
                     <button type="button" class="btn btn-outline" onclick="closeAddClassworkModal()">Cancel</button>
                     <button type="submit" class="btn">Publish Assignment</button>
@@ -1740,8 +1790,14 @@
                 @csrf
                 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
-                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Sesi (1-14) <span style="color: red;">*</span></label>
-                        <input type="number" name="session_number" min="1" max="14" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Sesi <span style="color: red;">*</span></label>
+                        <select name="session_number" id="quiz-session-select" required onchange="onQuizSessionChange(this.value)"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                            <option value="">-- Pilih Sesi --</option>
+                            @for($s = 1; $s <= 14; $s++)
+                                <option value="{{ $s }}">Sesi {{ $s }}</option>
+                            @endfor
+                        </select>
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Judul Kuis <span style="color: red;">*</span></label>
@@ -1759,17 +1815,12 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">
-                            Sangkutkan Penilaian OBE
+                            Sangkutkan Penilaian OBE (RPS)
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;"> — sesuai sesi</span>
                         </label>
-                        <select name="rps_assessment_id" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                            <option value="">-- Pilih Indikator Capaian OBE --</option>
-                            @foreach($rpsAssessments as $assessment)
-                                @php
-                                    $assessmentName = $assessment->assessment_name ?: ($assessment->type->name ?? 'Tugas');
-                                    $sessionNum = $assessment->session->session_number ?? '?';
-                                @endphp
-                                <option value="{{ $assessment->id }}">Sesi {{ $sessionNum }} - {{ $assessmentName }} (Bobot: {{ $assessment->weight }}%)</option>
-                            @endforeach
+                        <select name="rps_assessment_id" id="quiz-obe-select"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                            <option value="">-- Pilih Sesi terlebih dahulu --</option>
                         </select>
                     </div>
                 </div>
@@ -1840,6 +1891,45 @@
     </div>
 </div>
 
+<!-- Modal Edit Assignment (Deadline, Judul, Instruksi) -->
+<div id="modal-edit-assignment" class="modal-backdrop" style="display: none;">
+    <div class="modal-box" style="max-width: 560px;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">✏️ Edit Tugas</h3>
+            <button onclick="closeEditAssignmentModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        <div class="card-body" style="padding: 1.5rem;">
+            <form id="form-edit-assignment" method="POST" class="classwork-form">
+                @csrf
+                @method('PUT')
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Judul Tugas <span style="color: red;">*</span></label>
+                    <input type="text" name="title" id="edit-assignment-title" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Instruksi Tugas <span style="color: red;">*</span></label>
+                    <textarea name="instruction" id="edit-assignment-instruction" rows="4" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"></textarea>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Batas Pengumpulan (Deadline) <span style="color: red;">*</span></label>
+                    <input type="datetime-local" name="deadline" id="edit-assignment-deadline" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeEditAssignmentModal()">Batal</button>
+                    <button type="submit" class="btn">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -1895,6 +1985,34 @@
 
     // 3. Classwork Modal & Form toggling
     function openAddClassworkModal() {
+        // Reset type selector ke default (materi)
+        var typeSelect = document.getElementById('classwork-type');
+        if (typeSelect) typeSelect.value = 'materi';
+        // Initialize form fields visibility
+        toggleFormFields('materi');
+
+        // Reset OBE selects ke state awal
+        var obeAssign = document.getElementById('assignment-obe-select');
+        if (obeAssign) {
+            obeAssign.innerHTML = '<option value="">-- Pilih Sesi terlebih dahulu --</option>';
+            _refreshSelectpicker(obeAssign);
+        }
+        var obeQuiz = document.getElementById('quiz-obe-select');
+        if (obeQuiz) {
+            obeQuiz.innerHTML = '<option value="">-- Pilih Sesi terlebih dahulu --</option>';
+            _refreshSelectpicker(obeQuiz);
+        }
+        // Reset session selects
+        var sessAssign = document.getElementById('assignment-session-select');
+        if (sessAssign) {
+            sessAssign.value = '';
+            _refreshSelectpicker(sessAssign);
+        }
+        var sessQuiz = document.getElementById('quiz-session-select');
+        if (sessQuiz) {
+            sessQuiz.value = '';
+            _refreshSelectpicker(sessQuiz);
+        }
         document.getElementById('modal-classwork').style.display = 'flex';
     }
     
@@ -1911,12 +2029,123 @@
             document.getElementById('form-materi').style.display = 'block';
         } else if (type === 'assignment') {
             document.getElementById('form-assignment').style.display = 'block';
+            // Re-trigger OBE dropdown if session is already selected
+            const sessionSel = document.getElementById('assignment-session-select');
+            if (sessionSel && sessionSel.value) onAssignmentSessionChange(sessionSel.value);
         } else if (type === 'forum') {
             document.getElementById('form-forum').style.display = 'block';
         } else if (type === 'quiz') {
             document.getElementById('form-quiz').style.display = 'block';
+            // Re-trigger OBE dropdown if session is already selected
+            const sessionSel = document.getElementById('quiz-session-select');
+            if (sessionSel && sessionSel.value) onQuizSessionChange(sessionSel.value);
         }
     }
+
+    // ─── Helper: refresh selectpicker jika ada, untuk sync UI dengan native select ───
+    function _refreshSelectpicker(selectEl) {
+        if (window.jQuery && typeof jQuery.fn.selectpicker === 'function') {
+            try { $(selectEl).selectpicker('refresh'); } catch(e) {}
+        }
+    }
+
+    // ─── Session-based OBE filtering for Assignment form ─────────────────────────
+    function onAssignmentSessionChange(sessionNumber) {
+        const obeSelect = document.getElementById('assignment-obe-select');
+        if (!obeSelect) return;
+
+        if (!sessionNumber) {
+            obeSelect.innerHTML = '<option value="">-- Pilih Sesi terlebih dahulu --</option>';
+            _refreshSelectpicker(obeSelect);
+            return;
+        }
+
+        const data = window._rpsSessionAssessments || {};
+        const key = String(sessionNumber);
+        const sessionData = data[key];
+
+        // Reset dengan opsi "tidak terhubung RPS"
+        obeSelect.innerHTML = '<option value="">-- Tidak terhubung RPS (Bebas) --</option>';
+
+        if (sessionData && sessionData.assessments && sessionData.assessments.length > 0) {
+            sessionData.assessments.forEach(function(assessment) {
+                const opt = document.createElement('option');
+                opt.value = assessment.id;
+                opt.textContent = assessment.label;
+                opt.dataset.instruction = assessment.instruction || '';
+                opt.dataset.assessmentType = assessment.assessment_type || '';
+                obeSelect.appendChild(opt);
+            });
+        }
+
+        // Refresh selectpicker jika masih aktif (fallback safety)
+        _refreshSelectpicker(obeSelect);
+    }
+
+    function onQuizSessionChange(sessionNumber) {
+        const obeSelect = document.getElementById('quiz-obe-select');
+        if (!obeSelect) return;
+
+        if (!sessionNumber) {
+            obeSelect.innerHTML = '<option value="">-- Pilih Sesi terlebih dahulu --</option>';
+            _refreshSelectpicker(obeSelect);
+            return;
+        }
+
+        const data = window._rpsSessionAssessments || {};
+        const key = String(sessionNumber);
+        const sessionData = data[key];
+
+        // Reset
+        obeSelect.innerHTML = '<option value="">-- Tidak terhubung RPS (Bebas) --</option>';
+
+        if (sessionData && sessionData.assessments && sessionData.assessments.length > 0) {
+            sessionData.assessments.forEach(function(assessment) {
+                const opt = document.createElement('option');
+                opt.value = assessment.id;
+                opt.textContent = assessment.label;
+                opt.dataset.instruction = assessment.instruction || '';
+                opt.dataset.assessmentType = assessment.assessment_type || '';
+                obeSelect.appendChild(opt);
+            });
+        }
+
+        // Refresh selectpicker jika masih aktif (fallback safety)
+        _refreshSelectpicker(obeSelect);
+    }
+
+    function onAssessmentChange(assessmentId) {
+        if (!assessmentId) return;
+        const obeSelect = document.getElementById('assignment-obe-select');
+        const instrField = document.getElementById('assignment-instruction-input');
+        if (!obeSelect || !instrField) return;
+
+        const selectedOpt = obeSelect.querySelector('option[value="' + assessmentId + '"]');
+        if (selectedOpt && selectedOpt.dataset.instruction && instrField.value.trim() === '') {
+            // Auto-fill instruction only if blank
+            instrField.value = selectedOpt.dataset.instruction;
+        }
+    }
+
+    // ─── Edit Assignment Modal ────────────────────────────────────────────────────
+    function openEditAssignmentModal(assignmentId, title, instruction, deadline) {
+        const baseUrl = '{{ route("classes.update_assignment", [$class, "__ID__"]) }}';
+        const url = baseUrl.replace('__ID__', assignmentId);
+
+        const form = document.getElementById('form-edit-assignment');
+        form.action = url;
+
+        document.getElementById('edit-assignment-title').value = title;
+        document.getElementById('edit-assignment-instruction').value = instruction;
+        document.getElementById('edit-assignment-deadline').value = deadline;
+
+        document.getElementById('modal-edit-assignment').style.display = 'flex';
+    }
+
+    function closeEditAssignmentModal() {
+        document.getElementById('modal-edit-assignment').style.display = 'none';
+    }
+
 
     // 4. Live search: Mahasiswa
     function filterStudentOptions() {
@@ -2015,7 +2244,7 @@
     }
 
     // 6. Click-outside to close redesigned modals
-    ['modal-add', 'modal-add-dosen', 'modal-add-baak', 'modal-edit-material'].forEach(id => {
+    ['modal-add', 'modal-add-dosen', 'modal-add-baak', 'modal-edit-material', 'modal-edit-assignment'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('click', function(e) {
