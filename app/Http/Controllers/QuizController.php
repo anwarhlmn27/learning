@@ -168,12 +168,17 @@ class QuizController extends Controller
                 );
             }
 
-            $attempt->update([
+            $updateData = [
                 'is_submitted' => true,
-                'submitted_at' => $now,
-                'duration_in_seconds' => $durationInSeconds,
-                'score' => $hasEssay ? null : $totalScore // Jika ada essay, nilai total menunggu dosen
-            ]);
+                'score'        => $hasEssay ? null : $totalScore,
+            ];
+            if (\Illuminate\Support\Facades\Schema::hasColumn('student_quiz_attempts', 'submitted_at')) {
+                $updateData['submitted_at'] = $now;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('student_quiz_attempts', 'duration_in_seconds')) {
+                $updateData['duration_in_seconds'] = $durationInSeconds;
+            }
+            $attempt->update($updateData);
 
             // Jika tidak ada essay, bisa langsung update OBE/Grade
             if (!$hasEssay && $quiz->rps_assessment_id) {

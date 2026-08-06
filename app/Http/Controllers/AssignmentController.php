@@ -127,17 +127,25 @@ class AssignmentController extends Controller
         $now = now();
         $isLate = $now->gt($assignment->deadline);
 
+        $submissionData = [
+            'text_answer' => $request->text_answer,
+            'status'      => $isLate ? 'Late' : 'Submitted',
+        ];
+
+        if ($filePath) {
+            $submissionData['file_path'] = $filePath;
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('assignment_submissions', 'submitted_at')) {
+            $submissionData['submitted_at'] = $now;
+        }
+
         AssignmentSubmission::updateOrCreate(
             [
                 'assignment_id' => $assignment->id,
-                'student_id' => $user->student->id,
+                'student_id'    => $user->student->id,
             ],
-            [
-                'text_answer' => $request->text_answer,
-                'file_path' => $filePath,
-                'status' => $isLate ? 'Late' : 'Submitted',
-                'submitted_at' => $now,
-            ]
+            $submissionData
         );
 
         return back()->with('success', 'Tugas berhasil dikumpulkan.');
