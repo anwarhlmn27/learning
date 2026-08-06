@@ -1243,21 +1243,36 @@ class ClassRoomController extends Controller
         }
 
         $request->validate([
-            'title'       => 'required|string|max:255',
-            'instruction' => 'required|string',
-            'deadline'    => 'required|date',
+            'session_number'    => 'required|integer|min:1|max:14',
+            'title'             => 'required|string|max:255',
+            'instruction'       => 'required|string',
+            'deadline'          => 'required|date',
+            'rps_assessment_id' => 'required|exists:rps_assessments,id',
+        ], [
+            'rps_assessment_id.required' => 'Penilaian OBE (RPS) wajib dipilih agar CLO dapat terlacak.',
+            'rps_assessment_id.exists'   => 'Penilaian OBE yang dipilih tidak valid.',
         ]);
+
+        // Resolve the ClassSession for the chosen session number
+        $classSession = ClassSession::where('class_room_id', $class->id)
+            ->whereHas('rpsSession', fn ($q) => $q->where('session_number', $request->session_number))
+            ->first();
 
         $assignment->update([
-            'title'       => $request->title,
-            'instruction' => $request->instruction,
-            'deadline'    => $request->deadline,
+            'class_session_id'  => $classSession?->id,
+            'title'             => $request->title,
+            'instruction'       => $request->instruction,
+            'deadline'          => $request->deadline,
+            'rps_assessment_id' => $request->rps_assessment_id,
         ]);
 
-        // Keep ClassTopic title in sync
+        // Keep ClassTopic title and session_number in sync
         \App\Models\ClassTopic::where('content_id', $assignment->id)
             ->where('type', 'assignment')
-            ->update(['title' => $request->title]);
+            ->update([
+                'session_number' => $request->session_number,
+                'title'          => $request->title,
+            ]);
 
         return back()->with('success', 'Tugas berhasil diperbarui.');
     }

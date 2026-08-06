@@ -646,7 +646,7 @@
 
             // Auto Logout after 10 minutes of inactivity
             let idleTimer;
-            const idleLimit = 10 * 60 * 1000;
+            const idleLimit = 60 * 60 * 1000;
             function resetIdleTimer() {
                 clearTimeout(idleTimer);
                 idleTimer = setTimeout(logoutUser, idleLimit);

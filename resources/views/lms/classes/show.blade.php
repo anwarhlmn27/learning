@@ -430,6 +430,8 @@
                                                     data-title="{{ $topic->assignment->title }}"
                                                     data-instruction="{{ $topic->assignment->instruction }}"
                                                     data-deadline="{{ \Carbon\Carbon::parse($topic->assignment->deadline)->format('Y-m-d\TH:i') }}"
+                                                    data-session="{{ $topic->session_number }}"
+                                                    data-obe-id="{{ $topic->assignment->rps_assessment_id }}"
                                                     onclick="openEditAssignmentModal(this)">✏️</button>
                                             @elseif($topic->type == 'forum' && $topic->forum)
                                                 <button type="button" style="background: none; border: none; padding: 0; color: var(--primary); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;" title="Edit Forum Diskusi" 
@@ -487,6 +489,8 @@
                                                     data-title="{{ $topic->assignment->title }}"
                                                     data-instruction="{{ $topic->assignment->instruction }}"
                                                     data-deadline="{{ \Carbon\Carbon::parse($topic->assignment->deadline)->format('Y-m-d\TH:i') }}"
+                                                    data-session="{{ $topic->session_number }}"
+                                                    data-obe-id="{{ $topic->assignment->rps_assessment_id }}"
                                                     onclick="openEditAssignmentModal(this)"
                                                     title="Edit Tugas"
                                                     style="background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.3); color: #4f46e5; border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;">
@@ -1660,7 +1664,7 @@
     // innerHTML via JS tidak tercermin di UI-nya. Solusi: destroy selectpicker
     // pada elemen OBE agar tetap jadi native select yang bisa dikontrol JS.
     document.addEventListener('DOMContentLoaded', function() {
-        var obeIds = ['assignment-obe-select', 'quiz-obe-select'];
+        var obeIds = ['assignment-obe-select', 'quiz-obe-select', 'edit-assignment-obe-select'];
         obeIds.forEach(function(id) {
             var el = document.getElementById(id);
             if (!el) return;
@@ -1920,9 +1924,9 @@
     </div>
 </div>
 
-<!-- Modal Edit Assignment (Deadline, Judul, Instruksi) -->
+<!-- Modal Edit Assignment (Sesi, Judul, Instruksi, Deadline, OBE) -->
 <div id="modal-edit-assignment" class="modal-backdrop" style="display: none;">
-    <div class="modal-box" style="max-width: 560px;">
+    <div class="modal-box" style="max-width: 600px;">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
             <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">✏️ Edit Tugas</h3>
             <button onclick="closeEditAssignmentModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
@@ -1932,10 +1936,22 @@
                 @csrf
                 @method('PUT')
 
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Judul Tugas <span style="color: red;">*</span></label>
-                    <input type="text" name="title" id="edit-assignment-title" required
-                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Sesi (1-14) <span style="color: red;">*</span></label>
+                        <select name="session_number" id="edit-assignment-session-select" required
+                            onchange="onEditAssignmentSessionChange(this.value)"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                            @for($s = 1; $s <= 14; $s++)
+                                <option value="{{ $s }}">Sesi {{ $s }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Judul Tugas <span style="color: red;">*</span></label>
+                        <input type="text" name="title" id="edit-assignment-title" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                    </div>
                 </div>
 
                 <div style="margin-bottom: 1rem;">
@@ -1944,10 +1960,24 @@
                         style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"></textarea>
                 </div>
 
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Batas Pengumpulan (Deadline) <span style="color: red;">*</span></label>
-                    <input type="datetime-local" name="deadline" id="edit-assignment-deadline" required
-                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Batas Pengumpulan (Deadline) <span style="color: red;">*</span></label>
+                        <input type="datetime-local" name="deadline" id="edit-assignment-deadline" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">
+                            Penilaian OBE (RPS) <span style="color: red;">*</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;"> — wajib</span>
+                        </label>
+                        <select name="rps_assessment_id" id="edit-assignment-obe-select"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"
+                            required>
+                            <option value="">-- Pilih Sesi terlebih dahulu --</option>
+                        </select>
+                        <p style="margin: 0.35rem 0 0; font-size: 0.75rem; color: #dc2626; display: none;" id="edit-obe-required-hint">⚠️ Pilih Sesi dulu agar daftar penilaian OBE muncul.</p>
+                    </div>
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
@@ -2206,19 +2236,75 @@
         }
     }
 
+    // ─── Session-based OBE filtering for Edit Assignment form ────────────────────
+    function onEditAssignmentSessionChange(sessionNumber, selectedObeId) {
+        const obeSelect = document.getElementById('edit-assignment-obe-select');
+        const obeHint = document.getElementById('edit-obe-required-hint');
+        if (!obeSelect) return;
+
+        if (!sessionNumber) {
+            obeSelect.innerHTML = '<option value="">-- Pilih Sesi terlebih dahulu --</option>';
+            if (obeHint) obeHint.style.display = 'block';
+            _refreshSelectpicker(obeSelect);
+            return;
+        }
+
+        const data = window._rpsSessionAssessments || {};
+        const key = String(sessionNumber);
+        const sessionData = data[key];
+
+        if (!sessionData || !sessionData.assessments || sessionData.assessments.length === 0) {
+            obeSelect.innerHTML = '<option value="">-- Tidak ada penilaian OBE di sesi ini --</option>';
+            if (obeHint) {
+                obeHint.textContent = '⚠️ Sesi ' + sessionNumber + ' belum memiliki rencana penilaian di RPS. Hubungi Kaprodi.';
+                obeHint.style.display = 'block';
+            }
+            _refreshSelectpicker(obeSelect);
+            return;
+        }
+
+        if (obeHint) obeHint.style.display = 'none';
+
+        obeSelect.innerHTML = '<option value="">-- Pilih Penilaian OBE --</option>';
+
+        sessionData.assessments.forEach(function(assessment) {
+            const opt = document.createElement('option');
+            opt.value = assessment.id;
+            opt.textContent = assessment.label;
+            opt.dataset.instruction = assessment.instruction || '';
+            opt.dataset.assessmentType = assessment.assessment_type || '';
+            if (selectedObeId && String(assessment.id) === String(selectedObeId)) {
+                opt.selected = true;
+            }
+            obeSelect.appendChild(opt);
+        });
+
+        if (selectedObeId) {
+            obeSelect.value = selectedObeId;
+        } else if (sessionData.assessments.length === 1) {
+            obeSelect.value = sessionData.assessments[0].id;
+        }
+
+        _refreshSelectpicker(obeSelect);
+    }
+
     // ─── Edit Assignment Modal ────────────────────────────────────────────────────
     function openEditAssignmentModal(button) {
-        let assignmentId, title, instruction, deadline;
+        let assignmentId, title, instruction, deadline, sessionNum, obeId;
         if (typeof button === 'object' && button !== null && button.getAttribute) {
             assignmentId = button.getAttribute('data-id');
             title = button.getAttribute('data-title') || '';
             instruction = button.getAttribute('data-instruction') || '';
             deadline = button.getAttribute('data-deadline') || '';
+            sessionNum = button.getAttribute('data-session') || '';
+            obeId = button.getAttribute('data-obe-id') || '';
         } else {
             assignmentId = arguments[0];
             title = arguments[1] || '';
             instruction = arguments[2] || '';
             deadline = arguments[3] || '';
+            sessionNum = arguments[4] || '';
+            obeId = arguments[5] || '';
         }
 
         const url = "{{ url('/classes/' . $class->id . '/assignment') }}/" + assignmentId;
@@ -2228,10 +2314,18 @@
         const titleEl = document.getElementById('edit-assignment-title');
         const instructionEl = document.getElementById('edit-assignment-instruction');
         const deadlineEl = document.getElementById('edit-assignment-deadline');
+        const sessionEl = document.getElementById('edit-assignment-session-select');
 
         if (titleEl) titleEl.value = title;
         if (instructionEl) instructionEl.value = instruction;
         if (deadlineEl) deadlineEl.value = deadline;
+
+        if (sessionEl && sessionNum) {
+            sessionEl.value = sessionNum;
+            _refreshSelectpicker(sessionEl);
+        }
+
+        onEditAssignmentSessionChange(sessionNum, obeId);
 
         const modal = document.getElementById('modal-edit-assignment');
         if (modal) modal.style.display = 'flex';
