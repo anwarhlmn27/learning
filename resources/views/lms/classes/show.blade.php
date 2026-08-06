@@ -385,17 +385,16 @@
                             {{ $number }}
                         </span>
                         Sesi {{ $number }} : 
-                        @if($sessionData['topics']->count() > 0)
+                        @php
+                            $rpsSessionInfo = isset($rpsSessionsWithAssessments) ? $rpsSessionsWithAssessments->firstWhere('session_number', $number) : null;
+                            $sessionTitle = $rpsSessionInfo['topic_name'] ?? null;
+                        @endphp
+                        @if($sessionTitle)
+                            <span style="font-weight: 500; font-size: 1rem; color: var(--text-primary);">{{ $sessionTitle }}</span>
+                        @elseif($sessionData['topics']->count() > 0)
                             <span style="font-weight: 500; font-size: 1rem; color: var(--text-primary);">{{ $sessionData['topics']->first()->title }}</span>
                         @else
-                            @php
-                                $fallbackTopic = isset($rpsSessionsWithAssessments) ? $rpsSessionsWithAssessments->where('session_number', $number)->first() : null;
-                            @endphp
-                            @if($fallbackTopic)
-                                <span style="font-weight: 500; font-size: 1rem; color: var(--text-primary);">{{ $fallbackTopic['topic_name'] }}</span>
-                            @else
-                                <span style="font-weight: 400; font-size: 1rem; color: var(--text-muted); font-style: italic;">Topik Belum Diisi</span>
-                            @endif
+                            <span style="font-weight: 400; font-size: 1rem; color: var(--text-muted); font-style: italic;">Topik Belum Diisi</span>
                         @endif
                     </span>
                     <span id="icon-session-{{ $number }}" style="font-size: 1.25rem; color: var(--text-muted); transition: var(--transition);">▼</span>
@@ -425,6 +424,19 @@
                                                     data-paths="{{ json_encode($topic->material->file_paths) }}"
                                                     data-links="{{ json_encode($topic->material->link_urls) }}"
                                                     onclick="openEditMaterialModal(this)">✏️</button>
+                                            @elseif($topic->type == 'assignment' && $topic->assignment)
+                                                <button type="button" style="background: none; border: none; padding: 0; color: var(--primary); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;" title="Edit Tugas" 
+                                                    data-id="{{ $topic->assignment->id }}"
+                                                    data-title="{{ $topic->assignment->title }}"
+                                                    data-instruction="{{ $topic->assignment->instruction }}"
+                                                    data-deadline="{{ \Carbon\Carbon::parse($topic->assignment->deadline)->format('Y-m-d\TH:i') }}"
+                                                    onclick="openEditAssignmentModal(this)">✏️</button>
+                                            @elseif($topic->type == 'forum' && $topic->forum)
+                                                <button type="button" style="background: none; border: none; padding: 0; color: var(--primary); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;" title="Edit Forum Diskusi" 
+                                                    data-id="{{ $topic->forum->id }}"
+                                                    data-title="{{ $topic->forum->title }}"
+                                                    data-desc="{{ $topic->forum->context ?? $topic->forum->description }}"
+                                                    onclick="openEditForumModal(this)">✏️</button>
                                             @endif
                                             <form action="{{ route('classes.destroy_topic', [$class, $topic]) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Yakin ingin menghapus aktivitas ini?">
                                                 @csrf
@@ -471,7 +483,11 @@
                                             </span>
                                             @if(!Auth::user()->hasRole('mahasiswa'))
                                                 <button type="button"
-                                                    onclick="openEditAssignmentModal('{{ $topic->assignment->id }}', '{{ addslashes($topic->assignment->title) }}', '{{ addslashes($topic->assignment->instruction) }}', '{{ \Carbon\Carbon::parse($topic->assignment->deadline)->format('Y-m-d\TH:i') }}')"
+                                                    data-id="{{ $topic->assignment->id }}"
+                                                    data-title="{{ $topic->assignment->title }}"
+                                                    data-instruction="{{ $topic->assignment->instruction }}"
+                                                    data-deadline="{{ \Carbon\Carbon::parse($topic->assignment->deadline)->format('Y-m-d\TH:i') }}"
+                                                    onclick="openEditAssignmentModal(this)"
                                                     title="Edit Tugas"
                                                     style="background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.3); color: #4f46e5; border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;">
                                                     ✏️ Edit
@@ -500,9 +516,20 @@
                                         @endif
                                     </div>
                                 @elseif($topic->type == 'forum' && $topic->forum)
-                                    <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-muted);">{{ $topic->forum->description }}</p>
-                                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; margin-top: 0.5rem;">
+                                    <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-muted);">{{ $topic->forum->context ?? $topic->forum->description }}</p>
+                                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
                                         <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">💬 Ruang Diskusi Kelas Aktif</span>
+                                        @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+                                            <button type="button"
+                                                data-id="{{ $topic->forum->id }}"
+                                                data-title="{{ $topic->forum->title }}"
+                                                data-desc="{{ $topic->forum->context ?? $topic->forum->description }}"
+                                                onclick="openEditForumModal(this)"
+                                                title="Edit Forum"
+                                                style="background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.3); color: #4f46e5; border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;">
+                                                ✏️ Edit
+                                            </button>
+                                        @endif
                                     </div>
                                 @elseif($topic->type == 'quiz' && $topic->quiz)
                                     <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-muted);">{{ $topic->quiz->description }}</p>
@@ -1932,6 +1959,39 @@
     </div>
 </div>
 
+<!-- Modal Edit Forum -->
+<div id="modal-edit-forum" class="modal-backdrop" style="display: none;">
+    <div class="modal-box" style="max-width: 560px;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700;">💬 Edit Forum Diskusi</h3>
+            <button onclick="closeEditForumModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        <div class="card-body" style="padding: 1.5rem;">
+            <form id="form-edit-forum" method="POST" class="classwork-form">
+                @csrf
+                @method('PUT')
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Judul Forum <span style="color: red;">*</span></label>
+                    <input type="text" name="title" id="edit-forum-title" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Topik Bahasan Forum</label>
+                    <textarea name="description" id="edit-forum-desc" rows="4"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeEditForumModal()">Batal</button>
+                    <button type="submit" class="btn">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -2147,22 +2207,64 @@
     }
 
     // ─── Edit Assignment Modal ────────────────────────────────────────────────────
-    function openEditAssignmentModal(assignmentId, title, instruction, deadline) {
-        const baseUrl = '{{ route("classes.update_assignment", [$class, "__ID__"]) }}';
-        const url = baseUrl.replace('__ID__', assignmentId);
+    function openEditAssignmentModal(button) {
+        let assignmentId, title, instruction, deadline;
+        if (typeof button === 'object' && button !== null && button.getAttribute) {
+            assignmentId = button.getAttribute('data-id');
+            title = button.getAttribute('data-title') || '';
+            instruction = button.getAttribute('data-instruction') || '';
+            deadline = button.getAttribute('data-deadline') || '';
+        } else {
+            assignmentId = arguments[0];
+            title = arguments[1] || '';
+            instruction = arguments[2] || '';
+            deadline = arguments[3] || '';
+        }
 
+        const url = "{{ url('/classes/' . $class->id . '/assignment') }}/" + assignmentId;
         const form = document.getElementById('form-edit-assignment');
-        form.action = url;
+        if (form) form.action = url;
 
-        document.getElementById('edit-assignment-title').value = title;
-        document.getElementById('edit-assignment-instruction').value = instruction;
-        document.getElementById('edit-assignment-deadline').value = deadline;
+        const titleEl = document.getElementById('edit-assignment-title');
+        const instructionEl = document.getElementById('edit-assignment-instruction');
+        const deadlineEl = document.getElementById('edit-assignment-deadline');
 
-        document.getElementById('modal-edit-assignment').style.display = 'flex';
+        if (titleEl) titleEl.value = title;
+        if (instructionEl) instructionEl.value = instruction;
+        if (deadlineEl) deadlineEl.value = deadline;
+
+        const modal = document.getElementById('modal-edit-assignment');
+        if (modal) modal.style.display = 'flex';
     }
 
     function closeEditAssignmentModal() {
-        document.getElementById('modal-edit-assignment').style.display = 'none';
+        const modal = document.getElementById('modal-edit-assignment');
+        if (modal) modal.style.display = 'none';
+    }
+
+    // ─── Edit Forum Modal ─────────────────────────────────────────────────────────
+    function openEditForumModal(button) {
+        const forumId = button.getAttribute('data-id');
+        const title = button.getAttribute('data-title') || '';
+        const desc = button.getAttribute('data-desc') || '';
+
+        const url = "{{ url('/classes/' . $class->id . '/forum') }}/" + forumId;
+        const form = document.getElementById('form-edit-forum');
+        if (form) form.action = url;
+
+        const titleEl = document.getElementById('edit-forum-title');
+        const descEl = document.getElementById('edit-forum-desc');
+
+        if (titleEl) titleEl.value = title;
+        if (descEl) descEl.value = desc;
+
+        const modal = document.getElementById('modal-edit-forum');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closeEditForumModal() {
+        const modal = document.getElementById('modal-edit-forum');
+        if (modal) modal.style.display = 'none';
     }
 
 
@@ -2263,7 +2365,7 @@
     }
 
     // 6. Click-outside to close redesigned modals
-    ['modal-add', 'modal-add-dosen', 'modal-add-baak', 'modal-edit-material', 'modal-edit-assignment'].forEach(id => {
+    ['modal-add', 'modal-add-dosen', 'modal-add-baak', 'modal-edit-material', 'modal-edit-assignment', 'modal-edit-forum'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('click', function(e) {

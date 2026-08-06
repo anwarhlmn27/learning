@@ -174,6 +174,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/classes/{class}/assignment', [\App\Http\Controllers\ClassRoomController::class, 'storeAssignment'])->name('classes.store_assignment');
     Route::put('/classes/{class}/assignment/{assignment}', [\App\Http\Controllers\ClassRoomController::class, 'updateAssignment'])->name('classes.update_assignment');
     Route::post('/classes/{class}/forum', [\App\Http\Controllers\ClassRoomController::class, 'storeForum'])->name('classes.store_forum');
+    Route::put('/classes/{class}/forum/{forum}', [\App\Http\Controllers\ClassRoomController::class, 'updateForum'])->name('classes.update_forum');
     Route::post('/classes/{class}/quiz', [\App\Http\Controllers\ClassRoomController::class, 'storeQuiz'])->name('classes.store_quiz');
     Route::delete('/classes/{class}/topics/{topic}', [\App\Http\Controllers\ClassRoomController::class, 'destroyTopic'])->name('classes.destroy_topic');
     Route::get('/classes/{class}/quiz/{quiz}', [\App\Http\Controllers\QuizController::class, 'take'])->name('classes.take_quiz');

@@ -1286,6 +1286,31 @@ class ClassRoomController extends Controller
         return back()->with('success', 'Forum diskusi berhasil ditambahkan pada Sesi ' . $request->session_number);
     }
 
+    public function updateForum(Request $request, ClassRoom $class, \App\Models\Forum $forum)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole(['admin', 'kaprodi', 'dosen', 'rektor', 'dekan'])) {
+            return back()->with('error', 'Akses ditolak.');
+        }
+
+        $request->validate([
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $forum->update([
+            'title'   => $request->title,
+            'context' => $request->description,
+        ]);
+
+        // Keep ClassTopic title in sync
+        \App\Models\ClassTopic::where('content_id', $forum->id)
+            ->where('type', 'forum')
+            ->update(['title' => $request->title]);
+
+        return back()->with('success', 'Forum diskusi berhasil diperbarui.');
+    }
+
     public function storeQuiz(Request $request, ClassRoom $class)
     {
         $request->validate([
