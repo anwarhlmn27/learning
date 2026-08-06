@@ -171,23 +171,28 @@ class AssignmentController extends Controller
                                               ->first();
             
             if ($submission) {
-                $submission->update([
+                $submissionData = [
                     'status' => 'Graded',
-                    'score' => $request->score,
                     'feedback' => $request->feedback,
-                ]);
+                ];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('assignment_submissions', 'score')) {
+                    $submissionData['score'] = $request->score;
+                }
+                $submission->update($submissionData);
             }
 
-            // Save to StudentGrade table for OBE Analytics
-            StudentGrade::updateOrCreate(
-                [
-                    'enrollment_id' => $enrollment->id,
-                    'rps_assessment_id' => $assignment->rps_assessment_id,
-                ],
-                [
-                    'score' => $request->score,
-                ]
-            );
+            // Save to StudentGrade table for OBE Analytics (only if rps_assessment_id exists)
+            if ($assignment->rps_assessment_id) {
+                StudentGrade::updateOrCreate(
+                    [
+                        'enrollment_id' => $enrollment->id,
+                        'rps_assessment_id' => $assignment->rps_assessment_id,
+                    ],
+                    [
+                        'score' => $request->score,
+                    ]
+                );
+            }
 
             DB::commit();
             return back()->with('success', 'Nilai berhasil disimpan.');
@@ -224,23 +229,28 @@ class AssignmentController extends Controller
                                                   ->first();
                 
                 if ($submission) {
-                    $submission->update([
+                    $submissionData = [
                         'status' => 'Graded',
-                        'score' => $data['score'],
-                        'feedback' => $data['feedback'],
-                    ]);
+                        'feedback' => $data['feedback'] ?? null,
+                    ];
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('assignment_submissions', 'score')) {
+                        $submissionData['score'] = $data['score'];
+                    }
+                    $submission->update($submissionData);
                 }
 
-                // Save to StudentGrade table for OBE Analytics
-                StudentGrade::updateOrCreate(
-                    [
-                        'enrollment_id' => $enrollment->id,
-                        'rps_assessment_id' => $assignment->rps_assessment_id,
-                    ],
-                    [
-                        'score' => $data['score'],
-                    ]
-                );
+                // Save to StudentGrade table for OBE Analytics (only if rps_assessment_id exists)
+                if ($assignment->rps_assessment_id) {
+                    StudentGrade::updateOrCreate(
+                        [
+                            'enrollment_id' => $enrollment->id,
+                            'rps_assessment_id' => $assignment->rps_assessment_id,
+                        ],
+                        [
+                            'score' => $data['score'],
+                        ]
+                    );
+                }
             }
 
             DB::commit();

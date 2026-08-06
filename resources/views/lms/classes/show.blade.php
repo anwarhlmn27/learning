@@ -521,19 +521,29 @@
                                     </div>
                                 @elseif($topic->type == 'forum' && $topic->forum)
                                     <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-muted);">{{ $topic->forum->context ?? $topic->forum->description }}</p>
-                                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">💬 Ruang Diskusi Kelas Aktif</span>
-                                        @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
-                                            <button type="button"
-                                                data-id="{{ $topic->forum->id }}"
-                                                data-title="{{ $topic->forum->title }}"
-                                                data-desc="{{ $topic->forum->context ?? $topic->forum->description }}"
-                                                onclick="openEditForumModal(this)"
-                                                title="Edit Forum"
-                                                style="background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.3); color: #4f46e5; border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;">
-                                                ✏️ Edit
-                                            </button>
-                                        @endif
+                                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <span style="font-size: 0.85rem; color: var(--text-primary); font-weight: 600;">💬 Ruang Diskusi Kelas</span>
+                                            <span style="background: #e0e7ff; color: #4f46e5; font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 12px;">
+                                                {{ $topic->forum->posts->count() }} Diskusi
+                                            </span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <a href="{{ route('classes.forums.show', [$class, $topic->forum]) }}" class="btn" style="padding: 0.35rem 0.85rem; font-size: 0.8rem; background: var(--primary); color: white; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem;">
+                                                💬 Masuk / Tulis Diskusi
+                                            </a>
+                                            @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+                                                <button type="button"
+                                                    data-id="{{ $topic->forum->id }}"
+                                                    data-title="{{ $topic->forum->title }}"
+                                                    data-desc="{{ $topic->forum->context ?? $topic->forum->description }}"
+                                                    onclick="openEditForumModal(this)"
+                                                    title="Edit Forum"
+                                                    style="background: rgba(79,70,229,0.1); border: 1px solid rgba(79,70,229,0.3); color: #4f46e5; border-radius: 6px; padding: 0.35rem 0.65rem; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;">
+                                                    ✏️ Edit
+                                                </button>
+                                            @endif
+                                        </div>
                                     </div>
                                 @elseif($topic->type == 'quiz' && $topic->quiz)
                                     <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--text-muted);">{{ $topic->quiz->description }}</p>

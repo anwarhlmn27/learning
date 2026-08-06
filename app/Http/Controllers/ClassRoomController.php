@@ -318,7 +318,7 @@ class ClassRoomController extends Controller
 
         // 2. Classwork / Sesi Tab data (timeline of 14 sessions)
         // Reload topics SETELAH auto-sync agar modul RPS langsung tampil
-        $topics = $class->topics()->with(['material', 'assignment', 'forum', 'quiz'])->get();
+        $topics = $class->topics()->with(['material', 'assignment', 'forum.posts', 'quiz'])->get();
         
         $sessions = [];
         for ($i = 1; $i <= 14; $i++) {

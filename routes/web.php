@@ -175,6 +175,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/classes/{class}/assignment/{assignment}', [\App\Http\Controllers\ClassRoomController::class, 'updateAssignment'])->name('classes.update_assignment');
     Route::post('/classes/{class}/forum', [\App\Http\Controllers\ClassRoomController::class, 'storeForum'])->name('classes.store_forum');
     Route::put('/classes/{class}/forum/{forum}', [\App\Http\Controllers\ClassRoomController::class, 'updateForum'])->name('classes.update_forum');
+    Route::get('/classes/{class}/forums/{forum}', [\App\Http\Controllers\ForumController::class, 'show'])->name('classes.forums.show');
+    Route::post('/classes/{class}/forums/{forum}/posts', [\App\Http\Controllers\ForumController::class, 'storePost'])->name('classes.forums.store_post');
+    Route::delete('/classes/{class}/forums/{forum}/posts/{post}', [\App\Http\Controllers\ForumController::class, 'destroyPost'])->name('classes.forums.destroy_post');
     Route::post('/classes/{class}/quiz', [\App\Http\Controllers\ClassRoomController::class, 'storeQuiz'])->name('classes.store_quiz');
     Route::delete('/classes/{class}/topics/{topic}', [\App\Http\Controllers\ClassRoomController::class, 'destroyTopic'])->name('classes.destroy_topic');
     Route::get('/classes/{class}/quiz/{quiz}', [\App\Http\Controllers\QuizController::class, 'take'])->name('classes.take_quiz');
