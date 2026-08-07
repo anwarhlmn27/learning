@@ -488,6 +488,7 @@ class ClassRoomController extends Controller
 
         return view('lms.classes.show', compact(
             'class', 
+            'topics',
             'enrollments', 
             'availableStudents', 
             'lecturers', 
