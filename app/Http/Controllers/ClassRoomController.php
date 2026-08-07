@@ -178,7 +178,7 @@ class ClassRoomController extends Controller
             }
         });
 
-        return redirect()->route('classes.index')->with('success', 'Data Kelas berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Data Kelas berhasil diperbarui.');
     }
 
     /**

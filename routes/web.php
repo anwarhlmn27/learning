@@ -162,6 +162,7 @@ Route::middleware('auth')->group(function () {
 
     // Class Enrollment & Management
     Route::resource('/classes', \App\Http\Controllers\ClassRoomController::class)->names('classes');
+    Route::post('/classes/{class}', [\App\Http\Controllers\ClassRoomController::class, 'update']);
     Route::get('/classes/{class}/export-grades', [\App\Http\Controllers\ClassRoomController::class, 'exportGrades'])->name('classes.export_grades');
     Route::post('/classes/{class}/generate-lms', [\App\Http\Controllers\ClassRoomController::class, 'generateLmsFromRps'])->name('classes.generate_lms');
     Route::post('/classes/{class}/enroll', [\App\Http\Controllers\ClassRoomController::class, 'enroll'])->name('classes.enroll');
@@ -169,12 +170,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/classes-template', [\App\Http\Controllers\ClassRoomController::class, 'downloadTemplate'])->name('classes.template');
     Route::delete('/classes/{class}/unenroll/{enrollment}', [\App\Http\Controllers\ClassRoomController::class, 'unenroll'])->name('classes.unenroll');
     Route::post('/classes/{class}/material', [\App\Http\Controllers\ClassRoomController::class, 'storeMaterial'])->name('classes.store_material');
-    Route::put('/classes/{class}/material/{material}', [\App\Http\Controllers\ClassRoomController::class, 'updateMaterial'])->name('classes.update_material');
+    Route::match(['put', 'post'], '/classes/{class}/material/{material}', [\App\Http\Controllers\ClassRoomController::class, 'updateMaterial'])->name('classes.update_material');
     Route::get('/classes/{class}/material/{material}/download', [\App\Http\Controllers\ClassRoomController::class, 'downloadMaterial'])->name('classes.download_material');
     Route::post('/classes/{class}/assignment', [\App\Http\Controllers\ClassRoomController::class, 'storeAssignment'])->name('classes.store_assignment');
-    Route::put('/classes/{class}/assignment/{assignment}', [\App\Http\Controllers\ClassRoomController::class, 'updateAssignment'])->name('classes.update_assignment');
+    Route::match(['put', 'post'], '/classes/{class}/assignment/{assignment}', [\App\Http\Controllers\ClassRoomController::class, 'updateAssignment'])->name('classes.update_assignment');
     Route::post('/classes/{class}/forum', [\App\Http\Controllers\ClassRoomController::class, 'storeForum'])->name('classes.store_forum');
-    Route::put('/classes/{class}/forum/{forum}', [\App\Http\Controllers\ClassRoomController::class, 'updateForum'])->name('classes.update_forum');
+    Route::match(['put', 'post'], '/classes/{class}/forum/{forum}', [\App\Http\Controllers\ClassRoomController::class, 'updateForum'])->name('classes.update_forum');
     Route::get('/classes/{class}/forums/{forum}', [\App\Http\Controllers\ForumController::class, 'show'])->name('classes.forums.show');
     Route::post('/classes/{class}/forums/{forum}/posts', [\App\Http\Controllers\ForumController::class, 'storePost'])->name('classes.forums.store_post');
     Route::delete('/classes/{class}/forums/{forum}/posts/{post}', [\App\Http\Controllers\ForumController::class, 'destroyPost'])->name('classes.forums.destroy_post');
