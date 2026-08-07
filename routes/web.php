@@ -191,6 +191,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/archived-classes', [\App\Http\Controllers\ClassRoomController::class, 'archivedIndex'])->name('classes.archived');
     Route::post('/classes/{class}/sessions/{session_number}/rate', [\App\Http\Controllers\SessionRatingController::class, 'store'])->name('classes.rate_session');
     Route::get('/classes/{class}/available-students', [\App\Http\Controllers\ClassRoomController::class, 'getAvailableStudents'])->name('classes.available_students');
+
+    // Assignments & Grading
+    Route::get('/assignments', [\App\Http\Controllers\AssignmentController::class, 'index'])->name('assignments.index');
+    Route::get('/assignments/{assignment}', [\App\Http\Controllers\AssignmentController::class, 'show'])->name('assignments.show');
+    Route::post('/assignments/{assignment}/publish', [\App\Http\Controllers\AssignmentController::class, 'publish'])->name('assignments.publish');
+    Route::post('/assignments/{assignment}/submit', [\App\Http\Controllers\AssignmentController::class, 'submit'])->name('assignments.submit');
+    Route::post('/assignments/{assignment}/grade/{enrollment}', [\App\Http\Controllers\AssignmentController::class, 'grade'])->name('assignments.grade');
+    Route::post('/assignments/{assignment}/bulk-grade', [\App\Http\Controllers\AssignmentController::class, 'bulkGrade'])->name('assignments.bulk_grade');
+
+    // Quizzes Management (Teacher)
+    Route::get('/quizzes/{quiz}', [\App\Http\Controllers\QuizController::class, 'show'])->name('quizzes.show');
+    Route::post('/quizzes/{quiz}/questions', [\App\Http\Controllers\QuizController::class, 'storeQuestion'])->name('quizzes.store_question');
+    Route::delete('/questions/{question}', [\App\Http\Controllers\QuizController::class, 'destroyQuestion'])->name('quizzes.destroy_question');
+    Route::get('/quizzes/{quiz}/grade/{attempt}', [\App\Http\Controllers\QuizController::class, 'gradeForm'])->name('quizzes.grade_form');
+    Route::post('/quizzes/{quiz}/grade/{attempt}', [\App\Http\Controllers\QuizController::class, 'saveGrade'])->name('quizzes.save_grade');
 });
 
 
