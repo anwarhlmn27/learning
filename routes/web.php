@@ -161,67 +161,36 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa-template', [\App\Http\Controllers\StudentController::class, 'downloadTemplate'])->name('mahasiswa.template');
 
     // Class Enrollment & Management
-    // Class Enrollment & Management (Main LMS Routes with /lms prefix)
-    Route::prefix('lms')->group(function() {
-        Route::resource('classes', \App\Http\Controllers\ClassRoomController::class)->names('classes');
-        Route::get('/classes/{class}/edit', [\App\Http\Controllers\ClassRoomController::class, 'edit'])->name('lms.classes.edit');
-        Route::match(['put', 'post'], '/classes/{class}', [\App\Http\Controllers\ClassRoomController::class, 'update'])->name('lms.classes.update');
-        Route::get('/classes/{class}/export-grades', [\App\Http\Controllers\ClassRoomController::class, 'exportGrades'])->name('classes.export_grades');
-        Route::post('/classes/{class}/generate-lms', [\App\Http\Controllers\ClassRoomController::class, 'generateLmsFromRps'])->name('classes.generate_lms');
-        Route::post('/classes/{class}/enroll', [\App\Http\Controllers\ClassRoomController::class, 'enroll'])->name('classes.enroll');
-        Route::post('/classes/{class}/import-students', [\App\Http\Controllers\ClassRoomController::class, 'importStudents'])->name('classes.import_students');
-        Route::get('/classes-template', [\App\Http\Controllers\ClassRoomController::class, 'downloadTemplate'])->name('classes.template');
-        Route::delete('/classes/{class}/unenroll/{enrollment}', [\App\Http\Controllers\ClassRoomController::class, 'unenroll'])->name('classes.unenroll');
-        Route::post('/classes/{class}/material', [\App\Http\Controllers\ClassRoomController::class, 'storeMaterial'])->name('classes.store_material');
-        Route::match(['put', 'post'], '/classes/{class}/material/{material}', [\App\Http\Controllers\ClassRoomController::class, 'updateMaterial'])->name('classes.update_material');
-        Route::get('/classes/{class}/material/{material}/download', [\App\Http\Controllers\ClassRoomController::class, 'downloadMaterial'])->name('classes.download_material');
-        Route::post('/classes/{class}/assignment', [\App\Http\Controllers\ClassRoomController::class, 'storeAssignment'])->name('classes.store_assignment');
-        Route::match(['put', 'post'], '/classes/{class}/assignment/{assignment}', [\App\Http\Controllers\ClassRoomController::class, 'updateAssignment'])->name('classes.update_assignment');
-        Route::post('/classes/{class}/forum', [\App\Http\Controllers\ClassRoomController::class, 'storeForum'])->name('classes.store_forum');
-        Route::match(['put', 'post'], '/classes/{class}/forum/{forum}', [\App\Http\Controllers\ClassRoomController::class, 'updateForum'])->name('classes.update_forum');
-        Route::get('/classes/{class}/forums/{forum}', [\App\Http\Controllers\ForumController::class, 'show'])->name('classes.forums.show');
-        Route::post('/classes/{class}/forums/{forum}/posts', [\App\Http\Controllers\ForumController::class, 'storePost'])->name('classes.forums.store_post');
-        Route::delete('/classes/{class}/forums/{forum}/posts/{post}', [\App\Http\Controllers\ForumController::class, 'destroyPost'])->name('classes.forums.destroy_post');
-        Route::post('/classes/{class}/quiz', [\App\Http\Controllers\ClassRoomController::class, 'storeQuiz'])->name('classes.store_quiz');
-        Route::delete('/classes/{class}/topics/{topic}', [\App\Http\Controllers\ClassRoomController::class, 'destroyTopic'])->name('classes.destroy_topic');
-        Route::get('/classes/{class}/quiz/{quiz}', [\App\Http\Controllers\QuizController::class, 'take'])->name('classes.take_quiz');
-        Route::post('/classes/{class}/quiz/{quiz}/submit', [\App\Http\Controllers\QuizController::class, 'submit'])->name('classes.submit_quiz');
-        Route::post('/classes/{class}/add-staff', [\App\Http\Controllers\ClassRoomController::class, 'addStaff'])->name('classes.add_staff');
-        Route::delete('/classes/{class}/remove-staff/{user}', [\App\Http\Controllers\ClassRoomController::class, 'removeStaff'])->name('classes.remove_staff');
-        Route::post('/classes/{class}/archive', [\App\Http\Controllers\ClassRoomController::class, 'archive'])->name('classes.archive');
-        Route::get('/archived-classes', [\App\Http\Controllers\ClassRoomController::class, 'archivedIndex'])->name('classes.archived');
-        Route::post('/classes/{class}/sessions/{session_number}/rate', [\App\Http\Controllers\SessionRatingController::class, 'store'])->name('classes.rate_session');
-        Route::get('/classes/{class}/available-students', [\App\Http\Controllers\ClassRoomController::class, 'getAvailableStudents'])->name('classes.available_students');
-    });
-
-    // Fallback routes for direct /classes access without /lms prefix
-    Route::resource('/classes', \App\Http\Controllers\ClassRoomController::class)->names('fallback_classes');
-    Route::match(['put', 'post'], '/classes/{class}', [\App\Http\Controllers\ClassRoomController::class, 'update']);
-    Route::get('/classes/{class}/export-grades', [\App\Http\Controllers\ClassRoomController::class, 'exportGrades']);
-    Route::post('/classes/{class}/generate-lms', [\App\Http\Controllers\ClassRoomController::class, 'generateLmsFromRps']);
-    Route::post('/classes/{class}/enroll', [\App\Http\Controllers\ClassRoomController::class, 'enroll']);
-    Route::post('/classes/{class}/import-students', [\App\Http\Controllers\ClassRoomController::class, 'importStudents']);
-    Route::delete('/classes/{class}/unenroll/{enrollment}', [\App\Http\Controllers\ClassRoomController::class, 'unenroll']);
-    Route::post('/classes/{class}/material', [\App\Http\Controllers\ClassRoomController::class, 'storeMaterial']);
-    Route::match(['put', 'post'], '/classes/{class}/material/{material}', [\App\Http\Controllers\ClassRoomController::class, 'updateMaterial']);
-    Route::get('/classes/{class}/material/{material}/download', [\App\Http\Controllers\ClassRoomController::class, 'downloadMaterial']);
-    Route::post('/classes/{class}/assignment', [\App\Http\Controllers\ClassRoomController::class, 'storeAssignment']);
-    Route::match(['put', 'post'], '/classes/{class}/assignment/{assignment}', [\App\Http\Controllers\ClassRoomController::class, 'updateAssignment']);
-    Route::post('/classes/{class}/forum', [\App\Http\Controllers\ClassRoomController::class, 'storeForum']);
-    Route::match(['put', 'post'], '/classes/{class}/forum/{forum}', [\App\Http\Controllers\ClassRoomController::class, 'updateForum']);
-    Route::get('/classes/{class}/forums/{forum}', [\App\Http\Controllers\ForumController::class, 'show']);
-    Route::post('/classes/{class}/forums/{forum}/posts', [\App\Http\Controllers\ForumController::class, 'storePost']);
-    Route::delete('/classes/{class}/forums/{forum}/posts/{post}', [\App\Http\Controllers\ForumController::class, 'destroyPost']);
-    Route::post('/classes/{class}/quiz', [\App\Http\Controllers\ClassRoomController::class, 'storeQuiz']);
-    Route::delete('/classes/{class}/topics/{topic}', [\App\Http\Controllers\ClassRoomController::class, 'destroyTopic']);
-    Route::get('/classes/{class}/quiz/{quiz}', [\App\Http\Controllers\QuizController::class, 'take']);
-    Route::post('/classes/{class}/quiz/{quiz}/submit', [\App\Http\Controllers\QuizController::class, 'submit']);
-    Route::post('/classes/{class}/add-staff', [\App\Http\Controllers\ClassRoomController::class, 'addStaff']);
-    Route::delete('/classes/{class}/remove-staff/{user}', [\App\Http\Controllers\ClassRoomController::class, 'removeStaff']);
-    Route::post('/classes/{class}/archive', [\App\Http\Controllers\ClassRoomController::class, 'archive']);
-    Route::get('/archived-classes', [\App\Http\Controllers\ClassRoomController::class, 'archivedIndex']);
-    Route::post('/classes/{class}/sessions/{session_number}/rate', [\App\Http\Controllers\SessionRatingController::class, 'store']);
-    Route::get('/classes/{class}/available-students', [\App\Http\Controllers\ClassRoomController::class, 'getAvailableStudents']);
+    // Class Enrollment & Management
+    Route::resource('/classes', \App\Http\Controllers\ClassRoomController::class)->names('classes');
+    Route::get('/classes/{class}/edit', [\App\Http\Controllers\ClassRoomController::class, 'edit'])->name('classes.edit');
+    Route::match(['put', 'post'], '/classes/{class}', [\App\Http\Controllers\ClassRoomController::class, 'update'])->name('classes.update');
+    Route::get('/classes/{class}/export-grades', [\App\Http\Controllers\ClassRoomController::class, 'exportGrades'])->name('classes.export_grades');
+    Route::post('/classes/{class}/generate-lms', [\App\Http\Controllers\ClassRoomController::class, 'generateLmsFromRps'])->name('classes.generate_lms');
+    Route::post('/classes/{class}/enroll', [\App\Http\Controllers\ClassRoomController::class, 'enroll'])->name('classes.enroll');
+    Route::post('/classes/{class}/import-students', [\App\Http\Controllers\ClassRoomController::class, 'importStudents'])->name('classes.import_students');
+    Route::get('/classes-template', [\App\Http\Controllers\ClassRoomController::class, 'downloadTemplate'])->name('classes.template');
+    Route::delete('/classes/{class}/unenroll/{enrollment}', [\App\Http\Controllers\ClassRoomController::class, 'unenroll'])->name('classes.unenroll');
+    Route::post('/classes/{class}/material', [\App\Http\Controllers\ClassRoomController::class, 'storeMaterial'])->name('classes.store_material');
+    Route::match(['put', 'post'], '/classes/{class}/material/{material}', [\App\Http\Controllers\ClassRoomController::class, 'updateMaterial'])->name('classes.update_material');
+    Route::get('/classes/{class}/material/{material}/download', [\App\Http\Controllers\ClassRoomController::class, 'downloadMaterial'])->name('classes.download_material');
+    Route::post('/classes/{class}/assignment', [\App\Http\Controllers\ClassRoomController::class, 'storeAssignment'])->name('classes.store_assignment');
+    Route::match(['put', 'post'], '/classes/{class}/assignment/{assignment}', [\App\Http\Controllers\ClassRoomController::class, 'updateAssignment'])->name('classes.update_assignment');
+    Route::post('/classes/{class}/forum', [\App\Http\Controllers\ClassRoomController::class, 'storeForum'])->name('classes.store_forum');
+    Route::match(['put', 'post'], '/classes/{class}/forum/{forum}', [\App\Http\Controllers\ClassRoomController::class, 'updateForum'])->name('classes.update_forum');
+    Route::get('/classes/{class}/forums/{forum}', [\App\Http\Controllers\ForumController::class, 'show'])->name('classes.forums.show');
+    Route::post('/classes/{class}/forums/{forum}/posts', [\App\Http\Controllers\ForumController::class, 'storePost'])->name('classes.forums.store_post');
+    Route::delete('/classes/{class}/forums/{forum}/posts/{post}', [\App\Http\Controllers\ForumController::class, 'destroyPost'])->name('classes.forums.destroy_post');
+    Route::post('/classes/{class}/quiz', [\App\Http\Controllers\ClassRoomController::class, 'storeQuiz'])->name('classes.store_quiz');
+    Route::delete('/classes/{class}/topics/{topic}', [\App\Http\Controllers\ClassRoomController::class, 'destroyTopic'])->name('classes.destroy_topic');
+    Route::get('/classes/{class}/quiz/{quiz}', [\App\Http\Controllers\QuizController::class, 'take'])->name('classes.take_quiz');
+    Route::post('/classes/{class}/quiz/{quiz}/submit', [\App\Http\Controllers\QuizController::class, 'submit'])->name('classes.submit_quiz');
+    Route::post('/classes/{class}/add-staff', [\App\Http\Controllers\ClassRoomController::class, 'addStaff'])->name('classes.add_staff');
+    Route::delete('/classes/{class}/remove-staff/{user}', [\App\Http\Controllers\ClassRoomController::class, 'removeStaff'])->name('classes.remove_staff');
+    Route::post('/classes/{class}/archive', [\App\Http\Controllers\ClassRoomController::class, 'archive'])->name('classes.archive');
+    Route::get('/archived-classes', [\App\Http\Controllers\ClassRoomController::class, 'archivedIndex'])->name('classes.archived');
+    Route::post('/classes/{class}/sessions/{session_number}/rate', [\App\Http\Controllers\SessionRatingController::class, 'store'])->name('classes.rate_session');
+    Route::get('/classes/{class}/available-students', [\App\Http\Controllers\ClassRoomController::class, 'getAvailableStudents'])->name('classes.available_students');
 });
 
 

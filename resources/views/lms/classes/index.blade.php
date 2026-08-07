@@ -360,7 +360,7 @@
     });
 
     function openEditModal(id, subject_id, dosen_id, nama_kelas, tahun_akademik, semester, status) {
-        document.getElementById('edit-form').action = '/lms/classes/' + id;
+        document.getElementById('edit-form').action = "{{ route('classes.update', ':id') }}".replace(':id', id);
         $('#edit-subject').val(subject_id).trigger('change');
 
         // Populate Faculty and Prodi filters dynamically for the chosen lecturer
