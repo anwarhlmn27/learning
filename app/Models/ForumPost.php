@@ -20,4 +20,14 @@ class ForumPost extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function parent()
+    {
+        return $this->belongsTo(ForumPost::class, 'parent_id');
+    }
+
+    public function replies()
+    {
+        return $this->hasMany(ForumPost::class, 'parent_id')->orderBy('created_at', 'asc');
+    }
 }

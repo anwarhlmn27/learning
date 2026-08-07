@@ -26,8 +26,14 @@ class ForumController extends Controller
 
         $class->load(['subject', 'dosens']);
         $forum->load(['posts' => function ($q) {
-            $q->orderBy('created_at', 'asc')->with('user');
+            $q->whereNull('parent_id')
+              ->orderBy('created_at', 'asc')
+              ->with(['user', 'replies' => function ($rq) {
+                  $rq->orderBy('created_at', 'asc')->with('user');
+              }]);
         }]);
+
+        $totalPostsCount = ForumPost::where('forum_id', $forum->id)->count();
 
         // Find associated session number if exists
         $topic = \App\Models\ClassTopic::where('class_room_id', $class->id)
@@ -35,7 +41,7 @@ class ForumController extends Controller
             ->where('content_id', $forum->id)
             ->first();
 
-        return view('lms.forums.show', compact('class', 'forum', 'topic'));
+        return view('lms.forums.show', compact('class', 'forum', 'topic', 'totalPostsCount'));
     }
 
     public function storePost(Request $request, ClassRoom $class, Forum $forum)
@@ -54,18 +60,28 @@ class ForumController extends Controller
 
         $request->validate([
             'content' => 'required|string|min:2',
+            'parent_id' => 'nullable|exists:forum_posts,id',
         ], [
-            'content.required' => 'Tuliskan tanggapan atau pertanyaan Anda terlebih dahulu.',
+            'content.required' => 'Tuliskan tanggapan atau balasan Anda terlebih dahulu.',
             'content.min' => 'Diskusi terlalu singkat, minimal 2 karakter.',
+            'parent_id.exists' => 'Postingan yang dibalas tidak ditemukan.',
         ]);
+
+        if ($request->filled('parent_id')) {
+            $parentPost = ForumPost::find($request->parent_id);
+            if (!$parentPost || $parentPost->forum_id !== $forum->id) {
+                return back()->with('error', 'Postingan yang dibalas tidak valid.');
+            }
+        }
 
         ForumPost::create([
-            'forum_id' => $forum->id,
-            'user_id'  => $user->id,
-            'content'  => $request->content,
+            'forum_id'  => $forum->id,
+            'user_id'   => $user->id,
+            'parent_id' => $request->parent_id ?? null,
+            'content'   => $request->content,
         ]);
 
-        return back()->with('success', 'Diskusi berhasil dikirim.');
+        return back()->with('success', $request->filled('parent_id') ? 'Balasan berhasil dikirim.' : 'Diskusi berhasil dikirim.');
     }
 
     public function destroyPost(ClassRoom $class, Forum $forum, ForumPost $post)
