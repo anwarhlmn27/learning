@@ -163,7 +163,7 @@ Route::middleware('auth')->group(function () {
     // Class Enrollment & Management
     // Class Enrollment & Management (Main LMS Routes with /lms prefix)
     Route::prefix('lms')->group(function() {
-        Route::resource('/classes', \App\Http\Controllers\ClassRoomController::class)->names('classes');
+        Route::resource('classes', \App\Http\Controllers\ClassRoomController::class)->names('classes');
         Route::get('/classes/{class}/edit', [\App\Http\Controllers\ClassRoomController::class, 'edit'])->name('lms.classes.edit');
         Route::match(['put', 'post'], '/classes/{class}', [\App\Http\Controllers\ClassRoomController::class, 'update'])->name('lms.classes.update');
         Route::get('/classes/{class}/export-grades', [\App\Http\Controllers\ClassRoomController::class, 'exportGrades'])->name('classes.export_grades');

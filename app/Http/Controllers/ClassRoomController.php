@@ -184,6 +184,8 @@ class ClassRoomController extends Controller
         });
 
         return redirect()->back()->with('success', 'Data Kelas berhasil diperbarui.');
+        // return redirect()->route('classes.index', ['prodi_id' => $request->id_prodi])
+        //          ->with('success', 'Data Kelas berhasil diperbarui.');
     }
 
     /**
