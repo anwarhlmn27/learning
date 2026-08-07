@@ -124,6 +124,11 @@ class ClassRoomController extends Controller
         return redirect()->route('classes.index')->with('success', 'Kelas berhasil dibuat.');
     }
 
+    public function edit(ClassRoom $class)
+    {
+        return redirect()->route('classes.show', $class);
+    }
+
     public function update(Request $request, ClassRoom $class)
     {
         $user = Auth::user();
