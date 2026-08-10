@@ -172,11 +172,12 @@
                     $sidebarProdiId = request()->prodi_id ?? session('selected_prodi_id');
                     $sidebarProdi   = null;
 
-                    if ($sidebarUser->hasRole('kaprodi')) {
-                        $sidebarProdi   = \App\Models\Prodi::where('kaprodi_id', $sidebarUser->id)->first();
+                    if ($sidebarProdiId) {
+                        $sidebarProdi = \App\Models\Prodi::withoutGlobalScopes()->find($sidebarProdiId);
+                    }
+                    if (!$sidebarProdi && $sidebarUser->hasRole('kaprodi')) {
+                        $sidebarProdi   = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $sidebarUser->id)->first();
                         $sidebarProdiId = $sidebarProdi?->id;
-                    } elseif ($sidebarProdiId) {
-                        $sidebarProdi = \App\Models\Prodi::find($sidebarProdiId);
                     }
 
                     $prodiParam = $sidebarProdiId ? ['prodi_id' => $sidebarProdiId] : [];
@@ -187,9 +188,7 @@
                         <li class="nav-label first" style="padding-top: 10px;">
                             <div class="text-primary font-w600" style="font-size: 11px;">PRODI AKTIF</div>
                             <div class="font-w700 text-black">{{ $sidebarProdi->nama_prodi }}</div>
-                            @if(!$sidebarUser->hasRole('kaprodi'))
                             <a href="{{ route('dashboard') }}" onclick="sessionStorage.setItem('clear_prodi','1')" style="font-size:11px; padding: 0; display: inline; text-decoration: underline;">← Ganti Prodi</a>
-                            @endif
                         </li>
                     @else
                         <li class="nav-label first">Main Menu</li>

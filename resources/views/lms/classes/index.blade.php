@@ -7,13 +7,11 @@
 @if(isset($selectedProdi) && $selectedProdi)
 <div style="background:#eff6ff; border-left:4px solid #3b82f6; border-radius:6px; padding:0.6rem 1rem; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; font-size:0.85rem;">
     <span>📚 <strong>{{ $selectedProdi->nama_prodi }}</strong> — {{ __('Kelas Aktif') }}</span>
-    @if(Auth::user()->hasRole(['admin','rektor','dekan','baak','finance','kemahasiswaan']) || Auth::user()->can('view-institusi'))
-    <a href="{{ route('dashboard') }}" style="color:#3b82f6; font-weight:600; text-decoration:none;">← {{ __('Ganti Prodi') }}</a>
-    @endif
+    <a href="{{ route('dashboard') }}" style="color:#3b82f6; font-weight:600; text-decoration:none;">← {{ __('Ganti Program Studi') }}</a>
 </div>
 @endif
 
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
     <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">{{ __('Kelas Aktif') }}</h2>
     @if(Auth::user()->can('create-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddClass">
@@ -22,19 +20,59 @@
     @endif
 </div>
 
+{{-- Navigation Tabs: Kelas yang Saya Ampu vs Kelas Program Studi --}}
+<div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.75rem; flex-wrap: wrap; align-items: center;">
+    @if($myClassesCount > 0 || Auth::user()->hasRole('dosen') || Auth::user()->dosen)
+    <a href="{{ route('classes.index', array_merge(request()->except(['page', 'tab']), ['tab' => 'my_classes', 'prodi_id' => request('prodi_id') ?? ($selectedProdi->id ?? null)])) }}" 
+       class="btn {{ ($activeTab ?? '') === 'my_classes' ? 'btn-primary' : 'btn-outline-primary' }} btn-sm" 
+       style="border-radius: 9999px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 1rem;">
+        <span>👨‍🏫 {{ __('Kelas yang Saya Ampu') }}</span>
+        <span class="badge {{ ($activeTab ?? '') === 'my_classes' ? 'bg-white text-primary' : 'bg-primary text-white' }}" style="border-radius: 9999px; font-size: 0.75rem;">{{ $myClassesCount }}</span>
+    </a>
+    @endif
 
+    @if(isset($selectedProdi) && $selectedProdi)
+    <a href="{{ route('classes.index', array_merge(request()->except(['page', 'tab']), ['tab' => 'prodi_classes', 'prodi_id' => $selectedProdi->id])) }}" 
+       class="btn {{ ($activeTab ?? '') === 'prodi_classes' ? 'btn-primary' : 'btn-outline-primary' }} btn-sm" 
+       style="border-radius: 9999px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 1rem;">
+        <span>📚 {{ __('Kelas Prodi') }} ({{ $selectedProdi->nama_prodi }})</span>
+        <span class="badge {{ ($activeTab ?? '') === 'prodi_classes' ? 'bg-white text-primary' : 'bg-primary text-white' }}" style="border-radius: 9999px; font-size: 0.75rem;">{{ $prodiClassesCount }}</span>
+    </a>
+    @endif
+</div>
+
+{{-- Helpful banner if current prodi tab is empty but user has teaching classes in another prodi --}}
+@if(($activeTab ?? '') === 'prodi_classes' && $prodiClassesCount == 0 && $myClassesCount > 0)
+<div class="alert alert-info d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2" style="border-left: 4px solid #3b82f6; background: #eff6ff; border-radius: 8px; padding: 1rem 1.25rem;">
+    <div>
+        <strong style="color: #1e40af; font-size: 0.95rem;">📌 {{ __('Informasi Dosen Pengampu') }}</strong>
+        <p class="mb-0 text-muted" style="font-size: 0.875rem;">
+            {{ __('Belum ada kelas di prodi ini, namun Anda terdaftar sebagai dosen pengampu di') }} <strong>{{ $myClassesCount }} {{ __('kelas aktif') }}</strong> ({{ __('misalnya di prodi lain seperti TI') }}).
+        </p>
+    </div>
+    <a href="{{ route('classes.index', array_merge(request()->except(['page']), ['tab' => 'my_classes', 'prodi_id' => request('prodi_id')])) }}" class="btn btn-primary btn-sm text-nowrap" style="border-radius: 6px; font-weight: 600;">
+        👨‍🏫 {{ __('Buka Kelas yang Saya Ampu') }} ({{ $myClassesCount }})
+    </a>
+</div>
+@endif
 
 <!-- Filter Form -->
 <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-body">
         <form action="{{ route('classes.index') }}" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+            @if(request('tab'))
+                <input type="hidden" name="tab" value="{{ request('tab') }}">
+            @endif
+            @if(request('prodi_id'))
+                <input type="hidden" name="prodi_id" value="{{ request('prodi_id') }}">
+            @endif
             <div style="flex: 1; min-width: 250px;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">{{ __('Search') }}</label>
                 <input type="text" name="search" placeholder="{{ __('Search by class name, subject, dosen...') }}" value="{{ request('search') }}" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px;">
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
                 <button type="submit" class="btn btn-outline-primary btn-sm">{{ __('Filter') }}</button>
-                <a href="{{ route('classes.index') }}" class="btn btn-outline-secondary btn-sm">{{ __('Reset') }}</a>
+                <a href="{{ route('classes.index', array_filter(['tab' => request('tab'), 'prodi_id' => request('prodi_id')])) }}" class="btn btn-outline-secondary btn-sm">{{ __('Reset') }}</a>
             </div>
         </form>
     </div>
@@ -43,7 +81,7 @@
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
     @forelse($classRooms as $class)
     <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; height: 100%;">
-        <div class="card-header" style="background-color: #f8fafc; display: flex; justify-content: space-between;">
+        <div class="card-header" style="background-color: #f8fafc; display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: 700; color: var(--primary);">{{ $class->nama_kelas }}</span>
             @php
                 $statusColors = [
@@ -53,9 +91,16 @@
                 ];
                 $sc = $statusColors[$class->status] ?? $statusColors['active'];
             @endphp
-            <span style="font-size: 0.75rem; background: {{ $sc['bg'] }}; color: {{ $sc['color'] }}; padding: 0.25rem 0.5rem; border-radius: 9999px; font-weight: 600;">
-                {{ $sc['label'] }}
-            </span>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                @if(optional(optional($class->subject)->prodi)->nama_prodi)
+                    <span style="font-size: 0.7rem; background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600;">
+                        {{ $class->subject->prodi->nama_prodi }}
+                    </span>
+                @endif
+                <span style="font-size: 0.75rem; background: {{ $sc['bg'] }}; color: {{ $sc['color'] }}; padding: 0.25rem 0.5rem; border-radius: 9999px; font-weight: 600;">
+                    {{ $sc['label'] }}
+                </span>
+            </div>
         </div>
         <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between; flex: 1; padding: 1.5rem 1.5rem 1.875rem 1.5rem;">
             <div>

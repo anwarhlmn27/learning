@@ -46,6 +46,9 @@ return new class extends Migration
             $table->uuid('quiz_id');
             $table->uuid('user_id'); // ID Mahasiswa
             $table->integer('score')->nullable(); // Nilai otomatis (0-100) setelah disubmit
+            $table->dateTime('started_at')->nullable();
+            $table->dateTime('submitted_at')->nullable();
+            $table->integer('duration_in_seconds')->nullable();
             $table->boolean('is_submitted')->default(false);
             $table->timestamps();
 

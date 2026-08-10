@@ -14,7 +14,9 @@ return new class extends Migration
             $table->uuid('student_id');
             $table->string('file_path')->nullable();
             $table->text('text_answer')->nullable();
+            $table->decimal('score', 5, 2)->nullable();
             $table->string('status')->default('Submitted'); // Submitted, Late, Graded
+            $table->dateTime('submitted_at')->nullable();
             $table->text('feedback')->nullable();
             $table->timestamps();
 

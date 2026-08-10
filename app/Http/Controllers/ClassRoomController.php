@@ -23,27 +23,67 @@ class ClassRoomController extends Controller
 {
     public function index(Request $request)
     {
-        $user  = Auth::user();
-        $query = ClassRoom::with(['subject'])->visible();
+        $user = Auth::user();
 
-        // Administrative staff & roles with view-classes permission see all active classes for the selected prodi
-        if (!$user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan', 'baak', 'finance', 'kemahasiswaan']) && !$user->can('view-classes')) {
+        // 1. User's own teaching classes / enrolled classes
+        $myClassesQuery = ClassRoom::with(['subject'])->visible()->active()->where(function($q) use ($user) {
+            $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
+            if ($user->student) {
+                $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
+            }
+        });
+        $myClassesCount = (clone $myClassesQuery)->count();
+
+        // 2. Filter by prodi
+        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+        $selectedProdi = null;
+        if ($prodiId) {
+            $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+        }
+        if (!$selectedProdi && $user->hasRole('kaprodi')) {
+            $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
+            if ($selectedProdi) {
+                $prodiId = $selectedProdi->id;
+                session(['selected_prodi_id' => $prodiId]);
+            }
+        }
+
+        // Determine active tab: 'my_classes' vs 'prodi_classes'
+        $activeTab = $request->get('tab');
+        if (!$activeTab) {
+            if ($request->filled('prodi_id')) {
+                $activeTab = 'prodi_classes';
+            } elseif ($selectedProdi && $myClassesCount == 0) {
+                $activeTab = 'prodi_classes';
+            } elseif ($myClassesCount > 0 && (!$selectedProdi || ClassRoom::visible()->active()->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id))->count() == 0)) {
+                // If selected prodi has 0 classes but user has teaching classes, default to showing teaching classes tab
+                $activeTab = 'my_classes';
+            } else {
+                $activeTab = $myClassesCount > 0 ? 'my_classes' : 'prodi_classes';
+            }
+        }
+
+        // Build query based on active tab
+        $query = ClassRoom::with(['subject'])->visible()->active();
+
+        if ($activeTab === 'my_classes') {
             $query->where(function($q) use ($user) {
                 $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
                 if ($user->student) {
                     $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
                 }
             });
-        }
-
-        $query->where('status', 'active');
-
-        // ── Filter by prodi (passed from dashboard picker or kaprodi auto-scope) ──
-        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
-        $selectedProdi = null;
-        if ($prodiId) {
-            $selectedProdi = \App\Models\Prodi::find($prodiId);
-            $query->whereHas('subject', fn($q) => $q->where('id_prodi', $prodiId));
+        } else {
+            if ($selectedProdi) {
+                $query->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id));
+            } elseif (!$user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan', 'baak', 'finance', 'kemahasiswaan']) && !$user->can('view-classes')) {
+                $query->where(function($q) use ($user) {
+                    $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
+                    if ($user->student) {
+                        $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
+                    }
+                });
+            }
         }
 
         if ($request->filled('search')) {
@@ -57,10 +97,16 @@ class ClassRoomController extends Controller
 
         $classRooms = $query->latest()->paginate(10)->withQueryString();
 
-        // Filter subjects/dosens by prodi if selected
+        // Calculate count for prodi classes
+        $prodiClassesCount = 0;
+        if ($selectedProdi) {
+            $prodiClassesCount = ClassRoom::visible()->active()->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id))->count();
+        }
+
+        // Subjects for modal creation
         $subjects = $selectedProdi
-            ? Subject::where('id_prodi', $prodiId)->orderBy('nama_subject')->get()
-            : Subject::orderBy('nama_subject')->get();
+            ? Subject::withoutGlobalScopes()->where('id_prodi', $selectedProdi->id)->orderBy('nama_subject')->get()
+            : Subject::withoutGlobalScopes()->orderBy('nama_subject')->get();
 
         $dosens = Dosen::with(['prodi.fakultas'])->orderBy('nama_dosen')->get();
 
@@ -75,9 +121,13 @@ class ClassRoomController extends Controller
         }
 
         $allFakultas = \App\Models\Fakultas::orderBy('nama_fakultas')->get();
-        $allProdis = \App\Models\Prodi::orderBy('nama_prodi')->get();
+        $allProdis = \App\Models\Prodi::withoutGlobalScopes()->orderBy('nama_prodi')->get();
 
-        return view('lms.classes.index', compact('classRooms', 'subjects', 'dosens', 'classPrimaryDosenMap', 'selectedProdi', 'allFakultas', 'allProdis'));
+        return view('lms.classes.index', compact(
+            'classRooms', 'subjects', 'dosens', 'classPrimaryDosenMap', 
+            'selectedProdi', 'allFakultas', 'allProdis', 
+            'activeTab', 'myClassesCount', 'prodiClassesCount'
+        ));
     }
 
     public function store(Request $request)
@@ -247,23 +297,54 @@ class ClassRoomController extends Controller
     public function archivedIndex(Request $request)
     {
         $user = Auth::user();
+
+        // 1. User's own archived classes
+        $myClassesQuery = ClassRoom::with(['subject'])->where('status', 'archived')->where(function($q) use ($user) {
+            $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
+            if ($user->student) {
+                $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
+            }
+        });
+        $myClassesCount = (clone $myClassesQuery)->count();
+
+        // 2. Filter by prodi
+        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+        $selectedProdi = null;
+        if ($prodiId) {
+            $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+        }
+        if (!$selectedProdi && $user->hasRole('kaprodi')) {
+            $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
+            if ($selectedProdi) {
+                $prodiId = $selectedProdi->id;
+            }
+        }
+
+        $activeTab = $request->get('tab');
+        if (!$activeTab) {
+            $activeTab = $request->filled('prodi_id') ? 'prodi_classes' : ($myClassesCount > 0 ? 'my_classes' : 'prodi_classes');
+        }
+
         $query = ClassRoom::with(['subject'])->where('status', 'archived');
 
-        if (!$user->hasRole(['admin', 'kaprodi'])) {
+        if ($activeTab === 'my_classes') {
             $query->where(function($q) use ($user) {
                 $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
                 if ($user->student) {
                     $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
                 }
             });
-        }
-
-        // ── Filter by prodi ──
-        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
-        $selectedProdi = null;
-        if ($prodiId) {
-            $selectedProdi = \App\Models\Prodi::find($prodiId);
-            $query->whereHas('subject', fn($q) => $q->where('id_prodi', $prodiId));
+        } else {
+            if ($selectedProdi) {
+                $query->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id));
+            } elseif (!$user->hasRole(['admin', 'kaprodi'])) {
+                $query->where(function($q) use ($user) {
+                    $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
+                    if ($user->student) {
+                        $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
+                    }
+                });
+            }
         }
 
         if ($request->filled('search')) {
@@ -275,7 +356,9 @@ class ClassRoomController extends Controller
         }
 
         $classRooms = $query->latest()->paginate(10)->withQueryString();
-        return view('lms.classes.archived', compact('classRooms', 'selectedProdi'));
+        $prodiClassesCount = $selectedProdi ? ClassRoom::where('status', 'archived')->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id))->count() : 0;
+
+        return view('lms.classes.archived', compact('classRooms', 'selectedProdi', 'activeTab', 'myClassesCount', 'prodiClassesCount'));
     }
 
     public function show(Request $request, ClassRoom $class)

@@ -37,11 +37,13 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('forum_id');
             $table->uuid('user_id');
+            $table->uuid('parent_id')->nullable();
             $table->text('content');
             $table->timestamps();
 
             $table->foreign('forum_id')->references('id')->on('forums')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('parent_id')->references('id')->on('forum_posts')->onDelete('cascade');
         });
     }
 
