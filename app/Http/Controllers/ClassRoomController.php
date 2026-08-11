@@ -1480,6 +1480,11 @@ class ClassRoomController extends Controller
             abort(404);
         }
 
+        // Prevent deletion if the topic is a material synced from RPS
+        if ($topic->type === 'materi' && $topic->content && !empty($topic->content->rps_resource_id)) {
+            return back()->with('error', 'Modul ini disinkronkan otomatis dari RPS dan tidak dapat dihapus dari kelas. Silahkan hapus modul dari Master RPS jika tidak diperlukan.');
+        }
+
         // Delete associated content
         $content = $topic->content;
         
