@@ -95,11 +95,17 @@ class ClassRoom extends Model
         return $this->hasMany(Assignment::class, 'class_room_id');
     }
 
+    public function ratings() {
+        return $this->hasMany(SessionRating::class, 'class_room_id');
+    }
+
     /**
-     * Check if classroom has any active content (topics / assignments)
+     * Check if classroom has any active content (topics / assignments / ratings)
      */
     public function hasActiveContent(): bool
     {
-        return $this->topics()->exists() || $this->assignments()->exists();
+        // Mengabaikan topik bertipe 'materi' (modul) karena tidak bisa dihapus sembarangan
+        $hasInteractiveTopics = $this->topics()->where('type', '!=', 'materi')->exists();
+        return $hasInteractiveTopics || $this->assignments()->exists() || $this->ratings()->exists();
     }
 }
