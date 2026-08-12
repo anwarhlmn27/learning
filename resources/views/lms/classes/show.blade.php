@@ -399,7 +399,7 @@
                     </span>
                     <span id="icon-session-{{ $number }}" style="font-size: 1.25rem; color: var(--text-muted); transition: var(--transition);">▼</span>
                 </button>
-                <div id="session-{{ $number }}" class="session-details {{ $loop->first ? 'open' : '' }}">
+                <div id="session-{{ $number }}" class="session-details">
                     @forelse($sessionData['topics'] as $topic)
                         <div class="activity-card">
                             <div class="activity-icon {{ $topic->type }}">
@@ -1758,7 +1758,10 @@
     // innerHTML via JS tidak tercermin di UI-nya. Solusi: destroy selectpicker
     // pada elemen OBE agar tetap jadi native select yang bisa dikontrol JS.
     document.addEventListener('DOMContentLoaded', function() {
-        var obeIds = ['assignment-obe-select', 'quiz-obe-select', 'edit-assignment-obe-select'];
+        var obeIds = [
+            'assignment-obe-select', 'quiz-obe-select', 'edit-assignment-obe-select',
+            'assignment-session-select', 'quiz-session-select', 'edit-assignment-session-select'
+        ];
         obeIds.forEach(function(id) {
             var el = document.getElementById(id);
             if (!el) return;
@@ -2192,12 +2195,10 @@
         var sessAssign = document.getElementById('assignment-session-select');
         if (sessAssign) {
             sessAssign.value = '';
-            _refreshSelectpicker(sessAssign);
         }
         var sessQuiz = document.getElementById('quiz-session-select');
         if (sessQuiz) {
             sessQuiz.value = '';
-            _refreshSelectpicker(sessQuiz);
         }
         document.getElementById('modal-classwork').style.display = 'flex';
     }
@@ -2245,6 +2246,7 @@
             obeSelect.innerHTML = '<option value="">-- Pilih Sesi terlebih dahulu --</option>';
             if (obeHint) obeHint.style.display = 'block';
             _refreshSelectpicker(obeSelect);
+            onAssessmentChange('');
             return;
         }
 
@@ -2257,6 +2259,7 @@
             obeSelect.innerHTML = '<option value="">-- Tidak ada penilaian OBE di sesi ini --</option>';
             if (obeHint) { obeHint.textContent = '⚠️ Sesi ' + sessionNumber + ' belum memiliki rencana penilaian di RPS. Hubungi Kaprodi.'; obeHint.style.display = 'block'; }
             _refreshSelectpicker(obeSelect);
+            onAssessmentChange('');
             return;
         }
 
@@ -2279,6 +2282,8 @@
         if (sessionData.assessments.length === 1) {
             obeSelect.value = sessionData.assessments[0].id;
             onAssessmentChange(sessionData.assessments[0].id);
+        } else {
+            onAssessmentChange('');
         }
 
         // Refresh selectpicker jika masih aktif (fallback safety)
@@ -2318,15 +2323,21 @@
     }
 
     function onAssessmentChange(assessmentId) {
-        if (!assessmentId) return;
         const obeSelect = document.getElementById('assignment-obe-select');
         const instrField = document.getElementById('assignment-instruction-input');
+        
         if (!obeSelect || !instrField) return;
 
+        if (!assessmentId) {
+            instrField.value = '';
+            return;
+        }
+
         const selectedOpt = obeSelect.querySelector('option[value="' + assessmentId + '"]');
-        if (selectedOpt && selectedOpt.dataset.instruction && instrField.value.trim() === '') {
-            // Auto-fill instruction only if blank
+        if (selectedOpt && selectedOpt.dataset.instruction) {
             instrField.value = selectedOpt.dataset.instruction;
+        } else {
+            instrField.value = '';
         }
     }
 
@@ -2416,7 +2427,6 @@
 
         if (sessionEl && sessionNum) {
             sessionEl.value = sessionNum;
-            _refreshSelectpicker(sessionEl);
         }
 
         onEditAssignmentSessionChange(sessionNum, obeId);
