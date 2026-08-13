@@ -24,9 +24,12 @@ class ClassRoomController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+        $isStaffOrAdmin = $user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan', 'baak', 'finance', 'kemahasiswaan']);
+        $isKaprodiOnly = $user->hasRole('kaprodi') && !$user->hasRole(['admin', 'rektor', 'dekan', 'baak']);
+        $kaprodiProdiIds = $isKaprodiOnly ? \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->pluck('id')->toArray() : [];
 
         // 1. User's own teaching classes / enrolled classes
-        $myClassesQuery = ClassRoom::with(['subject'])->visible()->active()->where(function($q) use ($user) {
+        $myClassesQuery = ClassRoom::with(['subject.prodi'])->visible()->active()->where(function($q) use ($user) {
             $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
             if ($user->student) {
                 $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
@@ -34,48 +37,52 @@ class ClassRoomController extends Controller
         });
         $myClassesCount = (clone $myClassesQuery)->count();
 
-        // 2. Filter by prodi
-        $isKaprodiOnly = $user->hasRole('kaprodi') && !$user->hasRole(['admin', 'rektor', 'dekan', 'baak']);
-        $kaprodiProdiIds = $isKaprodiOnly ? \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->pluck('id')->toArray() : [];
-
-        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+        // 2. Filter by prodi (Only for staff / kaprodi / admin)
         $selectedProdi = null;
+        $prodiId = null;
 
-        if ($isKaprodiOnly) {
-            if ($prodiId && in_array($prodiId, $kaprodiProdiIds)) {
-                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
-            } else {
-                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
-                $prodiId = $selectedProdi?->id;
-                if ($prodiId) {
-                    session(['selected_prodi_id' => $prodiId]);
+        if ($isStaffOrAdmin) {
+            $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+
+            if ($isKaprodiOnly) {
+                if ($prodiId && in_array($prodiId, $kaprodiProdiIds)) {
+                    $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+                } else {
+                    $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
+                    $prodiId = $selectedProdi?->id;
+                    if ($prodiId) {
+                        session(['selected_prodi_id' => $prodiId]);
+                    }
                 }
-            }
-        } else {
-            if ($prodiId) {
-                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+            } else {
+                if ($prodiId) {
+                    $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+                }
             }
         }
 
         // Determine active tab: 'my_classes' vs 'prodi_classes'
-        $activeTab = $request->get('tab');
-        if (!$activeTab) {
-            if ($request->filled('prodi_id')) {
-                $activeTab = 'prodi_classes';
-            } elseif ($selectedProdi && $myClassesCount == 0) {
-                $activeTab = 'prodi_classes';
-            } elseif ($myClassesCount > 0 && (!$selectedProdi || ClassRoom::visible()->active()->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id))->count() == 0)) {
-                // If selected prodi has 0 classes but user has teaching classes, default to showing teaching classes tab
-                $activeTab = 'my_classes';
-            } else {
-                $activeTab = $myClassesCount > 0 ? 'my_classes' : 'prodi_classes';
+        if (!$isStaffOrAdmin) {
+            $activeTab = 'my_classes';
+        } else {
+            $activeTab = $request->get('tab');
+            if (!$activeTab) {
+                if ($request->filled('prodi_id')) {
+                    $activeTab = 'prodi_classes';
+                } elseif ($selectedProdi && $myClassesCount == 0) {
+                    $activeTab = 'prodi_classes';
+                } elseif ($myClassesCount > 0 && (!$selectedProdi || ClassRoom::visible()->active()->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id))->count() == 0)) {
+                    $activeTab = 'my_classes';
+                } else {
+                    $activeTab = $myClassesCount > 0 ? 'my_classes' : 'prodi_classes';
+                }
             }
         }
 
         // Build query based on active tab
-        $query = ClassRoom::with(['subject'])->visible()->active();
+        $query = ClassRoom::with(['subject.prodi'])->visible()->active();
 
-        if ($activeTab === 'my_classes') {
+        if ($activeTab === 'my_classes' || !$isStaffOrAdmin) {
             $query->where(function($q) use ($user) {
                 $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
                 if ($user->student) {
@@ -85,13 +92,12 @@ class ClassRoomController extends Controller
         } else {
             if ($selectedProdi) {
                 $query->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id));
-            } elseif (!$user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan', 'baak', 'finance', 'kemahasiswaan']) && !$user->can('view-classes')) {
-                $query->where(function($q) use ($user) {
-                    $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
-                    if ($user->student) {
-                        $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
-                    }
-                });
+            } else {
+                if (!$user->hasRole(['admin', 'rektor', 'dekan', 'baak'])) {
+                    $query->where(function($q) use ($user) {
+                        $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
+                    });
+                }
             }
         }
 
@@ -308,9 +314,12 @@ class ClassRoomController extends Controller
     public function archivedIndex(Request $request)
     {
         $user = Auth::user();
+        $isStaffOrAdmin = $user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan', 'baak', 'finance', 'kemahasiswaan']);
+        $isKaprodiOnly = $user->hasRole('kaprodi') && !$user->hasRole(['admin', 'rektor', 'dekan', 'baak']);
+        $kaprodiProdiIds = $isKaprodiOnly ? \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->pluck('id')->toArray() : [];
 
         // 1. User's own archived classes
-        $myClassesQuery = ClassRoom::with(['subject'])->where('status', 'archived')->where(function($q) use ($user) {
+        $myClassesQuery = ClassRoom::with(['subject.prodi'])->where('status', 'archived')->where(function($q) use ($user) {
             $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
             if ($user->student) {
                 $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
@@ -318,37 +327,42 @@ class ClassRoomController extends Controller
         });
         $myClassesCount = (clone $myClassesQuery)->count();
 
-        // 2. Filter by prodi
-        $isKaprodiOnly = $user->hasRole('kaprodi') && !$user->hasRole(['admin', 'rektor', 'dekan', 'baak']);
-        $kaprodiProdiIds = $isKaprodiOnly ? \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->pluck('id')->toArray() : [];
-
-        $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+        // 2. Filter by prodi (Only for staff / kaprodi / admin)
         $selectedProdi = null;
+        $prodiId = null;
 
-        if ($isKaprodiOnly) {
-            if ($prodiId && in_array($prodiId, $kaprodiProdiIds)) {
-                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+        if ($isStaffOrAdmin) {
+            $prodiId = $request->prodi_id ?? session('selected_prodi_id');
+
+            if ($isKaprodiOnly) {
+                if ($prodiId && in_array($prodiId, $kaprodiProdiIds)) {
+                    $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+                } else {
+                    $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
+                    $prodiId = $selectedProdi?->id;
+                    if ($prodiId) {
+                        session(['selected_prodi_id' => $prodiId]);
+                    }
+                }
             } else {
-                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
-                $prodiId = $selectedProdi?->id;
                 if ($prodiId) {
-                    session(['selected_prodi_id' => $prodiId]);
+                    $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
                 }
             }
+        }
+
+        if (!$isStaffOrAdmin) {
+            $activeTab = 'my_classes';
         } else {
-            if ($prodiId) {
-                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+            $activeTab = $request->get('tab');
+            if (!$activeTab) {
+                $activeTab = $request->filled('prodi_id') ? 'prodi_classes' : ($myClassesCount > 0 ? 'my_classes' : 'prodi_classes');
             }
         }
 
-        $activeTab = $request->get('tab');
-        if (!$activeTab) {
-            $activeTab = $request->filled('prodi_id') ? 'prodi_classes' : ($myClassesCount > 0 ? 'my_classes' : 'prodi_classes');
-        }
+        $query = ClassRoom::with(['subject.prodi'])->where('status', 'archived');
 
-        $query = ClassRoom::with(['subject'])->where('status', 'archived');
-
-        if ($activeTab === 'my_classes') {
+        if ($activeTab === 'my_classes' || !$isStaffOrAdmin) {
             $query->where(function($q) use ($user) {
                 $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
                 if ($user->student) {
@@ -358,13 +372,12 @@ class ClassRoomController extends Controller
         } else {
             if ($selectedProdi) {
                 $query->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id));
-            } elseif (!$user->hasRole(['admin', 'kaprodi'])) {
-                $query->where(function($q) use ($user) {
-                    $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
-                    if ($user->student) {
-                        $q->orWhereHas('enrollments', fn($q3) => $q3->where('student_id', $user->student->id));
-                    }
-                });
+            } else {
+                if (!$user->hasRole(['admin', 'rektor', 'dekan', 'baak'])) {
+                    $query->where(function($q) use ($user) {
+                        $q->whereHas('users', fn($q2) => $q2->where('user_id', $user->id));
+                    });
+                }
             }
         }
 
