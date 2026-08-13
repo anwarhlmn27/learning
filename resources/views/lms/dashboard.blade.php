@@ -139,7 +139,7 @@
 {{-- ═══════════════════════════════════════════════════════════════════════════
      SECTION 2: PROGRAM STUDI SELECTOR (For Admin, Kaprodi, Dekan, Staff)
 ═══════════════════════════════════════════════════════════════════════════════ --}}
-@if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak', 'finance', 'kemahasiswaan', 'dosen']) || Auth::user()->can('view-institusi'))
+@if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak', 'finance', 'kemahasiswaan']) || Auth::user()->can('view-institusi'))
 
 <div class="row page-titles mx-0 mt-2">
     <div class="col-sm-12 p-md-0">
