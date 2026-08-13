@@ -171,13 +171,20 @@
                     $sidebarUser = Auth::user();
                     $sidebarProdiId = request()->prodi_id ?? session('selected_prodi_id');
                     $sidebarProdi   = null;
+                    $isKaprodiOnly  = $sidebarUser->hasRole('kaprodi') && !$sidebarUser->hasRole(['admin', 'rektor', 'dekan', 'baak']);
 
-                    if ($sidebarProdiId) {
-                        $sidebarProdi = \App\Models\Prodi::withoutGlobalScopes()->find($sidebarProdiId);
-                    }
-                    if (!$sidebarProdi && $sidebarUser->hasRole('kaprodi')) {
-                        $sidebarProdi   = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $sidebarUser->id)->first();
-                        $sidebarProdiId = $sidebarProdi?->id;
+                    if ($isKaprodiOnly) {
+                        $kaprodiProdiIds = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $sidebarUser->id)->pluck('id')->toArray();
+                        if ($sidebarProdiId && in_array($sidebarProdiId, $kaprodiProdiIds)) {
+                            $sidebarProdi = \App\Models\Prodi::withoutGlobalScopes()->find($sidebarProdiId);
+                        } else {
+                            $sidebarProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $sidebarUser->id)->first();
+                            $sidebarProdiId = $sidebarProdi?->id;
+                        }
+                    } else {
+                        if ($sidebarProdiId) {
+                            $sidebarProdi = \App\Models\Prodi::withoutGlobalScopes()->find($sidebarProdiId);
+                        }
                     }
 
                     $prodiParam = $sidebarProdiId ? ['prodi_id' => $sidebarProdiId] : [];
@@ -188,7 +195,9 @@
                         <li class="nav-label first" style="padding-top: 10px;">
                             <div class="text-primary font-w600" style="font-size: 11px;">PRODI AKTIF</div>
                             <div class="font-w700 text-black">{{ $sidebarProdi->nama_prodi }}</div>
-                            <a href="{{ route('dashboard') }}" onclick="sessionStorage.setItem('clear_prodi','1')" style="font-size:11px; padding: 0; display: inline; text-decoration: underline;">← Ganti Prodi</a>
+                            @if(!$isKaprodiOnly || \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $sidebarUser->id)->count() > 1)
+                                <a href="{{ route('dashboard') }}" onclick="sessionStorage.setItem('clear_prodi','1')" style="font-size:11px; padding: 0; display: inline; text-decoration: underline;">← Ganti Prodi</a>
+                            @endif
                         </li>
                     @else
                         <li class="nav-label first">Main Menu</li>

@@ -16,7 +16,18 @@ class LmsController extends Controller
         $user = Auth::user();
 
         // All prodis for staff/admin/kaprodi view
-        $prodis = Prodi::withoutGlobalScopes()->with(['fakultas', 'kaprodi'])->orderBy('nama_prodi')->get();
+        if ($user->hasRole('kaprodi') && !$user->hasRole(['admin', 'rektor', 'dekan', 'baak'])) {
+            $prodis = Prodi::withoutGlobalScopes()
+                ->where('kaprodi_id', $user->id)
+                ->with(['fakultas', 'kaprodi'])
+                ->orderBy('nama_prodi')
+                ->get();
+        } else {
+            $prodis = Prodi::withoutGlobalScopes()
+                ->with(['fakultas', 'kaprodi'])
+                ->orderBy('nama_prodi')
+                ->get();
+        }
 
         $data = [
             'total_classes'     => 0,
@@ -29,10 +40,10 @@ class LmsController extends Controller
         // 1. Check if user is a lecturer or enrolled in class_users
         $teachingClasses = ClassRoom::whereHas('users', fn($q) => $q->where('user_id', $user->id))
             ->where('status', 'active')
-            ->with(['subject'])
+            ->with(['subject.prodi'])
             ->get();
 
-        if ($teachingClasses->count() > 0 || $user->hasRole('dosen')) {
+        if ($teachingClasses->count() > 0 || $user->hasRole(['dosen', 'kaprodi'])) {
             $data['total_classes']     = $teachingClasses->count();
             $data['classes']           = $teachingClasses;
             $classIds                  = $teachingClasses->pluck('id');

@@ -7,7 +7,7 @@
 {{-- ═══════════════════════════════════════════════════════════════════════════
      SECTION 1: PERSONAL TEACHING / STUDENT DASHBOARD (if user has classes)
 ═══════════════════════════════════════════════════════════════════════════════ --}}
-@if(($data['total_classes'] ?? 0) > 0 || Auth::user()->hasRole('dosen') || Auth::user()->student)
+@if(($data['total_classes'] ?? 0) > 0 || Auth::user()->hasRole(['dosen', 'kaprodi']) || Auth::user()->student)
 <div class="row mb-4">
     <!-- Card 1: Total Kelas -->
     <div class="col-xl-6 col-xxl-6 col-sm-6 mb-3 mb-sm-0">

@@ -17,12 +17,29 @@ class DosenController extends Controller
     {
         $query = Dosen::with(['user', 'prodi']);
 
+        $user = auth()->user();
+        $isKaprodiOnly = $user && $user->hasRole('kaprodi') && !$user->hasRole(['admin', 'rektor', 'dekan', 'baak']);
+        $kaprodiProdiIds = $isKaprodiOnly ? \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->pluck('id')->toArray() : [];
+
         // ── Filter by prodi ──────────────────────────────────────────────────
         $prodiId = $request->prodi_id ?? session('selected_prodi_id');
         $selectedProdi = null;
-        if ($prodiId) {
-            $selectedProdi = \App\Models\Prodi::find($prodiId);
-            $query->where('prodi_id', $prodiId);
+
+        if ($isKaprodiOnly) {
+            if ($prodiId && in_array($prodiId, $kaprodiProdiIds)) {
+                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+            } else {
+                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
+                $prodiId = $selectedProdi?->id;
+            }
+            if ($selectedProdi) {
+                $query->where('prodi_id', $selectedProdi->id);
+            }
+        } else {
+            if ($prodiId) {
+                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+                $query->where('prodi_id', $prodiId);
+            }
         }
 
         if ($request->filled('search')) {

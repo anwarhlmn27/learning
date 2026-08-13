@@ -35,16 +35,25 @@ class ClassRoomController extends Controller
         $myClassesCount = (clone $myClassesQuery)->count();
 
         // 2. Filter by prodi
+        $isKaprodiOnly = $user->hasRole('kaprodi') && !$user->hasRole(['admin', 'rektor', 'dekan', 'baak']);
+        $kaprodiProdiIds = $isKaprodiOnly ? \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->pluck('id')->toArray() : [];
+
         $prodiId = $request->prodi_id ?? session('selected_prodi_id');
         $selectedProdi = null;
-        if ($prodiId) {
-            $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
-        }
-        if (!$selectedProdi && $user->hasRole('kaprodi')) {
-            $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
-            if ($selectedProdi) {
-                $prodiId = $selectedProdi->id;
-                session(['selected_prodi_id' => $prodiId]);
+
+        if ($isKaprodiOnly) {
+            if ($prodiId && in_array($prodiId, $kaprodiProdiIds)) {
+                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+            } else {
+                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
+                $prodiId = $selectedProdi?->id;
+                if ($prodiId) {
+                    session(['selected_prodi_id' => $prodiId]);
+                }
+            }
+        } else {
+            if ($prodiId) {
+                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
             }
         }
 
@@ -121,7 +130,9 @@ class ClassRoomController extends Controller
         }
 
         $allFakultas = \App\Models\Fakultas::orderBy('nama_fakultas')->get();
-        $allProdis = \App\Models\Prodi::withoutGlobalScopes()->orderBy('nama_prodi')->get();
+        $allProdis = $isKaprodiOnly
+            ? \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->orderBy('nama_prodi')->get()
+            : \App\Models\Prodi::withoutGlobalScopes()->orderBy('nama_prodi')->get();
 
         return view('lms.classes.index', compact(
             'classRooms', 'subjects', 'dosens', 'classPrimaryDosenMap', 
@@ -308,15 +319,25 @@ class ClassRoomController extends Controller
         $myClassesCount = (clone $myClassesQuery)->count();
 
         // 2. Filter by prodi
+        $isKaprodiOnly = $user->hasRole('kaprodi') && !$user->hasRole(['admin', 'rektor', 'dekan', 'baak']);
+        $kaprodiProdiIds = $isKaprodiOnly ? \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->pluck('id')->toArray() : [];
+
         $prodiId = $request->prodi_id ?? session('selected_prodi_id');
         $selectedProdi = null;
-        if ($prodiId) {
-            $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
-        }
-        if (!$selectedProdi && $user->hasRole('kaprodi')) {
-            $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
-            if ($selectedProdi) {
-                $prodiId = $selectedProdi->id;
+
+        if ($isKaprodiOnly) {
+            if ($prodiId && in_array($prodiId, $kaprodiProdiIds)) {
+                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
+            } else {
+                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->first();
+                $prodiId = $selectedProdi?->id;
+                if ($prodiId) {
+                    session(['selected_prodi_id' => $prodiId]);
+                }
+            }
+        } else {
+            if ($prodiId) {
+                $selectedProdi = \App\Models\Prodi::withoutGlobalScopes()->find($prodiId);
             }
         }
 
@@ -365,12 +386,18 @@ class ClassRoomController extends Controller
     {
         $user = Auth::user();
         
-        // Authorization check: non-admin / non-kaprodi / non-rektor / non-dekan must be enrolled in class_users or enrollments
-        if (!$user->hasRole(['admin', 'kaprodi', 'rektor', 'dekan'])) {
-            $isStaff = $class->users()->where('user_id', $user->id)->exists();
+        // Authorization check: non-admin / non-rektor / non-dekan
+        if (!$user->hasRole(['admin', 'rektor', 'dekan', 'baak'])) {
+            $isTeachingStaff = $class->users()->where('user_id', $user->id)->exists();
             $isStudent = $user->student && $class->enrollments()->where('student_id', $user->student->id)->exists();
             
-            if (!$isStaff && !$isStudent) {
+            $isKaprodiOfThisClass = false;
+            if ($user->hasRole('kaprodi')) {
+                $kaprodiProdiIds = \App\Models\Prodi::withoutGlobalScopes()->where('kaprodi_id', $user->id)->pluck('id')->toArray();
+                $isKaprodiOfThisClass = in_array($class->subject->id_prodi ?? null, $kaprodiProdiIds);
+            }
+
+            if (!$isTeachingStaff && !$isStudent && !$isKaprodiOfThisClass) {
                 return back()->with('error', 'Anda tidak memiliki akses ke kelas ini.');
             }
         }
