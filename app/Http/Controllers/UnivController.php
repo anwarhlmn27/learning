@@ -28,7 +28,7 @@ class UnivController extends Controller
             'nama_univ' => 'required|string|max:255',
 
             'rektor_id' => 'nullable|exists:users,id',
-            'sign_file' => 'required|image|mimes:png,jpg,jpeg|max:2048',
+            'sign_file' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
             'address' => 'required|string',
             'email' => 'required|email|max:255',
             'website' => 'required|url|max:255',

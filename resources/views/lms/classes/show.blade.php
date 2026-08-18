@@ -306,32 +306,97 @@
                 </span>
             @endif
             {{-- Archive / Restore button --}}
-            @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
-                <form action="{{ route('classes.archive', $class) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="{{ $class->status === 'active' ? 'Arsipkan kelas ini? Semua konten akan menjadi read-only.' : 'Aktifkan kembali kelas ini?' }}">
-                    @csrf
-                    @if($class->status === 'active')
-                        <button type="submit" class="btn" style="background: rgba(245,158,11,0.8); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; font-size: 0.85rem;">
-                            🗃️ Arsipkan Kelas
-                        </button>
-                    @elseif($class->status === 'archived')
-                        <button type="submit" class="btn" style="background: rgba(34,197,94,0.8); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; font-size: 0.85rem;">
-                            ✅ Aktifkan Kembali
+            @if($class->status === 'active')
+                @if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak']))
+                    @if($class->hasLecturerFeedback())
+                        <form action="{{ route('classes.archive', $class) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Arsipkan kelas ini? Semua konten akan menjadi read-only.">
+                            @csrf
+                            <button type="submit" class="btn" style="background: rgba(245,158,11,0.8); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; font-size: 0.85rem; font-weight: 600;">
+                                🗃️ {{ __('Arsipkan Kelas') }}
+                            </button>
+                        </form>
+                    @else
+                        <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#modalLecturerFeedback" style="background: rgba(245,158,11,0.9); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; font-size: 0.85rem; font-weight: 600;">
+                            🗃️ {{ __('Arsipkan Kelas') }}
                         </button>
                     @endif
-                </form>
+                @endif
+            @elseif($class->status === 'archived')
+                @if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak']))
+                    <form action="{{ route('classes.archive', $class) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Aktifkan kembali kelas ini?">
+                        @csrf
+                        <button type="submit" class="btn" style="background: rgba(34,197,94,0.8); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 9999px; font-size: 0.85rem; font-weight: 600;">
+                            ✅ {{ __('Aktifkan Kembali') }}
+                        </button>
+                    </form>
+                @endif
             @endif
         </div>
     </div>
 </div>
 
-
-
 @if($class->status === 'archived')
 <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f59e0b; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
     <span style="font-size: 1.5rem;">🗃️</span>
     <div>
-        <strong style="color: #92400e; font-size: 0.95rem;">Kelas Ini Sudah Diarsipkan</strong>
-        <p style="margin: 0.2rem 0 0; font-size: 0.8rem; color: #a16207;">Semua konten kelas ini bersifat <strong>read-only</strong>. Tidak dapat menambah atau mengubah data. Untuk mengaktifkan kembali, klik tombol &ldquo;Aktifkan Kembali&rdquo; di atas.</p>
+        <strong style="color: #92400e; font-size: 0.95rem;">{{ __('Kelas Ini Sudah Diarsipkan') }}</strong>
+        <p style="margin: 0.2rem 0 0; font-size: 0.8rem; color: #a16207;">
+            {{ __('Semua konten kelas ini bersifat read-only.') }}
+            @if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak']))
+                {{ __('Untuk mengaktifkan kembali, klik tombol "Aktifkan Kembali" di atas.') }}
+            @else
+                {{ __('Pengaktifan kembali kelas arsip hanya dapat diproses oleh BAAK, Kaprodi, Dekan, atau Admin.') }}
+            @endif
+        </p>
+    </div>
+</div>
+@endif
+
+{{-- Card Evaluasi & Feedback Dosen (Dapat dilihat oleh Kaprodi, Dekan, Rektor, Admin, dan Dosen Pengampu) --}}
+@if($class->lecturerFeedback && (Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak', 'dosen']) || $class->users()->where('user_id', Auth::id())->exists()))
+<div class="card mb-4 shadow-sm" style="border: 1px solid #bfdbfe; background: linear-gradient(to right, #eff6ff, #ffffff); border-radius: 12px; overflow: hidden;">
+    <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2" style="background: #dbeafe; border-bottom: 1px solid #bfdbfe;">
+        <div class="d-flex align-items-center gap-2">
+            <span style="font-size: 1.35rem;">📝</span>
+            <div>
+                <h5 class="mb-0 font-w700 text-primary" style="font-size: 1.05rem;">{{ __('Evaluasi & Feedback Akhir Perkuliahan (Dosen)') }}</h5>
+                <small class="text-muted">{{ __('Diisi oleh') }} <strong>{{ optional($class->lecturerFeedback->dosen)->nama_dosen ?? (optional($class->lecturerFeedback->user)->name ?? __('Dosen Pengampu')) }}</strong> &bull; {{ $class->lecturerFeedback->created_at->format('d M Y, H:i') }}</small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="badge bg-primary text-white px-3 py-2" style="font-size: 0.85rem; border-radius: 8px;">
+                ⭐ {{ __('Kepuasan LMS:') }} {{ $class->lecturerFeedback->rating_lms }}/5
+            </div>
+            @if($class->lecturerFeedback->rating_materi)
+            <div class="badge bg-success text-white px-3 py-2" style="font-size: 0.85rem; border-radius: 8px;">
+                📚 {{ __('Capaian Materi:') }} {{ $class->lecturerFeedback->rating_materi }}/5
+            </div>
+            @endif
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div style="background: white; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid #e2e8f0; height: 100%;">
+                    <strong style="color: #475569; font-size: 0.85rem; display: block; margin-bottom: 0.35rem;">
+                        ⚠️ {{ __('Kendala Pembelajaran / Teknis:') }}
+                    </strong>
+                    <p class="mb-0 text-dark" style="font-size: 0.9rem; white-space: pre-line;">
+                        {{ $class->lecturerFeedback->kendala ?: __('Tidak ada kendala yang dilaporkan.') }}
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div style="background: white; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid #e2e8f0; height: 100%;">
+                    <strong style="color: #475569; font-size: 0.85rem; display: block; margin-bottom: 0.35rem;">
+                        💡 {{ __('Saran & Masukan:') }}
+                    </strong>
+                    <p class="mb-0 text-dark" style="font-size: 0.9rem; white-space: pre-line;">
+                        {{ $class->lecturerFeedback->saran ?: __('Tidak ada saran khusus yang diberikan.') }}
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endif
@@ -368,9 +433,14 @@
             @endif
         </div>
         @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="btn btn-outline" onclick="openAddClassworkModal()">
-                    <i>➕</i> Add Classwork Item
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                @if($class->status === 'active' && isset($availableSourceClasses) && $availableSourceClasses->isNotEmpty())
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalCopyContent" style="border-radius: 6px; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                        <i>📥</i> {{ __('Salin Materi dari Kelas Lain') }}
+                    </button>
+                @endif
+                <button class="btn btn-primary" onclick="openAddClassworkModal()" style="border-radius: 6px; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+                    <i>➕</i> {{ __('Add Classwork Item') }}
                 </button>
             </div>
         @endif
@@ -2971,5 +3041,152 @@
             width: '560px'
         });
     }
+
+    // Interactive Star Rating for Lecturer Feedback Modal
+    function setFeedbackRating(type, val) {
+        const inputEl = document.getElementById('input_' + type);
+        if (inputEl) inputEl.value = val;
+
+        if (type === 'rating_lms') {
+            const labels = ['', '1 / 5 (Sangat Buruk)', '2 / 5 (Kurang)', '3 / 5 (Cukup)', '4 / 5 (Baik)', '5 / 5 (Sangat Baik)'];
+            const labelEl = document.getElementById('label_rating_lms');
+            if (labelEl) labelEl.textContent = labels[val] || (val + ' / 5');
+            document.querySelectorAll('.star-label-lms').forEach((star, idx) => {
+                star.style.color = (idx < val) ? '#f59e0b' : '#cbd5e1';
+            });
+        } else if (type === 'rating_materi') {
+            const labels = ['', '1 / 5 (Sangat Rendah)', '2 / 5 (Kurang)', '3 / 5 (Cukup)', '4 / 5 (Baik)', '5 / 5 (Tercapai Penuh)'];
+            const labelEl = document.getElementById('label_rating_materi');
+            if (labelEl) labelEl.textContent = labels[val] || (val + ' / 5');
+            document.querySelectorAll('.star-label-materi').forEach((star, idx) => {
+                star.style.color = (idx < val) ? '#10b981' : '#cbd5e1';
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setFeedbackRating('rating_lms', 5);
+        setFeedbackRating('rating_materi', 5);
+    });
 </script>
+
+<!-- Modal Form Feedback & Evaluasi Dosen Sebelum Arsip Kelas -->
+<div class="modal fade" id="modalLecturerFeedback" tabindex="-1" role="dialog" aria-labelledby="modalLecturerFeedbackLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);">
+            <div class="modal-header bg-warning text-dark px-4 py-3" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                <h5 class="modal-title font-w700" id="modalLecturerFeedbackLabel" style="font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🗃️</span> {{ __('Evaluasi & Feedback Dosen Sebelum Mengarsipkan Kelas') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('classes.archive', $class) }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" style="border-radius: 8px; font-size: 0.875rem;">
+                        <span>ℹ️</span>
+                        <div>
+                            {{ __('Sebelum kelas ini diarsipkan secara permanen (read-only), mohon berikan penilaian dan evaluasi perkuliahan untuk penjaminan mutu dan evaluasi sistem LMS bagi Program Studi dan Fakultas.') }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <label class="form-label font-w600 text-dark">{{ __('Kepuasan Penggunaan Sistem LMS (1-5)') }} <span class="text-danger">*</span></label>
+                            <div class="rating-stars-input d-flex gap-2 align-items-center my-1" id="starGroupLms">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <label style="cursor: pointer; font-size: 1.6rem; color: #cbd5e1; user-select: none;" class="star-label-lms" data-value="{{ $i }}" onclick="setFeedbackRating('rating_lms', {{ $i }})">
+                                        ★
+                                    </label>
+                                @endfor
+                                <input type="hidden" name="rating_lms" id="input_rating_lms" value="5" required>
+                                <span id="label_rating_lms" class="badge bg-primary ms-2 font-w600" style="font-size: 0.85rem;">5 / 5 (Sangat Baik)</span>
+                            </div>
+                            <small class="text-muted">{{ __('Skala 1 (Sangat Buruk) hingga 5 (Sangat Baik)') }}</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label font-w600 text-dark">{{ __('Ketercapaian Materi & RPS (1-5)') }} <span class="text-danger">*</span></label>
+                            <div class="rating-stars-input d-flex gap-2 align-items-center my-1" id="starGroupMateri">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <label style="cursor: pointer; font-size: 1.6rem; color: #cbd5e1; user-select: none;" class="star-label-materi" data-value="{{ $i }}" onclick="setFeedbackRating('rating_materi', {{ $i }})">
+                                        ★
+                                    </label>
+                                @endfor
+                                <input type="hidden" name="rating_materi" id="input_rating_materi" value="5" required>
+                                <span id="label_rating_materi" class="badge bg-success ms-2 font-w600" style="font-size: 0.85rem;">5 / 5 (Tercapai Penuh)</span>
+                            </div>
+                            <small class="text-muted">{{ __('Kesesuaian penyampaian materi dengan RPS') }}</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="kendala" class="form-label font-w600 text-dark">{{ __('Kendala Pembelajaran / Teknis yang Dihadapi (Opsional)') }}</label>
+                        <textarea class="form-control" id="kendala" name="kendala" rows="3" placeholder="{{ __('Tuliskan kendala teknis LMS, kehadiran mahasiswa, atau sarana perkuliahan yang dialami...') }}" style="border-radius: 8px; border-color: #cbd5e1;"></textarea>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="saran" class="form-label font-w600 text-dark">{{ __('Saran & Masukan untuk Prodi / Fakultas / LMS (Opsional)') }}</label>
+                        <textarea class="form-control" id="saran" name="saran" rows="3" placeholder="{{ __('Tuliskan masukan atau saran perbaikan untuk semester berikutnya...') }}" style="border-radius: 8px; border-color: #cbd5e1;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer px-4 py-3 bg-light" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3 font-w600" data-bs-dismiss="modal" style="border-radius: 6px;">{{ __('Batal') }}</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 font-w600" style="border-radius: 6px;">
+                        🗃️ {{ __('Kirim Feedback & Arsipkan Kelas') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if(isset($availableSourceClasses) && $availableSourceClasses->isNotEmpty())
+<!-- Modal Salin Konten/Materi dari Kelas Lain -->
+<div class="modal fade" id="modalCopyContent" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);">
+            <div class="modal-header bg-primary text-white px-4 py-3">
+                <h5 class="modal-title font-w700 text-white" style="font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📥</span> {{ __('Salin Materi dari Kelas Sebelumnya / Lain') }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('classes.copy_content_from', $class) }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-info d-flex align-items-center gap-2 mb-3" style="font-size: 0.85rem; border-radius: 8px;">
+                        <span>ℹ️</span>
+                        <div>
+                            {{ __('Fitur ini akan menyalin seluruh 14 Sesi, Modul Materi, Tugas (Draft), dan Kuis dari kelas sumber yang Anda pilih ke kelas ini. Data mahasiswa dan nilai tidak akan disalin.') }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="source_class_id" class="form-label font-w600 text-dark">{{ __('Pilih Kelas Sumber') }} <span class="text-danger">*</span></label>
+                        <select class="form-select" id="source_class_id" name="source_class_id" required style="border-radius: 6px;">
+                            <option value="">-- {{ __('Pilih Kelas Sumber') }} --</option>
+                            @foreach($availableSourceClasses as $sc)
+                                <option value="{{ $sc->id }}">
+                                    {{ $sc->nama_kelas }} ({{ $sc->tahun_akademik }} - {{ $sc->semester }}) [{{ ucfirst($sc->status) }}]
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="p-3 bg-light rounded" style="font-size: 0.8rem; color: #64748b; border: 1px dashed #cbd5e1;">
+                        <strong>{{ __('Catatan:') }}</strong> {{ __('Materi yang disalin akan ditambahkan ke timeline sesi kelas ini. Anda tetap dapat mengedit atau menghapus materi tersebut kapan saja.') }}
+                    </div>
+                </div>
+                <div class="modal-footer px-4 py-3 bg-light" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal" style="border-radius: 6px;">{{ __('Batal') }}</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 font-w600" style="border-radius: 6px;">
+                        📥 {{ __('Mulai Salin Materi') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection

@@ -15,7 +15,16 @@ use App\Models\Assignment;
 use App\Models\RpsSession;
 use App\Models\RpsAssessment;
 use App\Models\Quiz;
+use App\Models\QuizQuestion;
 use App\Models\AssignmentSubmission;
+use App\Models\Material;
+use App\Models\Forum;
+use App\Models\ClassTopic;
+use App\Models\ClassLecturerFeedback;
+use App\Models\SessionRating;
+use App\Models\StudentQuizAttempt;
+use App\Models\Fakultas;
+use App\Models\Prodi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -280,32 +289,212 @@ class ClassRoomController extends Controller
     }
 
     /**
-     * Toggle status: active <-> archived (by dosen, baak, kaprodi, admin).
+     * Toggle status: active <-> archived.
+     * Archiving is permitted for Dosen (with feedback), BAAK, Kaprodi, Dekan, Admin.
+     * Reactivating (unarchiving) is strictly restricted to BAAK, Kaprodi, Dekan, and Admin.
      */
     public function archive(Request $request, ClassRoom $class)
     {
         $user = Auth::user();
-        if (!$user->hasRole(['admin', 'kaprodi', 'dosen', 'baak'])) {
+        if (!$user->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak'])) {
             return back()->with('error', 'Anda tidak memiliki akses.');
         }
 
-        // Only enrolled users or admins can archive
-        if (!$user->hasRole(['admin', 'kaprodi'])) {
-            $isEnrolled = $class->users()->where('user_id', $user->id)->exists();
-            if (!$isEnrolled) {
-                return back()->with('error', 'Anda tidak terdaftar di kelas ini.');
-            }
-        }
-
         if ($class->status === 'active') {
+            // Only enrolled users or staff/admins can archive
+            if (!$user->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak'])) {
+                $isEnrolled = $class->users()->where('user_id', $user->id)->exists();
+                if (!$isEnrolled) {
+                    return back()->with('error', 'Anda tidak terdaftar di kelas ini.');
+                }
+            }
+
+            // Check if feedback is provided in the request
+            if ($request->has('rating_lms')) {
+                $request->validate([
+                    'rating_lms'    => 'required|integer|min:1|max:5',
+                    'rating_materi' => 'nullable|integer|min:1|max:5',
+                    'kendala'       => 'nullable|string|max:2000',
+                    'saran'         => 'nullable|string|max:2000',
+                ]);
+
+                \App\Models\ClassLecturerFeedback::updateOrCreate(
+                    [
+                        'class_room_id' => $class->id,
+                        'user_id'       => $user->id,
+                    ],
+                    [
+                        'dosen_id'      => $user->dosen?->id,
+                        'rating_lms'    => (int) $request->input('rating_lms', 5),
+                        'rating_materi' => (int) $request->input('rating_materi', 5),
+                        'kendala'       => $request->input('kendala'),
+                        'saran'         => $request->input('saran'),
+                    ]
+                );
+            } else {
+                // If feedback was not submitted in this request, verify if it already exists
+                if (!$class->hasLecturerFeedback()) {
+                    return back()->with('error', 'Kelas belum dapat diarsipkan! Dosen pengampu wajib mengisi Formulir Evaluasi & Umpan Balik terlebih dahulu.');
+                }
+            }
+
             $class->update(['status' => 'archived']);
-            return back()->with('success', 'Kelas "' . $class->nama_kelas . '" berhasil diarsipkan. Semua konten menjadi read-only.');
+            return back()->with('success', 'Evaluasi dosen tersimpan dan kelas "' . $class->nama_kelas . '" berhasil diarsipkan. Semua konten menjadi read-only.');
         } elseif ($class->status === 'archived') {
+            // Reactivation is only allowed for BAAK, Kaprodi, Dekan, Rektor, Admin
+            if (!$user->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak'])) {
+                return back()->with('error', 'Dosen tidak dapat mengaktifkan kembali kelas yang telah diarsipkan. Proses aktivasi kembali hanya dapat dilakukan oleh BAAK, Kaprodi, Dekan, atau Admin.');
+            }
+
             $class->update(['status' => 'active']);
             return back()->with('success', 'Kelas "' . $class->nama_kelas . '" berhasil diaktifkan kembali.');
         }
 
         return back()->with('error', 'Status kelas tidak valid untuk diubah.');
+    }
+
+    /**
+     * Helper to perform deep copying of topics, materials, assignments, quizzes, and forums.
+     */
+    private function performDeepCopyTopics(ClassRoom $sourceClass, ClassRoom $targetClass): int
+    {
+        $copiedCount = 0;
+        $sourceTopics = ClassTopic::where('class_room_id', $sourceClass->id)->orderBy('session_number')->get();
+
+        foreach ($sourceTopics as $topic) {
+            $newContentId = null;
+
+            if ($topic->type === 'materi') {
+                $srcMat = Material::find($topic->content_id);
+                if ($srcMat) {
+                    $newMat = $srcMat->replicate();
+                    $newMat->save();
+                    $newContentId = $newMat->id;
+                }
+            } elseif ($topic->type === 'assignment') {
+                $srcAssign = Assignment::find($topic->content_id);
+                if ($srcAssign) {
+                    $newAssign = $srcAssign->replicate(['submissions_count']);
+                    $newAssign->class_room_id = $targetClass->id;
+                    $newAssign->status = 'Draft';
+                    $newAssign->save();
+                    $newContentId = $newAssign->id;
+                }
+            } elseif ($topic->type === 'quiz') {
+                $srcQuiz = Quiz::with('questions')->find($topic->content_id);
+                if ($srcQuiz) {
+                    $newQuiz = $srcQuiz->replicate();
+                    $newQuiz->class_room_id = $targetClass->id;
+                    $newQuiz->save();
+
+                    foreach ($srcQuiz->questions as $question) {
+                        $newQ = $question->replicate();
+                        $newQ->quiz_id = $newQuiz->id;
+                        $newQ->save();
+                    }
+                    $newContentId = $newQuiz->id;
+                }
+            } elseif ($topic->type === 'forum') {
+                $srcForum = Forum::find($topic->content_id);
+                if ($srcForum) {
+                    $newForum = $srcForum->replicate();
+                    $newForum->save();
+                    $newContentId = $newForum->id;
+                }
+            }
+
+            if ($newContentId) {
+                ClassTopic::create([
+                    'class_room_id'  => $targetClass->id,
+                    'session_number' => $topic->session_number,
+                    'title'          => $topic->title,
+                    'type'           => $topic->type,
+                    'content_id'     => $newContentId,
+                ]);
+                $copiedCount++;
+            }
+        }
+
+        return $copiedCount;
+    }
+
+    /**
+     * Clone an existing/archived class into a brand new active class with all material content.
+     */
+    public function cloneToNew(Request $request, ClassRoom $class)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole(['admin', 'kaprodi', 'baak', 'dosen']) && !$user->can('create-classes')) {
+            return back()->with('error', 'Anda tidak memiliki akses untuk membuat kelas.');
+        }
+
+        $request->validate([
+            'nama_kelas'     => 'required|string|max:255',
+            'tahun_akademik' => 'required|string|max:50',
+            'semester'       => 'required|in:Ganjil,Genap,Antara',
+            'dosen_id'       => 'nullable|exists:dosens,id',
+        ]);
+
+        $newClass = null;
+
+        DB::transaction(function () use ($request, $class, &$newClass) {
+            $newClass = ClassRoom::create([
+                'subject_id'     => $class->subject_id,
+                'nama_kelas'     => $request->nama_kelas,
+                'tahun_akademik' => $request->tahun_akademik,
+                'semester'       => $request->semester,
+                'status'         => 'active',
+            ]);
+
+            // Assign lecturer
+            if ($request->filled('dosen_id')) {
+                $dosen = Dosen::find($request->dosen_id);
+                if ($dosen && $dosen->user_id) {
+                    $newClass->users()->attach($dosen->user_id, ['id' => (string) \Illuminate\Support\Str::uuid()]);
+                }
+            } else {
+                // Keep the primary lecturer from source class if any
+                $sourceLecturer = $class->users()->first();
+                if ($sourceLecturer) {
+                    $newClass->users()->attach($sourceLecturer->id, ['id' => (string) \Illuminate\Support\Str::uuid()]);
+                }
+            }
+
+            // Copy all content
+            $this->performDeepCopyTopics($class, $newClass);
+        });
+
+        return redirect()->route('classes.show', $newClass)
+            ->with('success', 'Kelas baru "' . $newClass->nama_kelas . '" berhasil dibuat dan seluruh materi perkuliahan berhasil dikloning!');
+    }
+
+    /**
+     * Copy topics and contents from another class into the current target class.
+     */
+    public function copyContentFrom(Request $request, ClassRoom $class)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole(['admin', 'kaprodi', 'baak', 'dosen']) && !$user->can('edit-classes')) {
+            return back()->with('error', 'Anda tidak memiliki akses.');
+        }
+
+        $request->validate([
+            'source_class_id' => 'required|exists:class_rooms,id',
+        ]);
+
+        if ($request->source_class_id === $class->id) {
+            return back()->with('error', 'Kelas sumber tidak boleh sama dengan kelas tujuan.');
+        }
+
+        $sourceClass = ClassRoom::findOrFail($request->source_class_id);
+
+        $copiedCount = 0;
+        DB::transaction(function () use ($sourceClass, $class, &$copiedCount) {
+            $copiedCount = $this->performDeepCopyTopics($sourceClass, $class);
+        });
+
+        return redirect()->route('classes.show', $class)
+            ->with('success', "Berhasil menyalin {$copiedCount} item materi, tugas, dan kuis dari kelas \"{$sourceClass->nama_kelas}\" ke kelas ini!");
     }
 
     /**
@@ -391,8 +580,9 @@ class ClassRoomController extends Controller
 
         $classRooms = $query->latest()->paginate(10)->withQueryString();
         $prodiClassesCount = $selectedProdi ? ClassRoom::where('status', 'archived')->whereHas('subject', fn($q) => $q->where('id_prodi', $selectedProdi->id))->count() : 0;
+        $dosens = Dosen::with(['prodi.fakultas'])->orderBy('nama_dosen')->get();
 
-        return view('lms.classes.archived', compact('classRooms', 'selectedProdi', 'activeTab', 'myClassesCount', 'prodiClassesCount'));
+        return view('lms.classes.archived', compact('classRooms', 'selectedProdi', 'activeTab', 'myClassesCount', 'prodiClassesCount', 'dosens'));
     }
 
     public function show(Request $request, ClassRoom $class)
@@ -415,7 +605,7 @@ class ClassRoomController extends Controller
             }
         }
 
-        $class->load(['subject', 'subject.prodi']);
+        $class->load(['subject', 'subject.prodi', 'lecturerFeedback.user', 'lecturerFeedback.dosen']);
         
         // 1. People / Peserta Tab data
         $enrollments = Enrollment::with('student.user')
@@ -609,6 +799,13 @@ class ClassRoomController extends Controller
                 });
         }
 
+        // Available source classes with the same subject that have topics for cloning/copying
+        $availableSourceClasses = ClassRoom::where('id', '!=', $class->id)
+            ->where('subject_id', $class->subject_id)
+            ->whereHas('topics')
+            ->latest()
+            ->get(['id', 'nama_kelas', 'tahun_akademik', 'semester', 'status']);
+
         return view('lms.classes.show', compact(
             'class', 
             'topics',
@@ -633,7 +830,8 @@ class ClassRoomController extends Controller
             'allProdis',
             'allAngkatans',
             'leaderboard',
-            'rpsSessionsWithAssessments'
+            'rpsSessionsWithAssessments',
+            'availableSourceClasses'
         ));
     }
 

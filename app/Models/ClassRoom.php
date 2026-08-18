@@ -99,6 +99,15 @@ class ClassRoom extends Model
         return $this->hasMany(SessionRating::class, 'class_room_id');
     }
 
+    public function lecturerFeedback() {
+        return $this->hasOne(ClassLecturerFeedback::class, 'class_room_id');
+    }
+
+    public function hasLecturerFeedback(): bool
+    {
+        return $this->lecturerFeedback()->exists();
+    }
+
     /**
      * Check if classroom has any active content (topics / assignments / ratings)
      */

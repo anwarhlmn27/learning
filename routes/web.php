@@ -188,6 +188,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/classes/{class}/add-staff', [\App\Http\Controllers\ClassRoomController::class, 'addStaff'])->name('classes.add_staff');
     Route::delete('/classes/{class}/remove-staff/{user}', [\App\Http\Controllers\ClassRoomController::class, 'removeStaff'])->name('classes.remove_staff');
     Route::post('/classes/{class}/archive', [\App\Http\Controllers\ClassRoomController::class, 'archive'])->name('classes.archive');
+    Route::post('/classes/{class}/clone-to-new', [\App\Http\Controllers\ClassRoomController::class, 'cloneToNew'])->name('classes.clone_to_new');
+    Route::post('/classes/{class}/copy-content-from', [\App\Http\Controllers\ClassRoomController::class, 'copyContentFrom'])->name('classes.copy_content_from');
     Route::get('/archived-classes', [\App\Http\Controllers\ClassRoomController::class, 'archivedIndex'])->name('classes.archived');
     Route::post('/classes/{class}/sessions/{session_number}/rate', [\App\Http\Controllers\SessionRatingController::class, 'store'])->name('classes.rate_session');
     Route::get('/classes/{class}/available-students', [\App\Http\Controllers\ClassRoomController::class, 'getAvailableStudents'])->name('classes.available_students');

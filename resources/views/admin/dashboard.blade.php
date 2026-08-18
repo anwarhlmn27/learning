@@ -7,7 +7,7 @@
     <!-- Welcome section -->
     <div class="col-xl-12 col-xxl-12">
         <div class="welcome-section mb-4">
-            <h1 style="font-size: 1.875rem; font-weight: 700; margin: 0 0 0.5rem 0;">{{ __('Selamat datang, Admin') }}</h1>
+            <h1 style="font-size: 1.875rem; font-weight: 700; margin: 0 0 0.5rem 0;">{{ __('Selamat datang') }}, {{ Auth::user()->name }}</h1>
             <p style="color: var(--text-muted); margin: 0;">{{ __('Berikut adalah ringkasan sistem Outcome-Based Education (OBE) Anda hari ini.') }}</p>
         </div>
     </div>
