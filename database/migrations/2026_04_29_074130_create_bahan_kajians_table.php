@@ -33,7 +33,7 @@ return new class extends Migration
             
             $table->timestamps();
 
-            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('restrict');
             $table->foreign('id_kategori_bk')->references('id')->on('kategori_bk')->onDelete('restrict');
         });
     }

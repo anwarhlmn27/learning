@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('nm_kategori'); // Contoh: Core Computing, Business, dsb.
             $table->timestamps();
             
-            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('restrict');
         });
     }
 

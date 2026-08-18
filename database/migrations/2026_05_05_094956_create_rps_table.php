@@ -25,8 +25,8 @@ return new class extends Migration
             $table->enum('status', ['Draft', 'Aktif', 'Arsip'])->default('Draft');
             $table->timestamps();
 
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
-            $table->foreign('kurikulum_id')->references('id')->on('kurikulums')->onDelete('cascade');
+            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('restrict');
+            $table->foreign('kurikulum_id')->references('id')->on('kurikulums')->onDelete('restrict');
         });
     }
 

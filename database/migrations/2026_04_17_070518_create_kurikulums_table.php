@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('dokumentasi')->nullable();
             $table->timestamps();
 
-            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('restrict');
         });
     }
 

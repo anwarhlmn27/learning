@@ -49,7 +49,7 @@ return new class extends Migration
             
             $table->timestamps();
 
-            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('restrict');
             $table->foreign('prerequisite_id')->references('id')->on('subjects')->onDelete('set null');
         });
     }

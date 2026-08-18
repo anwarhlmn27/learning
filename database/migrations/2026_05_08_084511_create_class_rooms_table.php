@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'archived', 'deleted'])->default('active');
             $table->timestamps();
             
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
+            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('restrict');
         });
 
         // Tabel Pivot Peserta Kelas (Dosen, Mahasiswa, BAAK)

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('enrollment_id')->references('id')->on('enrollments')->onDelete('cascade');
-            $table->foreign('rps_assessment_id')->references('id')->on('rps_assessments')->onDelete('cascade');
+            $table->foreign('rps_assessment_id')->references('id')->on('rps_assessments')->onDelete('restrict');
         }); 
     }
 

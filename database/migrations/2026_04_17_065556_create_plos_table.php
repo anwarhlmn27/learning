@@ -33,7 +33,7 @@ return new class extends Migration
             $table->enum('status', ['Draft', 'Aktif', 'Revisi'])->default('Draft');
             $table->timestamps();
 
-            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('restrict');
         });
         
     }

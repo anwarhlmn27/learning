@@ -28,7 +28,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('rps_session_id')->references('id')->on('rps_sessions')->onDelete('cascade');
-            $table->foreign('clo_id')->references('id')->on('clos')->onDelete('cascade');
+            $table->foreign('clo_id')->references('id')->on('clos')->onDelete('restrict');
             // $table->foreign('assessment_type_id')->references('id')->on('assessment_types')->onDelete('cascade');
         });
     }

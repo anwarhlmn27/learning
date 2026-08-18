@@ -43,7 +43,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Relasi ke tabel prodi
-            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('restrict');
         });
         
         // 2. Create gp_attachments table for flexible document storage
@@ -54,7 +54,7 @@ return new class extends Migration
             $table->string('file_path');
             $table->timestamps();
 
-            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('cascade');
+            $table->foreign('id_prodi')->references('id')->on('prodis')->onDelete('restrict');
         });
        
     }

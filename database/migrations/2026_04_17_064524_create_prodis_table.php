@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('sign')->nullable();
             $table->timestamps();
 
-            $table->foreign('id_fakultas')->references('id')->on('fakultas')->onDelete('cascade');
+            $table->foreign('id_fakultas')->references('id')->on('fakultas')->onDelete('restrict');
         });
     
     }
