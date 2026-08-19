@@ -166,6 +166,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/classes/{class}/edit', [\App\Http\Controllers\ClassRoomController::class, 'edit'])->name('classes.edit');
     Route::match(['put', 'post'], '/classes/{class}', [\App\Http\Controllers\ClassRoomController::class, 'update'])->name('classes.update');
     Route::get('/classes/{class}/export-grades', [\App\Http\Controllers\ClassRoomController::class, 'exportGrades'])->name('classes.export_grades');
+    Route::get('/classes/{class}/achievements', [\App\Http\Controllers\ClassRoomController::class, 'getAchievements'])->name('classes.achievements');
     Route::post('/classes/{class}/generate-lms', [\App\Http\Controllers\ClassRoomController::class, 'generateLmsFromRps'])->name('classes.generate_lms');
     Route::post('/classes/{class}/enroll', [\App\Http\Controllers\ClassRoomController::class, 'enroll'])->name('classes.enroll');
     Route::post('/classes/{class}/import-students', [\App\Http\Controllers\ClassRoomController::class, 'importStudents'])->name('classes.import_students');

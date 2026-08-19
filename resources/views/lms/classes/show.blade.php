@@ -404,19 +404,22 @@
 <!-- Tab Navigation Header -->
 <div class="tabs-bar">
     <button class="tab-trigger active" data-tab="tab-classwork">
-        📚 Sesi & Classwork
+        📚 Sesi Kelas
     </button>
     <button class="tab-trigger" data-tab="tab-people">
-        👥 Peserta & Staff (People)
+        👥 Peserta
     </button>
     <button class="tab-trigger" data-tab="tab-grades">
-        📝 Penugasan & Nilai (Grades)
+        📝 Nilai
     </button>
     <button class="tab-trigger" data-tab="tab-leaderboard">
         🏆 Leaderboard
     </button>
     <button class="tab-trigger" data-tab="tab-settings">
         ⚙️ Settings
+    </button>
+    <button class="tab-trigger" data-tab="tab-achievements">
+        📈 Achievements
     </button>
 </div>
 
@@ -1547,6 +1550,44 @@
 </div>
 
 <!-- ============================================ -->
+<!-- TAB 5: ACHIEVEMENTS                          -->
+<!-- ============================================ -->
+<div id="tab-achievements" class="tab-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">Student Achievements</h2>
+        <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">
+            Ringkasan performa dan capaian kelas, dihitung secara otomatis berdasarkan penugasan dan kuis.
+        </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Grade Distribution Chart -->
+        <div class="card shadow-sm" style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem;">
+            <h4 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text-primary); text-align: center;">Distribusi Nilai Akhir</h4>
+            <div style="position: relative; height: 300px;">
+                <canvas id="gradeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Pass/Fail Donut Chart -->
+        <div class="card shadow-sm" style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem;">
+            <h4 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text-primary); text-align: center;">Tingkat Kelulusan (Min. C)</h4>
+            <div style="position: relative; height: 300px; display: flex; justify-content: center;">
+                <canvas id="passFailChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLO Achievement Chart -->
+    <div class="card shadow-sm" style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem;">
+        <h4 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text-primary); text-align: center;">Rata-rata Capaian Pembelajaran (CLO)</h4>
+        <div style="position: relative; height: 350px;">
+            <canvas id="cloChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
 <!-- FLOATING MODALS                              -->
 <!-- ============================================ -->
 
@@ -2187,8 +2228,12 @@
             </form>
         </div>
     </div>
+    </div>
 </div>
 
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -3189,4 +3234,119 @@
     </div>
 </div>
 @endif
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const achievementsTabBtn = document.querySelector('.tab-trigger[data-tab="tab-achievements"]');
+    let achievementsLoaded = false;
+    let gradeChartInstance = null;
+    let passFailChartInstance = null;
+    let cloChartInstance = null;
+
+    if (achievementsTabBtn) {
+        achievementsTabBtn.addEventListener('click', function () {
+            if (!achievementsLoaded) {
+                loadAchievements();
+            }
+        });
+    }
+
+    function loadAchievements() {
+        fetch('{{ route("classes.achievements", $class->id) }}')
+            .then(response => response.json())
+            .then(data => {
+                achievementsLoaded = true;
+                renderGradeChart(data.grades);
+                renderPassFailChart(data.pass_fail);
+                renderCloChart(data.clos);
+            })
+            .catch(error => {
+                console.error("Error fetching achievements data:", error);
+            });
+    }
+
+    function renderGradeChart(data) {
+        const ctx = document.getElementById('gradeChart').getContext('2d');
+        gradeChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Jumlah Mahasiswa',
+                    data: data.data,
+                    backgroundColor: [
+                        '#10b981', // A
+                        '#34d399', // A-
+                        '#3b82f6', // B+
+                        '#60a5fa', // B
+                        '#93c5fd', // B-
+                        '#f59e0b', // C+
+                        '#fbbf24', // C
+                        '#ef4444'  // D
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    function renderPassFailChart(data) {
+        const ctx = document.getElementById('passFailChart').getContext('2d');
+        passFailChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.data,
+                    backgroundColor: ['#10b981', '#ef4444'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    function renderCloChart(data) {
+        const ctx = document.getElementById('cloChart').getContext('2d');
+        cloChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Rata-rata Nilai (0-100)',
+                    data: data.data,
+                    backgroundColor: '#4f46e5',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+});
+</script>
 @endsection

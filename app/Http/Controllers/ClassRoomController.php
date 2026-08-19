@@ -1898,4 +1898,108 @@ class ClassRoomController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+    public function getAchievements(ClassRoom $class)
+    {
+        $enrollments = Enrollment::with('student.user')->where('class_room_id', $class->id)->get();
+        
+        $assignments = Assignment::with('rpsAssessment.clo')->where('class_room_id', $class->id)->get();
+        $quizIds = ClassTopic::where('class_room_id', $class->id)->where('type', 'quiz')->pluck('content_id');
+        $quizzes = Quiz::with('rpsAssessment.clo')->whereIn('id', $quizIds)->get();
+
+        $submissions = AssignmentSubmission::whereIn('assignment_id', $assignments->pluck('id'))->get()->groupBy('student_id');
+        $quizAttempts = \App\Models\StudentQuizAttempt::whereIn('quiz_id', $quizzes->pluck('id'))->get()->groupBy('user_id');
+
+        $gradesCount = ['A' => 0, 'A-' => 0, 'B+' => 0, 'B' => 0, 'B-' => 0, 'C+' => 0, 'C' => 0, 'D' => 0];
+        $passCount = 0;
+        $failCount = 0;
+        
+        $cloStats = []; 
+        $subjectClos = \App\Models\Clo::where('subject_id', $class->subject_id)->orderBy('kode_clo')->get();
+        foreach ($subjectClos as $clo) {
+            $cloStats[$clo->kode_clo] = ['total_score_weight' => 0, 'total_weight' => 0];
+        }
+
+        foreach ($enrollments as $enrollment) {
+            $student = $enrollment->student;
+            $userId = $student->user->id ?? null;
+            $studentFinalScore = 0;
+
+            $studentSubs = $submissions->get($student->id, collect());
+            $studentQuizzes = $userId ? $quizAttempts->get($userId, collect()) : collect();
+
+            foreach ($assignments as $assignment) {
+                $sub = $studentSubs->where('assignment_id', $assignment->id)->first();
+                $score = $sub ? (float)$sub->score : 0;
+                $weight = $assignment->rpsAssessment ? (float)$assignment->rpsAssessment->weight : 0;
+                
+                $studentFinalScore += ($score * ($weight / 100));
+
+                if ($assignment->rpsAssessment && $assignment->rpsAssessment->clo) {
+                    $cloCode = $assignment->rpsAssessment->clo->kode_clo;
+                    if (!isset($cloStats[$cloCode])) {
+                        $cloStats[$cloCode] = ['total_score_weight' => 0, 'total_weight' => 0];
+                    }
+                    $cloStats[$cloCode]['total_score_weight'] += ($score * $weight);
+                    $cloStats[$cloCode]['total_weight'] += $weight;
+                }
+            }
+
+            foreach ($quizzes as $quiz) {
+                $attempt = $studentQuizzes->where('quiz_id', $quiz->id)->sortByDesc('score')->first();
+                $score = $attempt ? (float)$attempt->score : 0;
+                $weight = $quiz->rpsAssessment ? (float)$quiz->rpsAssessment->weight : 0;
+
+                $studentFinalScore += ($score * ($weight / 100));
+
+                if ($quiz->rpsAssessment && $quiz->rpsAssessment->clo) {
+                    $cloCode = $quiz->rpsAssessment->clo->kode_clo;
+                    if (!isset($cloStats[$cloCode])) {
+                        $cloStats[$cloCode] = ['total_score_weight' => 0, 'total_weight' => 0];
+                    }
+                    $cloStats[$cloCode]['total_score_weight'] += ($score * $weight);
+                    $cloStats[$cloCode]['total_weight'] += $weight;
+                }
+            }
+
+            if ($studentFinalScore >= 90) { $gradesCount['A']++; $passCount++; }
+            elseif ($studentFinalScore >= 85) { $gradesCount['A-']++; $passCount++; }
+            elseif ($studentFinalScore >= 80) { $gradesCount['B+']++; $passCount++; }
+            elseif ($studentFinalScore >= 70) { $gradesCount['B']++; $passCount++; }
+            elseif ($studentFinalScore >= 65) { $gradesCount['B-']++; $passCount++; }
+            elseif ($studentFinalScore >= 60) { $gradesCount['C+']++; $passCount++; }
+            elseif ($studentFinalScore >= 50) { $gradesCount['C']++; $passCount++; }
+            else { $gradesCount['D']++; $failCount++; }
+        }
+
+        $cloLabels = [];
+        $cloData = [];
+        
+        foreach ($cloStats as $cloCode => $stats) {
+            $cloLabels[] = $cloCode;
+            if ($stats['total_weight'] > 0) {
+                $cloData[] = round($stats['total_score_weight'] / $stats['total_weight'], 2);
+            } else {
+                $cloData[] = 0;
+            }
+        }
+
+        return response()->json([
+            'grades' => [
+                'labels' => ['A (≥90)', 'A- (85-89)', 'B+ (80-84)', 'B (70-79)', 'B- (65-69)', 'C+ (60-64)', 'C (50-59)', 'D (<50)'],
+                'data' => [
+                    $gradesCount['A'], $gradesCount['A-'], $gradesCount['B+'], 
+                    $gradesCount['B'], $gradesCount['B-'], $gradesCount['C+'], 
+                    $gradesCount['C'], $gradesCount['D']
+                ]
+            ],
+            'pass_fail' => [
+                'labels' => ['Pass (A-C)', 'Fail (D)'],
+                'data' => [$passCount, $failCount]
+            ],
+            'clos' => [
+                'labels' => $cloLabels,
+                'data' => $cloData
+            ]
+        ]);
+    }
 }
