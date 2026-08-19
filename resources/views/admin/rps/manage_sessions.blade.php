@@ -139,16 +139,16 @@
             <div id="activities_container_{{ $session->id }}">
                 @foreach($session->activities as $index => $activity)
                     <div class="activity-row" style="display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.5rem;">
-                        <div style="width: 150px;">
+                        <div style="flex: 0 0 150px;">
                             <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} <span style="color: red;">*</span></label>
-                            <select name="activities[{{ $index }}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                            <select name="activities[{{ $index }}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; box-sizing: border-box;">
                                 <option value="Connect" {{ $activity->type == 'Connect' ? 'selected' : '' }}>Connect</option>
                                 <option value="Coach" {{ $activity->type == 'Coach' ? 'selected' : '' }}>Coach</option>
                                 <option value="Check" {{ $activity->type == 'Check' ? 'selected' : '' }}>Check</option>
                                 <option value="Wrap-up" {{ $activity->type == 'Wrap-up' ? 'selected' : '' }}>Wrap-up</option>
                             </select>
                         </div>
-                        <div style="width: 100px;">
+                        <div style="flex: 0 0 100px;">
                             <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Dur (Min)') }} <span style="color: red;">*</span></label>
                             <input type="number" name="activities[{{ $index }}][duration]" value="{{ $activity->duration }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                         </div>
@@ -416,18 +416,18 @@
         row.style.alignItems = 'flex-start';
         row.style.marginBottom = '0.5rem';
         row.innerHTML = `
-            <div style="width: 150px;">
+            <div style="flex: 0 0 150px;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} </label>
-                <select name="activities[${index}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                <select name="activities[${index}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; box-sizing: border-box;">
                     <option value="Connect">Connect</option>
                     <option value="Coach">Coach</option>
                     <option value="Check">Check</option>
                     <option value="Wrap-up">Wrap-up</option>
                 </select>
             </div>
-            <div style="width: 100px;">
+            <div style="flex: 0 0 100px;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Dur (Min)') }} </label>
-                <input type="number" name="activities[${index}][duration]" value="0" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                <input type="number" name="activities[${index}][duration]" value="0" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; box-sizing: border-box;">
             </div>
             <div style="flex: 1;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Activity Content') }} </label>
