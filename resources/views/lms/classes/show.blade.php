@@ -992,7 +992,7 @@
 <!-- ============================================ -->
 <div id="tab-grades" class="tab-content">
     
-    @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+    @if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak']))
         <!-- Dosen Gradebook Matrix Dashboard -->
         <div class="card" style="margin-bottom: 2rem;">
             <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
