@@ -46,4 +46,34 @@ class RpsSession extends Model
     {
         return $this->hasMany(SessionResource::class, 'rps_session_id');
     }
+
+    public function classSessions()
+    {
+        return $this->hasMany(ClassSession::class, 'rps_session_id');
+    }
+
+    public function hasStudentActivity()
+    {
+        // Check assignment submissions via ClassSessions
+        foreach ($this->classSessions as $classSession) {
+            $hasSubmissions = Assignment::where('class_session_id', $classSession->id)
+                ->whereHas('submissions')
+                ->exists();
+            if ($hasSubmissions) {
+                return true;
+            }
+        }
+
+        // Check quiz attempts via Assessments -> Quizzes
+        foreach ($this->assessments as $assessment) {
+            $hasQuizAttempts = Quiz::where('rps_assessment_id', $assessment->id)
+                ->whereHas('attempts')
+                ->exists();
+            if ($hasQuizAttempts) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

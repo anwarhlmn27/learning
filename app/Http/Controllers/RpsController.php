@@ -116,6 +116,12 @@ class RpsController extends Controller
             'dosen_pengampu' => 'required|string',
             'status' => 'required|in:Draft,Aktif,Arsip',
         ]);
+        if ($request->status === 'Aktif') {
+            $totalWeight = \App\Models\RpsAssessment::whereIn('rps_session_id', $rp->sessions->pluck('id'))->sum('weight');
+            if ($totalWeight != 100) {
+                return redirect()->back()->withErrors(['error' => 'RPS tidak dapat diaktifkan karena total bobot Assessment belum 100% (Saat ini: ' . $totalWeight . '%). Silakan lengkapi bobot di menu Manage Sessions.'])->withInput();
+            }
+        }
 
         $rp->update($request->all());
 
@@ -134,16 +140,9 @@ class RpsController extends Controller
             return redirect()->back()->withErrors(['error' => 'RPS tidak dapat dihapus karena sudah disinkronisasikan dan digunakan di kelas LMS.']);
         }
 
-        $hasActivities = \App\Models\RpsActivity::whereIn('rps_session_id', $rp->sessions->pluck('id'))->exists();
         $hasAssessments = \App\Models\RpsAssessment::whereIn('rps_session_id', $rp->sessions->pluck('id'))->exists();
-        $hasFilledSessions = $rp->sessions()->where(function($q) {
-            $q->whereNotNull('sub_clo')->where('sub_clo', '!=', '')
-              ->orWhereNotNull('learning_materials')->where('learning_materials', '!=', '')
-              ->orWhereNotNull('assessment_indicators')->where('assessment_indicators', '!=', '');
-        })->exists();
-
-        if ($hasActivities || $hasAssessments || $hasFilledSessions) {
-            return redirect()->back()->withErrors(['error' => 'RPS tidak dapat dihapus karena sudah memiliki konten (Sesi Pembelajaran, Aktivitas, atau Assessment).']);
+        if ($hasAssessments) {
+            return redirect()->back()->withErrors(['error' => 'RPS tidak dapat dihapus. Sebagai bentuk konfirmasi keamanan, silakan hapus semua Assessment di dalam sesi RPS ini terlebih dahulu.']);
         }
 
         $rp->delete();
@@ -297,6 +296,12 @@ class RpsController extends Controller
 
     public function updateSession(Request $request, RpsSession $session)
     {
+        if ($session->hasStudentActivity()) {
+            return redirect()->back()->withErrors(['error' => 'Sesi RPS tidak dapat diubah karena sudah ada aktivitas mahasiswa (pengumpulan tugas/kuis) di LMS untuk sesi ini.']);
+        }
+
+        $isSynced = $session->rps && $session->rps->isSyncedWithLms();
+
         $request->validate([
             'topic_name' => 'required|string',
             'sub_clo' => 'nullable|string',
@@ -336,33 +341,75 @@ class RpsController extends Controller
             }
             
             $session->update($data);
-            $session->clos()->sync($request->clos ?? []);
 
-            // Handle Assessments
-            $session->assessments()->delete();
-            if ($request->has('assessments') && is_array($request->assessments)) {
-                foreach ($request->assessments as $assess) {
-                    $session->assessments()->create([
-                        'clo_id' => !empty($assess['clo_id']) ? $assess['clo_id'] : null,
-                        'assessment_type' => $assess['assessment_type'],
-                        'assignment_activities' => $assess['assignment_activities'] ?? null,
-                        'assessment_scope' => $assess['assessment_scope'] ?? null,
-                        'how_worked' => $assess['how_worked'] ?? null,
-                        'time_worked' => $assess['time_worked'] ?? null,
-                        'assessment_output' => $assess['assessment_output'] ?? null,
-                        'weight' => $assess['weight'],
-                    ]);
+            // Auto-sync ClassSession title to match RPS topic_name
+            if (isset($data['topic_name'])) {
+                foreach ($session->classSessions as $classSession) {
+                    $classSession->update(['title' => $data['topic_name']]);
                 }
             }
 
-            // Double check total weight for the whole RPS
-            $totalWeight = RpsAssessment::whereIn('rps_session_id', $session->rps->sessions->pluck('id'))->sum('weight');
-            if ($totalWeight > 100) {
-                DB::rollBack();
-                return redirect()->back()->withErrors(['error' => 'Total weight exceeds 100% (Current: ' . $totalWeight . '%)'])->withInput();
+            if (!$isSynced) {
+                $session->clos()->sync($request->clos ?? []);
+
+                // Handle Assessments only if not synced to prevent ID recreation breaking LMS
+                $session->assessments()->delete();
+                if ($request->has('assessments') && is_array($request->assessments)) {
+                    foreach ($request->assessments as $assess) {
+                        $session->assessments()->create([
+                            'clo_id' => !empty($assess['clo_id']) ? $assess['clo_id'] : null,
+                            'assessment_type' => $assess['assessment_type'],
+                            'assignment_activities' => $assess['assignment_activities'] ?? null,
+                            'assessment_scope' => $assess['assessment_scope'] ?? null,
+                            'how_worked' => $assess['how_worked'] ?? null,
+                            'time_worked' => $assess['time_worked'] ?? null,
+                            'assessment_output' => $assess['assessment_output'] ?? null,
+                            'weight' => $assess['weight'],
+                        ]);
+                    }
+                }
+
+                // Double check total weight for the whole RPS
+                $totalWeight = RpsAssessment::whereIn('rps_session_id', $session->rps->sessions->pluck('id'))->sum('weight');
+                if ($totalWeight > 100) {
+                    DB::rollBack();
+                    return redirect()->back()->withErrors(['error' => 'Total weight exceeds 100% (Current: ' . $totalWeight . '%)'])->withInput();
+                }
+            } else {
+                // If synced, ONLY allow updating text fields of existing assessments
+                if ($request->has('assessments') && is_array($request->assessments)) {
+                    foreach ($request->assessments as $assess) {
+                        if (isset($assess['id'])) {
+                            $existingAssess = $session->assessments()->find($assess['id']);
+                            if ($existingAssess) {
+                                // Update text fields, ignore weight and clo_id
+                                $existingAssess->update([
+                                    'assessment_type' => $assess['assessment_type'],
+                                    'assignment_activities' => $assess['assignment_activities'] ?? null,
+                                    'assessment_scope' => $assess['assessment_scope'] ?? null,
+                                    'how_worked' => $assess['how_worked'] ?? null,
+                                    'time_worked' => $assess['time_worked'] ?? null,
+                                    'assessment_output' => $assess['assessment_output'] ?? null,
+                                ]);
+
+                                // Auto-sync to LMS Assignments (ONLY instruction, keep Dosen's custom title)
+                                \App\Models\Assignment::where('rps_assessment_id', $existingAssess->id)
+                                    ->update([
+                                        'instruction' => $assess['assignment_activities'] ?? ''
+                                    ]);
+
+                                // Auto-sync to LMS Quizzes (ONLY description, keep Dosen's custom title)
+                                \App\Models\Quiz::where('rps_assessment_id', $existingAssess->id)
+                                    ->update([
+                                        'description' => $assess['assignment_activities'] ?? ''
+                                    ]);
+                            }
+                        }
+                    }
+                }
             }
 
-            // Sync activities
+            // Sync activities (safe to recreate because they aren't directly linked to LMS submissions)
             $session->activities()->delete();
             if ($request->has('activities') && is_array($request->activities)) {
                 foreach ($request->activities as $activity) {
@@ -427,6 +474,10 @@ class RpsController extends Controller
 
     public function storeActivity(Request $request, RpsSession $session)
     {
+        if ($session->hasStudentActivity()) {
+            return redirect()->back()->withErrors(['error' => 'Aktivitas tidak dapat ditambah karena sudah ada aktivitas mahasiswa di kelas LMS untuk sesi ini.']);
+        }
+
         $request->validate([
             'type' => 'required|in:Connect,Coach,Check,Wrap-up',
             'duration' => 'required|integer|min:1',
@@ -440,6 +491,10 @@ class RpsController extends Controller
 
     public function destroyActivity(RpsActivity $activity)
     {
+        if ($activity->session && $activity->session->hasStudentActivity()) {
+            return redirect()->back()->withErrors(['error' => 'Aktivitas tidak dapat dihapus karena sudah ada aktivitas mahasiswa di kelas LMS untuk sesi ini.']);
+        }
+
         $activity->delete();
         return redirect()->back()->with('success', 'Activity deleted successfully.');
     }

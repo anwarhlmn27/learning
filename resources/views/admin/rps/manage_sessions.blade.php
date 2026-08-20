@@ -173,6 +173,7 @@
             <div id="assessments_container_{{ $session->id }}">
                 @foreach($session->assessments as $index => $assessment)
                     <div class="assessment-row">
+                        <input type="hidden" name="assessments[{{ $index }}][id]" value="{{ $assessment->id }}">
                         <div style="display: grid; grid-template-columns: 1fr 1fr 100px auto; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
                             <div>
                                 <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Target CLO') }} <span style="color: red;">*</span></label>
