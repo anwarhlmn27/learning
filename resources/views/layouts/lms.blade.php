@@ -84,15 +84,20 @@
             @php
                 $dashboardLogo = \App\Models\Setting::where('key', 'dashboard_logo')->value('value');
             @endphp
-            <a href="{{ route('dashboard') }}" class="brand-logo" style="display: flex; align-items: center; justify-content: center;">
+            <a href="{{ route('dashboard') }}" class="brand-logo">
                 @if($dashboardLogo)
-                    <img src="{{ asset('img/logo_dashboard/' . $dashboardLogo) }}" alt="Campus Logo" style="max-width: 100%; max-height: 50px; object-fit: contain;">
+                    <!-- Logo untuk sidebar tertutup (mini) -->
+                    <img class="logo-abbr" src="{{ asset('img/logo_dashboard/' . $dashboardLogo) }}" alt="Logo" style="max-width: 45px; max-height: 45px; object-fit: contain;">
+                    <!-- Logo untuk sidebar terbuka (full) -->
+                    <img class="brand-title" src="{{ asset('img/logo_dashboard/' . $dashboardLogo) }}" alt="Campus Logo" style="max-width: 140px; max-height: 50px; object-fit: contain;">
                 @else
-                    <h2 class="brand-title" style="color: var(--primary); font-weight: 700; margin: 0; font-size: 1.5rem;">Horizon</h2>
+                    <!-- Inisial jika tidak ada logo -->
+                    <h2 class="logo-abbr" style="color: var(--primary); font-weight: 700; margin: 0; font-size: 1.5rem;">H</h2>
+                    <h2 class="brand-title" style="color: var(--primary); font-weight: 700; margin: 0; font-size: 1.5rem; padding-left: 10px;">Horizon</h2>
                 @endif
             </a>
 
-            <div class="nav-control" style="position: absolute; right: -10px; z-index: 9999;">
+            <div class="nav-control">
                 <div class="hamburger">
                     <span class="line"></span><span class="line"></span><span class="line"></span>
                 </div>
