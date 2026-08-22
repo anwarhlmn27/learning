@@ -77,4 +77,13 @@ class Prodi extends Model
     {
         return $this->hasManyThrough(Rps::class, Subject::class, 'id_prodi', 'subject_id');
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($model) {
+            if ($model->visi()->exists()) {
+                throw new \Exception('Data tidak bisa dihapus karena masih terhubung dengan data Visi & Misi.');
+            }
+        });
+    }
 }

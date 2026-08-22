@@ -36,4 +36,13 @@ class Univ extends Model
     {
         return $this->belongsTo(User::class, 'rektor_id');
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($model) {
+            if ($model->visi()->exists()) {
+                throw new \Exception('Data tidak bisa dihapus karena masih terhubung dengan data Visi & Misi.');
+            }
+        });
+    }
 }

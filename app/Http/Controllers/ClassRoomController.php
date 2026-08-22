@@ -184,7 +184,7 @@ class ClassRoomController extends Controller
             "Expires"             => "0"
         ];
 
-        $columns = ['No', 'Kode Kelas', 'Nama Kelas', 'Tahun Akademik', 'Semester', 'Nama Pengajar', 'Jumlah Siswa', 'Status'];
+        $columns = ['No', 'Kode Kelas', 'Nama Matakuliah', 'Nama Kelas', 'Tahun Akademik', 'Semester', 'Nama Pengajar', 'Jumlah Siswa', 'Status'];
 
         $callback = function() use($classes, $columns) {
             $file = fopen('php://output', 'w');
@@ -201,11 +201,13 @@ class ClassRoomController extends Controller
                 }
                 
                 $kodeKelas = optional($class->subject)->kode_subject ?? '-';
+                $namaMataKuliah = optional($class->subject)->nama_subject ?? '-';
                 $jumlahSiswa = $class->enrollments ? $class->enrollments->count() : 0;
 
                 $row = [
                     $index + 1,
                     $kodeKelas,
+                    $namaMataKuliah,
                     $class->nama_kelas,
                     $class->tahun_akademik,
                     $class->semester,
