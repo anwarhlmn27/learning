@@ -162,6 +162,7 @@ Route::middleware('auth')->group(function () {
 
     // Class Enrollment & Management
     // Class Enrollment & Management
+    Route::get('/classes/export-active', [\App\Http\Controllers\ClassRoomController::class, 'exportActiveClasses'])->name('classes.export_active');
     Route::resource('/classes', \App\Http\Controllers\ClassRoomController::class)->names('classes');
     Route::get('/classes/{class}/edit', [\App\Http\Controllers\ClassRoomController::class, 'edit'])->name('classes.edit');
     Route::match(['put', 'post'], '/classes/{class}', [\App\Http\Controllers\ClassRoomController::class, 'update'])->name('classes.update');

@@ -156,6 +156,72 @@ class ClassRoomController extends Controller
         ));
     }
 
+    public function exportActiveClasses(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole(['admin', 'kaprodi', 'baak', 'rektor', 'dekan'])) {
+            abort(403, 'Anda tidak memiliki akses untuk export kelas.');
+        }
+
+        $query = ClassRoom::with(['subject', 'dosens.dosen', 'enrollments'])->visible()->active();
+        
+        // Filter by prodi if passed
+        if ($request->filled('prodi_id')) {
+            $query->whereHas('subject', function($q) use ($request) {
+                $q->where('id_prodi', $request->prodi_id);
+            });
+        }
+
+        $classes = $query->latest()->get();
+
+        $filename = "Kelas_Aktif_" . date('Y-m-d_H-i-s') . ".csv";
+
+        $headers = [
+            "Content-type"        => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = ['No', 'Kode Kelas', 'Nama Kelas', 'Tahun Akademik', 'Semester', 'Nama Pengajar', 'Jumlah Siswa', 'Status'];
+
+        $callback = function() use($classes, $columns) {
+            $file = fopen('php://output', 'w');
+            // Add BOM so Excel opens UTF-8 properly
+            fputs($file, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF)));
+            
+            fputcsv($file, $columns, ';');
+
+            foreach ($classes as $index => $class) {
+                $dosenName = '-';
+                $firstDosenUser = $class->dosens()->first();
+                if ($firstDosenUser) {
+                    $dosenName = $firstDosenUser->dosen->nama_dosen ?? $firstDosenUser->name;
+                }
+                
+                $kodeKelas = optional($class->subject)->kode_subject ?? '-';
+                $jumlahSiswa = $class->enrollments ? $class->enrollments->count() : 0;
+
+                $row = [
+                    $index + 1,
+                    $kodeKelas,
+                    $class->nama_kelas,
+                    $class->tahun_akademik,
+                    $class->semester,
+                    $dosenName,
+                    $jumlahSiswa,
+                    'Aktif'
+                ];
+
+                fputcsv($file, $row, ';');
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function store(Request $request)
     {
         $user = Auth::user();

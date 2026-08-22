@@ -13,11 +13,18 @@
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
     <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-main);">{{ __('Kelas Aktif') }}</h2>
-    @if(Auth::user()->can('create-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
-    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddClass">
-        <i>➕</i> {{ __('Tambah Kelas') }}
-    </button>
-    @endif
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        @if(Auth::user()->hasRole(['admin', 'kaprodi', 'baak', 'rektor', 'dekan']))
+        <a href="{{ route('classes.export_active', request()->all()) }}" class="btn btn-success btn-sm" style="display: inline-flex; align-items: center; gap: 0.25rem;">
+            <i>⬇️</i> {{ __('Export Excel') }}
+        </a>
+        @endif
+        @if(Auth::user()->can('create-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAddClass">
+            <i>➕</i> {{ __('Tambah Kelas') }}
+        </button>
+        @endif
+    </div>
 </div>
 
 {{-- Navigation Tabs: Kelas yang Saya Ampu vs Kelas Program Studi --}}
