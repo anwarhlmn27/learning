@@ -137,7 +137,17 @@
                 </a>
                 
                 @if(Auth::user()->can('edit-classes') || Auth::user()->can('delete-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
-                <button class="btn btn-outline-secondary" style="padding: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px;" onclick="openEditModal('{{ $class->id }}', '{{ $class->subject_id }}', '{{ $classPrimaryDosenMap[$class->id] ?? '' }}', '{{ addslashes($class->nama_kelas) }}', '{{ $class->tahun_akademik }}', '{{ $class->semester }}', '{{ $class->status }}')" title="{{ __('Edit Class') }}">
+                <button class="btn btn-outline-secondary" style="padding: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px;" 
+                    data-id="{{ $class->id }}"
+                    data-subject="{{ $class->subject_id }}"
+                    data-dosen="{{ $classPrimaryDosenMap[$class->id] ?? '' }}"
+                    data-nama="{{ $class->nama_kelas }}"
+                    data-tahun="{{ $class->tahun_akademik }}"
+                    data-semester="{{ $class->semester }}"
+                    data-ruangan="{{ $class->ruangan }}"
+                    data-jadwal="{{ $class->jadwal }}"
+                    data-status="{{ $class->status }}"
+                    onclick="openEditModalFromBtn(this)" title="{{ __('Edit Class') }}">
                     ✏️
                 </button>
                 <form action="{{ route('classes.destroy', $class) }}" method="POST" style="margin: 0; display: inline-flex;" class="swal-confirm-form" data-swal-msg="{{ __('Hapus kelas ini? Kelas aktif yang memiliki kegiatan tidak dapat dihapus. Arsipkan dulu jika perlu.') }}">
@@ -244,6 +254,14 @@
                             </select>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Ruangan') }}</label>
+                        <input type="text" name="ruangan" class="form-control" placeholder="e.g. R. 204" value="{{ old('ruangan') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Waktu / Jadwal') }}</label>
+                        <textarea name="jadwal" class="form-control" rows="3" placeholder="e.g. Senin, 08:00 - 10:00">{{ old('jadwal') }}</textarea>
+                    </div>
                     <div class="modal-footer px-0 pb-0 mt-3 border-0">
                         <button type="button" class="btn btn-danger light" data-bs-dismiss="modal">{{ __('Batal') }}</button>
                         <button type="submit" class="btn btn-primary">{{ __('Simpan Kelas') }}</button>
@@ -334,6 +352,14 @@
                         </div>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Ruangan') }}</label>
+                        <input type="text" name="ruangan" id="edit-ruangan" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark font-w600">{{ __('Waktu / Jadwal') }}</label>
+                        <textarea name="jadwal" id="edit-jadwal" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label text-dark font-w600">{{ __('Status Kelas') }} <span class="text-danger">*</span></label>
                         <select name="status" id="edit-status" class="default-select form-control wide" required>
                             <option value="active">{{ __('Aktif') }}</option>
@@ -411,7 +437,17 @@
         @endif
     });
 
-    function openEditModal(id, subject_id, dosen_id, nama_kelas, tahun_akademik, semester, status) {
+    function openEditModalFromBtn(btn) {
+        const id = btn.getAttribute('data-id');
+        const subject_id = btn.getAttribute('data-subject');
+        const dosen_id = btn.getAttribute('data-dosen');
+        const nama_kelas = btn.getAttribute('data-nama');
+        const tahun_akademik = btn.getAttribute('data-tahun');
+        const semester = btn.getAttribute('data-semester');
+        const ruangan = btn.getAttribute('data-ruangan');
+        const jadwal = btn.getAttribute('data-jadwal');
+        const status = btn.getAttribute('data-status');
+
         document.getElementById('edit-form').action = "{{ route('classes.update', ':id') }}".replace(':id', id);
         $('#edit-subject').val(subject_id).trigger('change');
 
@@ -433,6 +469,8 @@
 
         document.getElementById('edit-nama').value = nama_kelas;
         document.getElementById('edit-tahun').value = tahun_akademik;
+        document.getElementById('edit-ruangan').value = ruangan;
+        document.getElementById('edit-jadwal').value = jadwal;
         
         $('#edit-semester').val(semester);
         $('#edit-status').val(status);

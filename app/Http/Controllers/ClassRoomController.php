@@ -237,6 +237,8 @@ class ClassRoomController extends Controller
             'nama_kelas' => 'required|string|max:255',
             'tahun_akademik' => 'required|string|max:50',
             'semester' => 'required|in:Ganjil,Genap,Antara',
+            'ruangan' => 'nullable|string|max:255',
+            'jadwal' => 'nullable|string',
         ]);
 
         $activeRps = Rps::where('subject_id', $request->subject_id)
@@ -255,6 +257,8 @@ class ClassRoomController extends Controller
                 'nama_kelas'    => $request->nama_kelas,
                 'tahun_akademik'=> $request->tahun_akademik,
                 'semester'      => $request->semester,
+                'ruangan'       => $request->ruangan,
+                'jadwal'        => $request->jadwal,
                 'status'        => 'active',
             ]);
 
@@ -286,6 +290,8 @@ class ClassRoomController extends Controller
             'nama_kelas'     => 'required|string|max:255',
             'tahun_akademik' => 'required|string|max:50',
             'semester'       => 'required|in:Ganjil,Genap,Antara',
+            'ruangan'        => 'nullable|string|max:255',
+            'jadwal'         => 'nullable|string',
             'status'         => 'required|in:active,archived',
         ]);
 
@@ -305,6 +311,8 @@ class ClassRoomController extends Controller
                 'nama_kelas'     => $request->nama_kelas,
                 'tahun_akademik' => $request->tahun_akademik,
                 'semester'       => $request->semester,
+                'ruangan'        => $request->ruangan,
+                'jadwal'         => $request->jadwal,
                 'status'         => $request->status,
             ]);
 

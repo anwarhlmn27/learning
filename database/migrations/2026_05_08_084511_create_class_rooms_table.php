@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('nama_kelas');
             $table->string('tahun_akademik');
             $table->enum('semester', ['Ganjil', 'Genap', 'Antara']);
+            $table->text('jadwal')->nullable();
+            $table->text('ruangan')->nullable();
             $table->enum('status', ['active', 'archived', 'deleted'])->default('active');
             $table->timestamps();
             
