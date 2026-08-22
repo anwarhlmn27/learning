@@ -86,7 +86,7 @@
             @endphp
             <a href="{{ route('dashboard') }}" class="brand-logo" style="display: flex; align-items: center; justify-content: center;">
                 @if($dashboardLogo)
-                    <img src="{{ asset('img/logo_dashboard/' . $dashboardLogo) }}" alt="Campus Logo" style="max-width: 100%; max-height: 50px; object-fit: contain;">
+                    <img class="brand-title" src="{{ asset('img/logo_dashboard/' . $dashboardLogo) }}" alt="Campus Logo" style="max-width: 100%; max-height: 50px; object-fit: contain;">
                 @else
                     <h2 class="brand-title" style="color: var(--primary); font-weight: 700; margin: 0; font-size: 1.5rem;">Horizon</h2>
                 @endif
