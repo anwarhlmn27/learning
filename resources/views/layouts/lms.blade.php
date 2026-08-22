@@ -86,13 +86,13 @@
             @endphp
             <a href="{{ route('dashboard') }}" class="brand-logo" style="display: flex; align-items: center; justify-content: center;">
                 @if($dashboardLogo)
-                    <img class="brand-title" src="{{ asset('img/logo_dashboard/' . $dashboardLogo) }}" alt="Campus Logo" style="max-width: 100%; max-height: 50px; object-fit: contain;">
+                    <img src="{{ asset('img/logo_dashboard/' . $dashboardLogo) }}" alt="Campus Logo" style="max-width: 100%; max-height: 50px; object-fit: contain;">
                 @else
                     <h2 class="brand-title" style="color: var(--primary); font-weight: 700; margin: 0; font-size: 1.5rem;">Horizon</h2>
                 @endif
             </a>
 
-            <div class="nav-control">
+            <div class="nav-control" style="position: absolute; right: -10px; z-index: 9999;">
                 <div class="hamburger">
                     <span class="line"></span><span class="line"></span><span class="line"></span>
                 </div>
