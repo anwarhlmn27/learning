@@ -1117,7 +1117,7 @@
                                         // Process Quizzes
                                         foreach($sessQuizzes as $quiz) {
                                             $quizAttempt = \App\Models\StudentQuizAttempt::where('quiz_id', $quiz->id)
-                                                ->where('student_id', $studentId)
+                                                ->where('user_id', $studentUserId)
                                                 ->orderBy('score', 'desc')
                                                 ->first();
                                             
@@ -1208,7 +1208,7 @@
                                                 @php
                                                     $singleQuiz = $sessQuizzes->first();
                                                     $quizAttempt = \App\Models\StudentQuizAttempt::where('quiz_id', $singleQuiz->id)
-                                                        ->where('student_id', $studentId)
+                                                        ->where('user_id', $studentUserId)
                                                         ->orderBy('score', 'desc')
                                                         ->first();
                                                     $singleGrade = \App\Models\StudentGrade::where('enrollment_id', $enroll->id)
