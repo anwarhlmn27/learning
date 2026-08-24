@@ -3,6 +3,9 @@
 @section('header_title', 'Classroom Dashboard')
 
 @section('content')
+@php
+    $isTeachingStaff = isset($class) ? $class->users()->where('user_id', Auth::id())->exists() : false;
+@endphp
 <style>
     /* Styling Premium & Harmonious HSL Palette */
     :root {
@@ -307,7 +310,7 @@
             @endif
             {{-- Archive / Restore button --}}
             @if($class->status === 'active')
-                @if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak']))
+                @if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak']) || $isTeachingStaff)
                     @if($class->hasLecturerFeedback())
                         <form action="{{ route('classes.archive', $class) }}" method="POST" style="margin: 0;" class="swal-confirm-form" data-swal-msg="Arsipkan kelas ini? Semua konten akan menjadi read-only.">
                             @csrf
@@ -435,7 +438,7 @@
             >📋 Sesi &amp; modul disinkronkan otomatis dari RPS — {{ optional($rpsSessionsWithAssessments->first())['topic_name'] ? 'RPS aktif terhubung' : '' }}</p>
             @endif
         </div>
-        @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+        @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dekan']) || $isTeachingStaff)
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 @if($class->status === 'active' && isset($availableSourceClasses) && $availableSourceClasses->isNotEmpty())
                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalCopyContent" style="border-radius: 6px; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem;">
@@ -487,7 +490,7 @@
                                         <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: var(--text-muted);">
                                             {{ $topic->type }}
                                         </span>
-                                        @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+                                        @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dekan']) || $isTeachingStaff)
                                             @if($topic->type == 'materi' && $topic->material)
                                                 <button type="button" style="background: none; border: none; padding: 0; color: var(--primary); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center;" title="Edit Materi" 
                                                     data-id="{{ $topic->material->id }}"
@@ -605,7 +608,7 @@
                                             <a href="{{ route('classes.forums.show', [$class, $topic->forum]) }}" class="btn" style="padding: 0.35rem 0.85rem; font-size: 0.8rem; background: var(--primary); color: white; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem;">
                                                 💬 Masuk / Tulis Diskusi
                                             </a>
-                                            @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dosen']))
+                                            @if(Auth::user()->hasRole(['admin', 'kaprodi', 'dekan']) || $isTeachingStaff)
                                                 <button type="button"
                                                     data-id="{{ $topic->forum->id }}"
                                                     data-title="{{ $topic->forum->title }}"
@@ -921,7 +924,7 @@
                 <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">
                     Enrolled Students <span style="background: #e0e7ff; color: var(--primary); padding: 0.15rem 0.6rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700;">{{ $enrollments->count() }}</span>
                 </h3>
-                @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
+                @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dekan', 'baak']) || $isTeachingStaff)
                     <div style="display: flex; gap: 0.5rem;">
                         <a href="{{ route('classes.template') }}" class="btn btn-outline btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
                             <i>📥</i> Template
@@ -944,7 +947,7 @@
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Nama Mahasiswa</th>
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Program Studi</th>
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Angkatan</th>
-                            @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
+                            @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dekan', 'baak']) || $isTeachingStaff)
                                 <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: right;">Action</th>
                             @endif
                         </tr>
@@ -962,7 +965,7 @@
                             </td>
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">{{ optional($enrollment->student)->prodi->nama_prodi ?? '-' }}</td>
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">{{ optional($enrollment->student)->angkatan ?? '-' }}</td>
-                            @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dosen', 'baak']))
+                            @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dekan', 'baak']) || $isTeachingStaff)
                                 <td style="padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: right;">
                                     <form action="{{ route('classes.unenroll', [$class, $enrollment]) }}" method="POST" style="margin: 0;" class="form-unenroll">
                                         @csrf
@@ -992,7 +995,7 @@
 <!-- ============================================ -->
 <div id="tab-grades" class="tab-content">
     
-    @if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'dosen', 'baak']))
+    @if(Auth::user()->hasRole(['admin', 'rektor', 'dekan', 'kaprodi', 'baak']) || $isTeachingStaff)
         <!-- Dosen Gradebook Matrix Dashboard -->
         <div class="card" style="margin-bottom: 2rem;">
             <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
