@@ -31,7 +31,7 @@ class GoogleAuthController extends Controller
             $googleUser = Socialite::driver('google')->user();
 
             // 1. Cek apakah email berakhiran @horizon.ac.id
-            if (!str_ends_with(strtolower($googleUser->email), '@horizon.ac.id','@krw.horizon.ac.id','@phinmaed.com')) {
+            if (!\Illuminate\Support\Str::endsWith(strtolower($googleUser->email), ['@horizon.ac.id', '@krw.horizon.ac.id', '@phinmaed.com'])) {
                 return redirect()->route('login')->withErrors([
                     'email' => 'Hanya email dengan domain @horizon.ac.id, @krw.horizon.ac.id, dan @phinmaed.com yang diizinkan untuk login.'
                 ]);
