@@ -89,7 +89,7 @@ class ClassRoomController extends Controller
         }
 
         // Build query based on active tab
-        $query = ClassRoom::with(['subject.prodi'])->visible()->active();
+        $query = ClassRoom::with(['subject.prodi', 'dosens.dosen'])->withCount('students')->visible()->active();
 
         if ($activeTab === 'my_classes' || !$isStaffOrAdmin) {
             $query->where(function($q) use ($user) {
@@ -439,24 +439,26 @@ class ClassRoomController extends Controller
 
         foreach ($sourceTopics as $topic) {
             $newContentId = null;
+            $type = strtolower($topic->type);
 
-            if ($topic->type === 'materi') {
+            if ($type === 'materi') {
                 $srcMat = Material::find($topic->content_id);
                 if ($srcMat) {
                     $newMat = $srcMat->replicate();
                     $newMat->save();
                     $newContentId = $newMat->id;
                 }
-            } elseif ($topic->type === 'assignment') {
+            } elseif ($type === 'assignment') {
                 $srcAssign = Assignment::find($topic->content_id);
                 if ($srcAssign) {
                     $newAssign = $srcAssign->replicate(['submissions_count']);
                     $newAssign->class_room_id = $targetClass->id;
+                    $newAssign->class_session_id = null;
                     $newAssign->status = 'Draft';
                     $newAssign->save();
                     $newContentId = $newAssign->id;
                 }
-            } elseif ($topic->type === 'quiz') {
+            } elseif ($type === 'quiz') {
                 $srcQuiz = Quiz::with('questions')->find($topic->content_id);
                 if ($srcQuiz) {
                     $newQuiz = $srcQuiz->replicate();
@@ -470,7 +472,7 @@ class ClassRoomController extends Controller
                     }
                     $newContentId = $newQuiz->id;
                 }
-            } elseif ($topic->type === 'forum') {
+            } elseif ($type === 'forum') {
                 $srcForum = Forum::find($topic->content_id);
                 if ($srcForum) {
                     $newForum = $srcForum->replicate();

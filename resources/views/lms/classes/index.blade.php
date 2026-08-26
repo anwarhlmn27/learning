@@ -112,12 +112,22 @@
         <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between; flex: 1; padding: 1.5rem 1.5rem 1.875rem 1.5rem;">
             <div>
                 <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">{{ optional($class->subject)->nama_subject ?? __('Unknown Subject') }}</h3>
-                <p style="margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-muted);">
-                    @php
-                        $firstDosenUser = $class->dosens()->first();
-                    @endphp
-                    <i>👨‍🏫</i> {{ $firstDosenUser ? ($firstDosenUser->dosen->nama_dosen ?? $firstDosenUser->name) : __('Unknown Lecturer') }}
-                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-muted);">
+                    <div style="flex: 1; padding-right: 0.5rem; word-break: break-word;">
+                        @php
+                            $dosenUsers = $class->dosens;
+                            $dosenNames = [];
+                            foreach($dosenUsers as $dUser) {
+                                $dosenNames[] = $dUser->dosen->nama_dosen ?? $dUser->name;
+                            }
+                            $dosenText = count($dosenNames) > 0 ? implode(' & ', $dosenNames) : __('Unknown Lecturer');
+                        @endphp
+                        <i>👨‍🏫</i> {{ $dosenText }}
+                    </div>
+                    <div style="background: #e2e8f0; color: #475569; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;" title="Total Mahasiswa Terdaftar">
+                        <span style="font-size: 0.85rem;">👥</span> {{ $class->students_count ?? $class->students()->count() }}
+                    </div>
+                </div>
                 
                 <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
                     <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; flex: 1; text-align: center;">
