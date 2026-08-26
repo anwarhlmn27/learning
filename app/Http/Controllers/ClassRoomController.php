@@ -89,7 +89,7 @@ class ClassRoomController extends Controller
         }
 
         // Build query based on active tab
-        $query = ClassRoom::with(['subject.prodi', 'dosens.dosen'])->withCount('students')->visible()->active();
+        $query = ClassRoom::with(['subject.prodi', 'dosens.dosen'])->withCount('enrollments')->visible()->active();
 
         if ($activeTab === 'my_classes' || !$isStaffOrAdmin) {
             $query->where(function($q) use ($user) {

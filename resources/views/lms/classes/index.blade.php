@@ -125,7 +125,7 @@
                         <i>👨‍🏫</i> {{ $dosenText }}
                     </div>
                     <div style="background: #e2e8f0; color: #475569; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;" title="Total Mahasiswa Terdaftar">
-                        <span style="font-size: 0.85rem;">👥</span> {{ $class->students_count ?? $class->students()->count() }}
+                        <span style="font-size: 0.85rem;">👥</span> {{ $class->enrollments_count ?? $class->enrollments()->count() }}
                     </div>
                 </div>
                 
