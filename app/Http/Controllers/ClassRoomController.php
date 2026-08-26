@@ -1222,6 +1222,20 @@ class ClassRoomController extends Controller
         return back()->with('success', 'Mahasiswa berhasil dihapus dari kelas.');
     }
 
+    public function bulkUnenroll(Request $request, ClassRoom $class)
+    {
+        $request->validate([
+            'enrollment_ids' => 'required|array',
+            'enrollment_ids.*' => 'exists:enrollments,id'
+        ]);
+
+        Enrollment::whereIn('id', $request->enrollment_ids)
+            ->where('class_room_id', $class->id)
+            ->delete();
+
+        return back()->with('success', count($request->enrollment_ids) . ' Mahasiswa berhasil dihapus dari kelas.');
+    }
+
     public function importStudents(Request $request, ClassRoom $class)
     {
         set_time_limit(300);

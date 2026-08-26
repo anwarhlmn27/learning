@@ -925,7 +925,10 @@
                     Enrolled Students <span style="background: #e0e7ff; color: var(--primary); padding: 0.15rem 0.6rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700;">{{ $enrollments->count() }}</span>
                 </h3>
                 @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dekan', 'baak']) || $isTeachingStaff)
-                    <div style="display: flex; gap: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button type="button" id="btnBulkRemove" class="btn btn-danger btn-sm" style="display: none; font-size: 0.85rem; padding: 0.4rem 0.8rem;" onclick="submitBulkUnenroll()">
+                            <i>🗑️</i> Bulk Remove
+                        </button>
                         <a href="{{ route('classes.template') }}" class="btn btn-outline btn-sm" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
                             <i>📥</i> Template
                         </a>
@@ -936,12 +939,21 @@
                             <i>➕</i> Enroll Student
                         </button>
                     </div>
+                    <form id="bulkUnenrollForm" action="{{ route('classes.bulk_unenroll', $class) }}" method="POST" style="display: none;">
+                        @csrf
+                        <div id="bulkUnenrollInputs"></div>
+                    </form>
                 @endif
             </div>
             <div class="card-body" style="padding: 0; overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr>
+                            @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dekan', 'baak']) || $isTeachingStaff)
+                                <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: center; width: 40px;">
+                                    <input type="checkbox" id="checkAllEnrolled" onchange="toggleAllEnrolled(this)">
+                                </th>
+                            @endif
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left; width: 50px;">No</th>
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">NIM</th>
                             <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Nama Mahasiswa</th>
@@ -955,6 +967,11 @@
                     <tbody>
                         @forelse($enrollments as $index => $enrollment)
                         <tr>
+                            @if(Auth::user()->can('enroll-students') || Auth::user()->hasRole(['admin', 'kaprodi', 'dekan', 'baak']) || $isTeachingStaff)
+                                <td style="padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: center;">
+                                    <input type="checkbox" class="check-enrolled" value="{{ $enrollment->id }}" onchange="updateBulkRemoveBtn()">
+                                </td>
+                            @endif
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">{{ $index + 1 }}</td>
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">{{ optional($enrollment->student)->nim ?? '-' }}</td>
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
@@ -986,6 +1003,44 @@
                 </table>
             </div>
         </div>
+        
+        <script>
+            function toggleAllEnrolled(source) {
+                const checkboxes = document.querySelectorAll('.check-enrolled');
+                checkboxes.forEach(cb => cb.checked = source.checked);
+                updateBulkRemoveBtn();
+            }
+
+            function updateBulkRemoveBtn() {
+                const checkboxes = document.querySelectorAll('.check-enrolled:checked');
+                const btn = document.getElementById('btnBulkRemove');
+                if (btn) {
+                    btn.style.display = checkboxes.length > 0 ? 'inline-flex' : 'none';
+                    btn.innerHTML = `<i>🗑️</i> Bulk Remove (${checkboxes.length})`;
+                }
+            }
+
+            function submitBulkUnenroll() {
+                const checkboxes = document.querySelectorAll('.check-enrolled:checked');
+                if (checkboxes.length === 0) return;
+                
+                if (confirm(`Apakah Anda yakin ingin menghapus ${checkboxes.length} mahasiswa dari kelas ini?`)) {
+                    const form = document.getElementById('bulkUnenrollForm');
+                    const inputsDiv = document.getElementById('bulkUnenrollInputs');
+                    inputsDiv.innerHTML = '';
+                    
+                    checkboxes.forEach(cb => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'enrollment_ids[]';
+                        input.value = cb.value;
+                        inputsDiv.appendChild(input);
+                    });
+                    
+                    form.submit();
+                }
+            }
+        </script>
 
     </div>
 </div>

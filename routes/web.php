@@ -178,6 +178,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/classes/{class}/import-students', [\App\Http\Controllers\ClassRoomController::class, 'importStudents'])->name('classes.import_students');
     Route::get('/classes-template', [\App\Http\Controllers\ClassRoomController::class, 'downloadTemplate'])->name('classes.template');
     Route::delete('/classes/{class}/unenroll/{enrollment}', [\App\Http\Controllers\ClassRoomController::class, 'unenroll'])->name('classes.unenroll');
+    Route::post('/classes/{class}/bulk-unenroll', [\App\Http\Controllers\ClassRoomController::class, 'bulkUnenroll'])->name('classes.bulk_unenroll');
     Route::post('/classes/{class}/material', [\App\Http\Controllers\ClassRoomController::class, 'storeMaterial'])->name('classes.store_material');
     Route::match(['put', 'post'], '/classes/{class}/material/{material}', [\App\Http\Controllers\ClassRoomController::class, 'updateMaterial'])->name('classes.update_material');
     Route::get('/classes/{class}/material/{material}/download', [\App\Http\Controllers\ClassRoomController::class, 'downloadMaterial'])->name('classes.download_material');
