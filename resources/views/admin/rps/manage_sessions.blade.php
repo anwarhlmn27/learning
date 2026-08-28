@@ -249,9 +249,11 @@
                             </select>
                         </div>
                         <div style="width: 250px;">
-                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Current File / Update</label>
-                            <a href="{{ asset('storage/' . $resource->file_path) }}" target="_blank" style="display: block; font-size: 0.75rem; margin-bottom: 0.25rem; color: var(--primary);">View Current</a>
-                            <input type="file" name="existing_resources[{{ $index }}][file]" style="width: 100%; padding: 0.3rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                            <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">
+                                Current File / Update
+                                <a href="{{ asset('storage/' . $resource->file_path) }}" target="_blank" style="font-size: 0.75rem; margin-left: 0.5rem; color: var(--primary); text-decoration: underline;">(View Current)</a>
+                            </label>
+                            <input type="file" name="existing_resources[{{ $index }}][file]" style="width: 100%; padding: 0.3rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; background: #fff;">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">&nbsp;</label>

@@ -65,7 +65,7 @@
                                     <td>{{ $term->description }}</td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#editTermModal{{ $term->id }}">Edit</button>
-                                        <form action="{{ route('plo.terms.destroy', $term->id) }}" method="POST" class="d-inline" class="swal-confirm-form" data-swal-msg="Delete this term?">
+                                        <form action="{{ route('plo.terms.destroy', $term->id) }}" method="POST" class="d-inline swal-confirm-form" data-swal-msg="Delete this term?">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -136,7 +136,7 @@
                                     <td>{{ $indicator->indicator_description }}</td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#editIndicatorModal{{ $indicator->id }}">Edit</button>
-                                        <form action="{{ route('plo.indicators.destroy', $indicator->id) }}" method="POST" class="d-inline" class="swal-confirm-form" data-swal-msg="Delete this indicator?">
+                                        <form action="{{ route('plo.indicators.destroy', $indicator->id) }}" method="POST" class="d-inline swal-confirm-form" data-swal-msg="Delete this indicator?">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>

@@ -1299,91 +1299,227 @@
         </div>
 
     @else
-        <!-- Student Personal Scorecard -->
-        <div class="card">
+        <!-- Student Personal Scorecard (Matrix Format) -->
+        <div class="card" style="margin-bottom: 2rem;">
             <div class="card-header" style="background: white; border-bottom: 1px solid var(--border-color); padding: 1.25rem;">
                 <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">Rapor Penugasan & Kuis Saya</h3>
-                <p style="margin: 0.25rem 0 0 0; font-size: 0.8rem; color: var(--text-muted);">Semua capaian nilai penugasan dan kuis Anda di kelas ini.</p>
+                <p style="margin: 0.25rem 0 0 0; font-size: 0.8rem; color: var(--text-muted);">Capaian nilai Anda di setiap sesi (1-14).</p>
             </div>
-            <div class="card-body" style="padding: 0;">
-                <table style="width: 100%; border-collapse: collapse;">
+            @php
+                $classTopics = isset($topics) ? $topics : ($class->topics ?? collect());
+                // Group assignments by session_number using $classTopics mapping
+                $assignmentsBySession = $assignments->groupBy(function($assign) use ($classTopics) {
+                    $topic = $classTopics->where('type', 'assignment')->where('content_id', $assign->id)->first();
+                    return $topic ? $topic->session_number : ($assign->session_number ?? 1);
+                })->sortKeys();
+                
+                // Group quizzes by session_number using $classTopics mapping
+                $quizzesBySession = $quizzes->groupBy(function($quiz) use ($classTopics) {
+                    $topic = $classTopics->where('type', 'quiz')->where('content_id', $quiz->id)->first();
+                    return $topic ? $topic->session_number : ($quiz->session_number ?? 1);
+                })->sortKeys();
+            @endphp
+            <div class="card-body" style="padding: 0; overflow-x: auto;">
+                <table class="matrix-table">
                     <thead>
                         <tr>
-                            <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Nama Kegiatan</th>
-                            <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Tipe</th>
-                            <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: left;">Status Pengumpulan</th>
-                            <th style="padding: 1rem; border-bottom: 1px solid var(--border-color); background: #f8fafc; text-align: right;">Capaian Nilai</th>
+                            <!-- Session Columns 1 to 14 (Assignments + Quizzes) -->
+                            @for($sessNum = 1; $sessNum <= 14; $sessNum++)
+                                @php
+                                    $sessAssignments = isset($assignmentsBySession[$sessNum]) ? $assignmentsBySession[$sessNum] : collect();
+                                    $sessQuizzes = isset($quizzesBySession[$sessNum]) ? $quizzesBySession[$sessNum] : collect();
+                                    $totalTasks = $sessAssignments->count() + $sessQuizzes->count();
+                                @endphp
+                                <th style="min-width: 130px; text-align: center;">
+                                    @if($totalTasks > 1)
+                                        <div style="font-weight: 700;">Sesi {{ $sessNum }}</div>
+                                        <div style="font-size: 0.7rem; color: #4f46e5; font-weight: 600;">({{ $totalTasks }} Aktivitas - Avg)</div>
+                                    @elseif($totalTasks == 1)
+                                        <div style="font-weight: 700;">Sesi {{ $sessNum }}</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">
+                                            @if($sessAssignments->count() == 1)
+                                                {{ Str::limit($sessAssignments->first()->title, 16) }}
+                                            @else
+                                                {{ Str::limit($sessQuizzes->first()->title, 16) }}
+                                            @endif
+                                        </div>
+                                    @else
+                                        <div style="font-weight: 700; color: #94a3b8;">Sesi {{ $sessNum }}</div>
+                                        <div style="font-size: 0.7rem; color: #cbd5e1; font-weight: normal;">-</div>
+                                    @endif
+                                </th>
+                            @endfor
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Student Assignment List -->
-                        @foreach($assignments as $assign)
-                            @php
-                                $studentId = Auth::user()->student->id ?? null;
-                                $sub = $studentId && isset($submissions[$studentId]) 
-                                    ? $submissions[$studentId]->where('assignment_id', $assign->id)->first() 
-                                    : null;
-                                
-                                $studentEnroll = \App\Models\Enrollment::where('class_room_id', $class->id)
-                                    ->where('student_id', $studentId)
-                                    ->first();
+                        @php
+                            $studentId = Auth::user()->student->id ?? null;
+                            $studentUserId = Auth::id();
+                            $myEnroll = \App\Models\Enrollment::where('class_room_id', $class->id)
+                                ->where('student_id', $studentId)
+                                ->first();
+                        @endphp
+                        <tr>
+                            @if($myEnroll)
+                                <!-- Render Combined scores per Session 1-14 -->
+                                @for($sessNum = 1; $sessNum <= 14; $sessNum++)
+                                    @php
+                                        $sessAssignments = isset($assignmentsBySession[$sessNum]) ? $assignmentsBySession[$sessNum] : collect();
+                                        $sessQuizzes = isset($quizzesBySession[$sessNum]) ? $quizzesBySession[$sessNum] : collect();
+                                        
+                                        $sessDetails = [];
+                                        $scores = [];
+                                        $hasSubmitted = false;
 
-                                $gradeObj = $studentEnroll 
-                                    ? \App\Models\StudentGrade::where('enrollment_id', $studentEnroll->id)
-                                        ->where('rps_assessment_id', $assign->rps_assessment_id)
-                                        ->first() 
-                                    : null;
-                            @endphp
-                            <tr>
-                                <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
-                                    <strong>{{ $assign->title }}</strong>
-                                </td>
-                                <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">Tugas (Assignment)</td>
-                                <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
-                                    @if($sub)
-                                        <span style="color: var(--success); font-weight: 600;">{{ $sub->status }}</span>
-                                    @else
-                                        <span style="color: var(--danger); font-weight: 600;">Missing</span>
-                                    @endif
-                                </td>
-                                <td style="padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: right;">
-                                    @if($gradeObj)
-                                        <strong style="font-size: 1.1rem; color: var(--success);">{{ $gradeObj->score }} / 100</strong>
-                                    @else
-                                        <span style="color: var(--text-muted); font-style: italic;">Belum Dinilai</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
+                                        // Process Assignments
+                                        foreach($sessAssignments as $assign) {
+                                            $sub = isset($submissions[$studentId]) 
+                                                ? $submissions[$studentId]->where('assignment_id', $assign->id)->first() 
+                                                : null;
+                                            
+                                            $gradeObj = \App\Models\StudentGrade::where('enrollment_id', $myEnroll->id)
+                                                ->where('rps_assessment_id', $assign->rps_assessment_id)
+                                                ->first();
 
-                        <!-- Student Quiz List -->
-                        @foreach($quizzes as $quiz)
-                            @php
-                                $bestAttempt = isset($quizAttempts[Auth::id()]) 
-                                    ? $quizAttempts[Auth::id()]->where('quiz_id', $quiz->id)->sortByDesc('score')->first() 
-                                    : null;
-                            @endphp
-                            <tr>
-                                <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
-                                    <strong>{{ $quiz->title }}</strong>
-                                </td>
-                                <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">Kuis Pilihan Ganda</td>
-                                <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
-                                    @if($bestAttempt)
-                                        <span style="color: var(--success); font-weight: 600;">Submitted</span>
-                                    @else
-                                        <span style="color: var(--danger); font-weight: 600;">Not Attempted</span>
-                                    @endif
-                                </td>
-                                <td style="padding: 1rem; border-bottom: 1px solid var(--border-color); text-align: right;">
-                                    @if($bestAttempt)
-                                        <strong style="font-size: 1.1rem; color: var(--success);">{{ $bestAttempt->score }} / 100</strong>
-                                    @else
-                                        <span style="color: var(--text-muted); font-style: italic;">-</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
+                                            $scoreVal = null;
+                                            if ($gradeObj && is_numeric($gradeObj->score)) {
+                                                $scoreVal = (float) $gradeObj->score;
+                                            } elseif ($sub && is_numeric($sub->score)) {
+                                                $scoreVal = (float) $sub->score;
+                                            }
+
+                                            if ($scoreVal !== null) {
+                                                $scores[] = $scoreVal;
+                                            }
+
+                                            if ($sub) {
+                                                $hasSubmitted = true;
+                                            }
+
+                                            $sessDetails[] = [
+                                                'title'  => $assign->title,
+                                                'score'  => $scoreVal !== null ? number_format($scoreVal, 1) : '-',
+                                                'status' => $gradeObj ? 'Graded' : ($sub ? ($sub->status ?? 'Submitted') : 'Belum Dikumpulkan'),
+                                            ];
+                                        }
+                                        
+                                        // Process Quizzes
+                                        foreach($sessQuizzes as $quiz) {
+                                            $quizAttempt = \App\Models\StudentQuizAttempt::where('quiz_id', $quiz->id)
+                                                ->where('user_id', $studentUserId)
+                                                ->orderBy('score', 'desc')
+                                                ->first();
+                                            
+                                            $quizGradeObj = \App\Models\StudentGrade::where('enrollment_id', $myEnroll->id)
+                                                ->where('rps_assessment_id', $quiz->rps_assessment_id)
+                                                ->first();
+                                            
+                                            $scoreVal = null;
+                                            if ($quizGradeObj && is_numeric($quizGradeObj->score)) {
+                                                $scoreVal = (float) $quizGradeObj->score;
+                                            } elseif ($quizAttempt && is_numeric($quizAttempt->score)) {
+                                                $scoreVal = (float) $quizAttempt->score;
+                                            }
+                                            
+                                            if ($scoreVal !== null) {
+                                                $scores[] = $scoreVal;
+                                            }
+                                            
+                                            if ($quizAttempt) {
+                                                $hasSubmitted = true;
+                                            }
+                                            
+                                            $sessDetails[] = [
+                                                'title'  => 'Kuis: ' . $quiz->title,
+                                                'score'  => $scoreVal !== null ? number_format($scoreVal, 1) : '-',
+                                                'status' => $quizGradeObj ? 'Graded' : ($quizAttempt ? 'Attempted' : 'Belum Dikerjakan'),
+                                            ];
+                                        }
+
+                                        $totalTasks = $sessAssignments->count() + $sessQuizzes->count();
+                                        $avgScore = count($scores) > 0 ? number_format(array_sum($scores) / count($scores), 1) : null;
+                                        $isMultiple = $totalTasks > 1;
+                                        $studentName = optional($myEnroll->student)->nama_student ?? 'Saya';
+                                    @endphp
+                                    <td style="text-align: center;">
+                                        @if($totalTasks == 0)
+                                            <span class="badge-score empty" style="color: #cbd5e1; border-color: transparent;">-</span>
+                                        @elseif($isMultiple)
+                                            @if($avgScore !== null)
+                                                <button type="button" class="badge-score passed" 
+                                                        style="cursor: pointer; border: 1px dashed #4f46e5; background: #eef2ff; color: #4f46e5; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.65rem;"
+                                                        onclick='openSessionGradeBreakdown("{{ addslashes($studentName) }}", "{{ $sessNum }}", {{ json_encode($sessDetails) }}, "{{ $avgScore }}")'
+                                                        title="Klik untuk melihat rincian {{ $totalTasks }} aktivitas Sesi {{ $sessNum }}">
+                                                    <span>{{ $avgScore }}</span>
+                                                    <span style="font-size: 0.65rem; background: #4f46e5; color: white; border-radius: 9999px; padding: 1px 5px; font-weight: 600;">Avg 🔍</span>
+                                                </button>
+                                            @elseif($hasSubmitted)
+                                                <button type="button" class="badge-score pending" 
+                                                        style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;"
+                                                        onclick='openSessionGradeBreakdown("{{ addslashes($studentName) }}", "{{ $sessNum }}", {{ json_encode($sessDetails) }}, null)'
+                                                        title="Klik untuk melihat rincian {{ $totalTasks }} aktivitas Sesi {{ $sessNum }}">
+                                                    <span>Submitted</span>
+                                                    <span style="font-size: 0.7rem;">🔍</span>
+                                                </button>
+                                            @else
+                                                <button type="button" class="badge-score empty" 
+                                                        style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;"
+                                                        onclick='openSessionGradeBreakdown("{{ addslashes($studentName) }}", "{{ $sessNum }}", {{ json_encode($sessDetails) }}, null)'
+                                                        title="Klik untuk melihat rincian {{ $totalTasks }} aktivitas Sesi {{ $sessNum }}">
+                                                    <span>-</span>
+                                                    <span style="font-size: 0.65rem; color: #94a3b8;">🔍</span>
+                                                </button>
+                                            @endif
+                                        @else
+                                            {{-- Single Activity in Session --}}
+                                            @if($sessAssignments->count() == 1)
+                                                @php
+                                                    $singleAssign = $sessAssignments->first();
+                                                    $singleSub = isset($submissions[$studentId]) 
+                                                        ? $submissions[$studentId]->where('assignment_id', $singleAssign->id)->first() 
+                                                        : null;
+                                                    $singleGrade = \App\Models\StudentGrade::where('enrollment_id', $myEnroll->id)
+                                                        ->where('rps_assessment_id', $singleAssign->rps_assessment_id)
+                                                        ->first();
+                                                @endphp
+                                                @if($singleGrade)
+                                                    <span class="badge-score passed">{{ $singleGrade->score }}</span>
+                                                @elseif($singleSub)
+                                                    <a href="{{ route('assignments.show', $singleAssign) }}" class="badge-score pending" style="text-decoration: none; display: inline-block;">
+                                                        {{ $singleSub->status ?? 'Submitted' }}
+                                                    </a>
+                                                @else
+                                                    <span class="badge-score empty">-</span>
+                                                @endif
+                                            @else
+                                                @php
+                                                    $singleQuiz = $sessQuizzes->first();
+                                                    $quizAttempt = \App\Models\StudentQuizAttempt::where('quiz_id', $singleQuiz->id)
+                                                        ->where('user_id', $studentUserId)
+                                                        ->orderBy('score', 'desc')
+                                                        ->first();
+                                                    $singleGrade = \App\Models\StudentGrade::where('enrollment_id', $myEnroll->id)
+                                                        ->where('rps_assessment_id', $singleQuiz->rps_assessment_id)
+                                                        ->first();
+                                                    $qScore = null;
+                                                    if ($singleGrade && is_numeric($singleGrade->score)) $qScore = (float)$singleGrade->score;
+                                                    elseif ($quizAttempt && is_numeric($quizAttempt->score)) $qScore = (float)$quizAttempt->score;
+                                                @endphp
+                                                @if($qScore !== null)
+                                                    <span class="badge-score passed">{{ number_format($qScore, 1) }}</span>
+                                                @elseif($quizAttempt)
+                                                    <span class="badge-score pending">Attempted</span>
+                                                @else
+                                                    <span class="badge-score empty">-</span>
+                                                @endif
+                                            @endif
+                                        @endif
+                                    </td>
+                                @endfor
+                            @else
+                                <td colspan="14" style="text-align: center; color: var(--text-muted); padding: 2rem;">Anda tidak terdaftar di kelas ini.</td>
+                            @endif
+                        </tr>
                     </tbody>
                 </table>
             </div>
