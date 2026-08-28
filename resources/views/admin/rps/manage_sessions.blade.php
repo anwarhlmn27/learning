@@ -233,14 +233,14 @@
             
             <div id="resources_container_{{ $session->id }}">
                 @foreach($session->resources as $index => $resource)
-                    <div class="resource-row" id="resource_row_{{ $resource->id }}" style="display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div class="resource-row" id="resource_row_{{ $resource->id }}" style="display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.5rem; flex-wrap: wrap;">
                         <input type="hidden" name="existing_resources[{{ $index }}][id]" value="{{ $resource->id }}">
                         <input type="checkbox" name="existing_resources[{{ $index }}][delete]" value="1" id="delete_resource_{{ $resource->id }}" style="display: none;">
-                        <div style="flex: 1;">
+                        <div style="flex: 2; min-width: 200px;">
                             <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Resource Name') }} <span style="color: red;">*</span></label>
                             <input type="text" name="existing_resources[{{ $index }}][nm_resource]" value="{{ $resource->nm_resource }}" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                         </div>
-                        <div style="width: 150px;">
+                        <div style="flex: 1; min-width: 150px;">
                             <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} <span style="color: red;">*</span></label>
                             <select name="existing_resources[{{ $index }}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                                 <option value="Modul" {{ $resource->type == 'Modul' ? 'selected' : '' }}>Modul</option>
@@ -248,14 +248,14 @@
                                 <option value="Video" {{ $resource->type == 'Video' ? 'selected' : '' }}>Video</option>
                             </select>
                         </div>
-                        <div style="width: 250px;">
+                        <div style="flex: 2; min-width: 250px;">
                             <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">
                                 Current File / Update
                                 <a href="{{ asset('storage/' . $resource->file_path) }}" target="_blank" style="font-size: 0.75rem; margin-left: 0.5rem; color: var(--primary); text-decoration: underline;">(View Current)</a>
                             </label>
                             <input type="file" name="existing_resources[{{ $index }}][file]" style="width: 100%; padding: 0.3rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; background: #fff;">
                         </div>
-                        <div>
+                        <div style="flex-shrink: 0;">
                             <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">&nbsp;</label>
                             <button type="button" onclick="deleteExistingResource('{{ $resource->id }}')" class="btn btn-danger" style="padding: 0.5rem; border-radius: 0.375rem; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; height: 38px;">&times;</button>
                         </div>
@@ -453,12 +453,13 @@
         row.style.gap = '1rem';
         row.style.alignItems = 'flex-start';
         row.style.marginBottom = '0.5rem';
+        row.style.flexWrap = 'wrap';
         row.innerHTML = `
-            <div style="flex: 1;">
+            <div style="flex: 2; min-width: 200px;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Resource Name') }} <span style="color: red;">*</span></label>
                 <input type="text" name="new_resources[${index}][nm_resource]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
             </div>
-            <div style="width: 150px;">
+            <div style="flex: 1; min-width: 150px;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('Type') }} <span style="color: red;">*</span></label>
                 <select name="new_resources[${index}][type]" required style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
                     <option value="Modul">Modul</option>
@@ -466,11 +467,11 @@
                     <option value="Video">Video</option>
                 </select>
             </div>
-            <div style="width: 250px;">
+            <div style="flex: 2; min-width: 250px;">
                 <label style="display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">{{ __('File') }} <span style="color: red;">*</span></label>
-                <input type="file" name="new_resources[${index}][file]" required style="width: 100%; padding: 0.3rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
+                <input type="file" name="new_resources[${index}][file]" required style="width: 100%; padding: 0.3rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; background: #fff;">
             </div>
-            <div>
+            <div style="flex-shrink: 0;">
                 <label style="display: block; font-size: 0.875rem; margin-bottom: 0.25rem;">&nbsp;</label>
                 <button type="button" onclick="this.parentElement.parentElement.remove()" class="btn btn-danger" style="padding: 0.5rem; border-radius: 0.375rem; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; height: 38px;">&times;</button>
             </div>
