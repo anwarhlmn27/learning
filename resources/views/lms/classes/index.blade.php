@@ -129,15 +129,28 @@
                     </div>
                 </div>
                 
-                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
-                    <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; flex: 1; text-align: center;">
-                        <strong style="display: block; color: var(--text-main);">{{ __('Tahun Akademik') }}</strong>
-                        <span style="color: var(--text-muted);">{{ $class->tahun_akademik }}</span>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                    <div style="display: flex; gap: 1rem;">
+                        <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; flex: 1; text-align: center;">
+                            <strong style="display: block; color: var(--text-main);">{{ __('Tahun Akademik') }}</strong>
+                            <span style="color: var(--text-muted);">{{ $class->tahun_akademik }}</span>
+                        </div>
+                        <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; flex: 1; text-align: center;">
+                            <strong style="display: block; color: var(--text-main);">{{ __('Semester') }}</strong>
+                            <span style="color: var(--text-muted);">{{ $class->semester }}</span>
+                        </div>
                     </div>
-                    <div style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; flex: 1; text-align: center;">
-                        <strong style="display: block; color: var(--text-main);">{{ __('Semester') }}</strong>
-                        <span style="color: var(--text-muted);">{{ $class->semester }}</span>
+                    
+                    @if($class->ruangan || $class->jadwal)
+                    <div style="background: #f8fafc; padding: 0.5rem; border-radius: 4px; text-align: center; border: 1px dashed #cbd5e1;">
+                        <strong style="display: block; color: var(--text-main); margin-bottom: 0.2rem;">📍 {{ __('Ruangan & Jadwal') }}</strong>
+                        <span style="color: var(--text-muted);">
+                            @if($class->ruangan) <strong>{{ $class->ruangan }}</strong> @endif
+                            @if($class->ruangan && $class->jadwal) | @endif
+                            @if($class->jadwal) {{ $class->jadwal }} @endif
+                        </span>
                     </div>
+                    @endif
                 </div>
             </div>
 
