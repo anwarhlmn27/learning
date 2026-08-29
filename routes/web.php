@@ -200,6 +200,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/classes/{class}/copy-content-from', [\App\Http\Controllers\ClassRoomController::class, 'copyContentFrom'])->name('classes.copy_content_from');
     Route::get('/archived-classes', [\App\Http\Controllers\ClassRoomController::class, 'archivedIndex'])->name('classes.archived');
     Route::post('/classes/{class}/sessions/{session_number}/rate', [\App\Http\Controllers\SessionRatingController::class, 'store'])->name('classes.rate_session');
+    Route::delete('/classes/{class}/ratings/{rating}', [\App\Http\Controllers\SessionRatingController::class, 'destroy'])->name('classes.destroy_rating');
     Route::get('/classes/{class}/available-students', [\App\Http\Controllers\ClassRoomController::class, 'getAvailableStudents'])->name('classes.available_students');
 
     // Assignments & Grading

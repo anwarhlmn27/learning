@@ -797,11 +797,22 @@
                                                             Mahasiswa (Anonim)
                                                         @endif
                                                     </span>
-                                                    <span style="color: #fbbf24; font-weight: bold; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.1rem;">
-                                                        @for($i = 1; $i <= 5; $i++)
-                                                            {{ $i <= $ratingRecord->rating ? '★' : '☆' }}
-                                                        @endfor
-                                                    </span>
+                                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                        <span style="color: #fbbf24; font-weight: bold; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.1rem;">
+                                                            @for($i = 1; $i <= 5; $i++)
+                                                                {{ $i <= $ratingRecord->rating ? '★' : '☆' }}
+                                                            @endfor
+                                                        </span>
+                                                        @if(Auth::user()->can('edit-classes') || Auth::user()->hasRole(['admin', 'kaprodi', 'baak']))
+                                                            <form action="{{ route('classes.destroy_rating', ['class' => $class->id, 'rating' => $ratingRecord->id]) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus rating ini?');" style="margin: 0;">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0.2rem; font-size: 0.85rem; border-radius: 4px;" title="Hapus Rating" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='none'">
+                                                                    🗑️
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                                 
                                                 @if(Auth::user()->can('view-ratings-transparent'))

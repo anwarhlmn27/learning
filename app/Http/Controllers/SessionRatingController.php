@@ -64,4 +64,18 @@ class SessionRatingController extends Controller
 
         return back()->with('success', 'Rating pertemuan berhasil dikirim.');
     }
+
+    public function destroy(ClassRoom $class, SessionRating $rating)
+    {
+        if (!Auth::user()->can('edit-classes') && !Auth::user()->hasRole(['admin', 'kaprodi', 'baak'])) {
+            return back()->with('error', 'Anda tidak memiliki akses untuk menghapus rating.');
+        }
+
+        if ($rating->class_room_id !== $class->id) {
+            return back()->with('error', 'Rating tidak ditemukan di kelas ini.');
+        }
+
+        $rating->delete();
+        return back()->with('success', 'Rating pertemuan berhasil dihapus.');
+    }
 }
