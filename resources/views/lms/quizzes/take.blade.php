@@ -198,6 +198,7 @@
     const maxWarnings = 3;
     let quizActive = false;
     let isSubmitting = false;
+    let lastViolationTime = 0; // Cooldown tracker
     
     document.getElementById('start-quiz-btn').addEventListener('click', function() {
         const docEl = document.documentElement;
@@ -253,6 +254,11 @@
 
     function handleViolation() {
         if (!quizActive || isSubmitting) return;
+        
+        // Cooldown 3 detik untuk mencegah deteksi ganda dari satu aksi (misal pindah tab memicu blur + visibilitychange sekaligus)
+        const now = Date.now();
+        if (now - lastViolationTime < 3000) return;
+        lastViolationTime = now;
         
         warningCount++;
         updateWarningUI();

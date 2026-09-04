@@ -90,6 +90,76 @@ class QuizController extends Controller
         return back()->with('success', 'Soal berhasil ditambahkan.');
     }
 
+    public function updateQuestion(Request $request, QuizQuestion $question)
+    {
+        $request->validate([
+            'type' => 'required|in:multiple_choice,essay',
+            'question_text' => 'required|string',
+            'points' => 'required|integer|min:1',
+            'question_image' => 'nullable|image|max:2048',
+        ]);
+
+        $updateData = [
+            'type' => $request->type,
+            'question_text' => $request->question_text,
+            'points' => $request->points,
+        ];
+
+        if ($request->has('remove_image') && $request->remove_image == 1) {
+            $updateData['question_image'] = null;
+        } elseif ($request->hasFile('question_image')) {
+            $updateData['question_image'] = $request->file('question_image')->store('quiz_images', 'public');
+        }
+
+        if ($request->type == 'multiple_choice') {
+            $optionsData = [];
+            $validOptionsCount = 0;
+            $rawOptions = $request->options ?? [];
+
+            // if updating, we might have old options image paths that we want to keep
+            $oldOptions = json_decode($question->options, true) ?? [];
+
+            foreach ($rawOptions as $index => $opt) {
+                $hasText = !empty($opt['text']);
+                $hasNewImage = $request->hasFile("options.{$index}.image");
+                $keepOldImage = !empty($opt['keep_image']) && $opt['keep_image'] == 1 && isset($oldOptions[$index]['image']);
+
+                if ($hasText || $hasNewImage || $keepOldImage) {
+                    $optImage = null;
+                    if ($hasNewImage) {
+                        $optImage = $request->file("options.{$index}.image")->store('quiz_images', 'public');
+                    } elseif ($keepOldImage) {
+                        $optImage = $oldOptions[$index]['image'];
+                    }
+
+                    $optionsData[$index] = [
+                        'text' => $opt['text'] ?? '',
+                        'image' => $optImage
+                    ];
+                    $validOptionsCount++;
+                }
+            }
+
+            if ($validOptionsCount < 2) {
+                return back()->with('error', 'Pilihan ganda harus memiliki minimal 2 opsi (teks atau gambar).');
+            }
+
+            if (!isset($optionsData[$request->correct_option])) {
+                return back()->with('error', 'Opsi yang dipilih sebagai jawaban benar tidak valid atau kosong.');
+            }
+
+            $updateData['options'] = json_encode($optionsData);
+            $updateData['correct_option'] = (string) $request->correct_option;
+        } else {
+            $updateData['options'] = null;
+            $updateData['correct_option'] = null;
+        }
+
+        $question->update($updateData);
+
+        return back()->with('success', 'Soal berhasil diperbarui.');
+    }
+
     // Teacher: Hapus soal
     public function destroyQuestion(QuizQuestion $question)
     {

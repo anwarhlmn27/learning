@@ -214,6 +214,7 @@ Route::middleware('auth')->group(function () {
     // Quizzes Management (Teacher)
     Route::get('/quizzes/{quiz}', [\App\Http\Controllers\QuizController::class, 'show'])->name('quizzes.show');
     Route::post('/quizzes/{quiz}/questions', [\App\Http\Controllers\QuizController::class, 'storeQuestion'])->name('quizzes.store_question');
+    Route::put('/questions/{question}', [\App\Http\Controllers\QuizController::class, 'updateQuestion'])->name('quizzes.update_question');
     Route::delete('/questions/{question}', [\App\Http\Controllers\QuizController::class, 'destroyQuestion'])->name('quizzes.destroy_question');
     Route::get('/quizzes/{quiz}/grade/{attempt}', [\App\Http\Controllers\QuizController::class, 'gradeForm'])->name('quizzes.grade_form');
     Route::post('/quizzes/{quiz}/grade/{attempt}', [\App\Http\Controllers\QuizController::class, 'saveGrade'])->name('quizzes.save_grade');

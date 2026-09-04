@@ -34,3 +34,5 @@ Karena ID Mata Kuliah (`subject_id`) dan ID Kurikulum (`kurikulum_id`) tidak ber
 
 #GP
 profile lulusan dengan kode PL sama tidak bisa walaupun beda prodi
+
+saat cloning materi dari kelas lain, tidak terkoneksi dengan rps, buat agar bisa koneksi dengan rps

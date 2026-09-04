@@ -74,6 +74,10 @@ class RpsController extends Controller
         ]);
 
         $data = $request->all();
+
+        if ($request->status === 'Aktif') {
+            return redirect()->back()->withErrors(['error' => 'RPS baru tidak dapat langsung berstatus Aktif. Silakan simpan sebagai Draft, lalu lengkapi sesi dan CLO terlebih dahulu.'])->withInput();
+        }
         
         $latestRps = Rps::where('subject_id', $request->subject_id)->orderBy('versi', 'desc')->first();
         if ($latestRps) {
@@ -117,9 +121,26 @@ class RpsController extends Controller
             'status' => 'required|in:Draft,Aktif,Arsip',
         ]);
         if ($request->status === 'Aktif') {
-            $totalWeight = \App\Models\RpsAssessment::whereIn('rps_session_id', $rp->sessions->pluck('id'))->sum('weight');
+            $sessionIds = $rp->sessions->pluck('id');
+            
+            // 1. Cek Total Bobot
+            $totalWeight = \App\Models\RpsAssessment::whereIn('rps_session_id', $sessionIds)->sum('weight');
             if ($totalWeight != 100) {
                 return redirect()->back()->withErrors(['error' => 'RPS tidak dapat diaktifkan karena total bobot Assessment belum 100% (Saat ini: ' . $totalWeight . '%). Silakan lengkapi bobot di menu Manage Sessions.'])->withInput();
+            }
+
+            // 2. Cek apakah ada Assessment yang tidak terkait CLO
+            $unmappedAssessments = \App\Models\RpsAssessment::whereIn('rps_session_id', $sessionIds)
+                ->whereNull('clo_id')
+                ->count();
+            if ($unmappedAssessments > 0) {
+                return redirect()->back()->withErrors(['error' => 'RPS tidak dapat diaktifkan karena ada ' . $unmappedAssessments . ' Penilaian (Assessment) yang belum dikaitkan dengan CLO. Silakan lengkapi di menu Manage Sessions.'])->withInput();
+            }
+
+            // 3. Cek apakah ada satupun sesi yang sudah dipetakan ke CLO
+            $sessionsWithClo = $rp->sessions()->has('clos')->count();
+            if ($sessionsWithClo == 0) {
+                return redirect()->back()->withErrors(['error' => 'RPS tidak dapat diaktifkan karena belum ada satupun Sesi yang dikaitkan dengan CLO.'])->withInput();
             }
         }
 
@@ -349,9 +370,10 @@ class RpsController extends Controller
                 }
             }
 
-            if (!$isSynced) {
-                $session->clos()->sync($request->clos ?? []);
+            // Izinkan update relasi CLO ke Sesi kapan saja (meskipun sudah di-sync)
+            $session->clos()->sync($request->clos ?? []);
 
+            if (!$isSynced) {
                 // Handle Assessments only if not synced to prevent ID recreation breaking LMS
                 $session->assessments()->delete();
                 if ($request->has('assessments') && is_array($request->assessments)) {
@@ -376,14 +398,15 @@ class RpsController extends Controller
                     return redirect()->back()->withErrors(['error' => 'Total weight exceeds 100% (Current: ' . $totalWeight . '%)'])->withInput();
                 }
             } else {
-                // If synced, ONLY allow updating text fields of existing assessments
+                // If synced, ONLY allow updating text fields and clo_id of existing assessments
                 if ($request->has('assessments') && is_array($request->assessments)) {
                     foreach ($request->assessments as $assess) {
                         if (isset($assess['id'])) {
                             $existingAssess = $session->assessments()->find($assess['id']);
                             if ($existingAssess) {
-                                // Update text fields, ignore weight and clo_id
+                                // Update text fields and clo_id, ignore weight
                                 $existingAssess->update([
+                                    'clo_id' => !empty($assess['clo_id']) ? $assess['clo_id'] : null,
                                     'assessment_type' => $assess['assessment_type'],
                                     'assignment_activities' => $assess['assignment_activities'] ?? null,
                                     'assessment_scope' => $assess['assessment_scope'] ?? null,
