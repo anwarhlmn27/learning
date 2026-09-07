@@ -6,9 +6,12 @@ use App\Http\Controllers\CloController;
 use App\Http\Controllers\BahanKajianController;
 
 Route::get('/', function () {
-    return view('auth.login');
+    return view('move');
 });
 
+Route::get('/login', function () {
+    return view('auth.login');
+});
 // Google Auth Routes
 Route::get('/auth/google', [\App\Http\Controllers\GoogleAuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [\App\Http\Controllers\GoogleAuthController::class, 'handleGoogleCallback']);
